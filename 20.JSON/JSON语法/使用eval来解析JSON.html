@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用eval来解析JSON</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 当使用eval来解析JSON时，必须对 JSON数据的 左右加上括号 ( )
+     * 原因是，在JavaScript中 JSON 格式的 {} 会被认为是一个语句，加上()可以让JavaScript的解释器将其当做表达式。
+     */
+
+    // {} 就是一个JSON格式的数据 表示的是一个没有属性的对象。
+    var a="{}";
+    //利用 JSON.parse可以正确解析
+    console.log(JSON.parse(a));
+    //但是使用 eval时，如果不加 () ，那么这只会被当做是空语句，因为执行返回的是undefined。
+    console.log(eval(a)===undefined);
+    //所以这就是使用 eval 解析 JSON数据格式的标准形式。
+    console.log(eval("("+a+")"));
+
+    /**
+     * 但是需要注意的是，使用eval解析 JSON数据是非常危险的。
+     * 这个危险主要体现在:数据源不可信。
+     * 获取到的数据可能是非常危险的一一夹带可执行的语句。
+     */
+    var  dangerousData='{ "a" : 123, "b" : alert("eval很危险!!!!") }';
+    try{
+        JSON.parse(dangerousData);
+    }catch (e) {
+        console.log("JSON.parse 会对不是JSON格式的数据报错 一一 JSON格式中 不允许语句(函数)作为值");
+    }
+
+    console.log("而eval则会对错误格式的JSON数据进行执行解析",eval("("+dangerousData+")"));
+
+    /**
+     * 同时，JSON数据的格式也可能是不规范的。
+     */
+    var incorretData='{ "a" : undefined}';
+    try{
+        JSON.parse(incorretData);
+    }catch (e) {
+        console.log("JSON.parse 会对不是JSON格式的数据报错 一一 JSON格式 不允许 undefined 作为值 ");
+    }
+    console.log("而eval则会对错误格式的JSON数据进行执行解析",eval("("+incorretData+")"));
+
+    /**
+     * 从这里可以看出来，尽管 eval 可以 解析 JSON数据，但是 解析 JSON数据仅仅只是eval函数的 解析执行代码功能 的 副作用 罢了。
+     * 使用 eval 来解析 JSON 数据 是非常危险的， 除非能百分百确定数据源安全并且JSON格式正确。
+     */
+
+</script>
+
+</html>

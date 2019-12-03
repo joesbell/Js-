@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML5约束验证API</title>
+</head>
+<body>
+
+<form style="border: 1px solid black">
+    <h3>required属性一一必须填写</h3>
+    <input type="text" id="input1" required>
+    <input type="button" value="修改required属性为false" onclick="changeRequired()">
+    <input type="submit" value="submit">
+</form>
+
+<hr>
+
+<!--这个type属性的验证非常不完善-->
+<form style="border: 1px solid black">
+    <h3>新增type属性一一url、email等</h3>
+    <!--对于谷歌浏览器来说，只要以http://开头的字符串就能通过url输入验证-->
+    <input type="url" id="input2" required>
+    <!--对于谷歌浏览器来说，只要包含@的字符串就能通过email输入验证-->
+    <input type="email" id="input3" required>
+    <!--同时还需要注意，如果没有任何输入一一也就是空字符串也可以通过type验证，因此最好加上required确保有输入-->
+    <input type="submit" value="submit">
+</form>
+
+<hr>
+
+<form style="border: 1px solid black">
+    <h3>type=number时 min,max,step属性或特性(两个是同步的)一一整数范围相关</h3>
+    <input type="number" id="input4" min="0" max="100" step="10" required>
+    <input type="submit" value="submit">
+</form>
+
+<hr>
+
+<form style="border: 1px solid black">
+    <h3>pattern属性或特性一一输入模式相关</h3>
+    <input type="text" id="input5" pattern="\d+" required>
+    <input type="submit" value="submit">
+</form>
+
+<form style="border: 1px solid black" id="testForm">
+    <h3>checkValidity方法和validity属性</h3>
+    <input type="text" id="input6" pattern="\d{2,}" value="1" required>
+    <input type="number" id="input7" min="0" max="100" step="10" value="-1" required>
+    <input type="number" id="input8" min="0" max="100" step="10" value="101" required>
+    <input type="number" id="input9" min="0" max="100" step="10" value="55" required>
+    <input type="url" id="input10" value="not url" required>
+    <input type="text" id="input11" required>
+    <input type="email" id="input12" value="reveur000@gmail.com" required>
+    <input type="submit" value="submit">
+</form>
+
+<form style="border: 1px solid black" id="testForm2" novalidate>
+    <h3>表单的novalidate特性</h3>
+    <input type="text"  required>
+    <input type="submit" value="submit">
+</form>
+
+<form style="border: 1px solid black">
+    <h3>input元素的formnovalidate特性</h3>
+    <input type="text"  required>
+    <input type="submit" id="input13" value="不验证的submit" formnovalidate>
+    <input type="submit" id="input14" value="普通的submit">
+</form>
+</body>
+
+<script>
+    var input1=document.getElementById("input1");
+    var input2=document.getElementById("input2");
+    var input3=document.getElementById("input3");
+    var input4=document.getElementById("input4");
+    var input5=document.getElementById("input5");
+    var input6=document.getElementById("input6");
+    var input7=document.getElementById("input7");
+    var input8=document.getElementById("input8");
+    var input9=document.getElementById("input9");
+    var input10=document.getElementById("input10");
+    var input11=document.getElementById("input11");
+    var input12=document.getElementById("input12");
+    var input13=document.getElementById("input13");
+    var input14=document.getElementById("input14");
+
+    /**
+     * HTMLInputElement类型上新增了 required属性。
+     */
+    console.log(HTMLInputElement.prototype.hasOwnProperty("required"));
+    console.log(input1.required===true);
+
+    /**
+     * 修改required属性为false会使该字段不再是必填项
+     */
+    function changeRequired(){
+        input1.required=false;
+    }
+
+    /**
+     * HTMLInputElement上新增了这些属性，用于描述 type="number"的输入框的 整数范围。
+     */
+    console.log(HTMLInputElement.prototype.hasOwnProperty("max"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("min"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("step"));
+
+    /**
+     * 这些属性同时也是元素的特性。
+     * min表示可以输入的最小整数
+     * max表示可以输入的最大整数。
+     * step属性表示可以输入的整数的间隔。
+     * 对于 min=0 max=100 step=10的情况而言，只允许输入0 10 20 30 ... 100  这些整数。
+     */
+    console.log(input4.max===input4.getAttribute("max"));
+    console.log(input4.min===input4.getAttribute("min"));
+    console.log(input4.step===input4.getAttribute("step"));
+    /**
+     * 修改属性或者修改特性同样生效。
+     */
+    input4.step="5";
+    input4.setAttribute("step","20");
+
+
+    /**
+     * HTMLInputElement新增了pattern属性用于描述输入的模式，也就是给输入划下了正则表达式。
+     * 这个正则表达式不需要 以^开头以$结尾。因为假定已经有了。
+     */
+    console.log(HTMLInputElement.prototype.hasOwnProperty("pattern"));
+    console.log(input5.pattern===input5.getAttribute("pattern"));
+    /**
+     * 同样的通过属性和特性都可以设置pattern。 不过这里需要注意的是字符串的转义问题。
+     */
+    input5.setAttribute("pattern","\\S+"); //均可
+    input5.pattern="\\s+";
+
+
+    /**
+     * 表单元素和文本框元素都有 checkValidity方法用于确定表单或者文本框是否符合输入。
+     * 更细致的是文本框元素还有validity属性，这个属性具有很多属性用于确定到底是什么原因导致的输入错误。
+     */
+    console.log(HTMLInputElement.prototype.hasOwnProperty("checkValidity"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("validity"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("checkValidity"));
+
+    console.log(input6.validity.patternMismatch===true); //输入不满足正则
+    console.log(input7.validity.rangeUnderflow===true); //输入的数字小于最小值
+    console.log(input8.validity.rangeOverflow===true); //输入的数字大于最大值
+    console.log(input9.validity.stepMismatch===true); //输入的数字不在间隔中
+    console.log(input10.validity.typeMismatch===true); //输入的邮箱或者网址格式不正确
+    console.log(input11.validity.valueMissing===true); //在要求必填的字段里没有填内容
+    console.log(input12.validity.valid===true);        //输入符合要求
+    console.log(input12.checkValidity()===true);       //在输入符合要求的情况下，checkValidity方法方法true
+    console.log(document.getElementById("testForm").checkValidity()===false); //但是表单元素的checkValidity()方法必须在控件的checkValidity()全部返回true时才会返回true。
+
+    /**
+     * 表单元素上的noValidate属性可以让表单下的字段不经过验证就提交。
+     * 输入框元素上的formNoValidate属性可以让通过点击这个按键的提交表单字段的行为不受验证。
+     */
+    console.log(HTMLFormElement.prototype.hasOwnProperty("noValidate"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("formNoValidate"));
+
+    console.log(document.getElementById("testForm2").noValidate===true);
+    console.log(input13.formNoValidate===true);
+    console.log(input14.formNoValidate===false);
+
+
+</script>
+</html>

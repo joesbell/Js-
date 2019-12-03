@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>作用域安全的构造函数</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    /**
+     * 一个非作用域安全的构造函数
+     */
+    function Person(name,age) {
+        this.name=name;
+        this.age=age;
+    }
+
+    /**
+     * 这是正确调用构造函数
+     */
+    var person1=new Person("reveur",18);
+    console.log(window.age===undefined);//不会污染外部作用域
+
+    var person2=Person("污染",20);
+    console.log(person2===undefined);
+    console.log("污染了全局作用域",window.age===20);
+
+    /**
+     * 这是一个作用域安全的构造函数
+     */
+    function SafePerson(name,sex) {
+        if(this instanceof SafePerson){
+            //判断当前this是否是构造函数的类型的对象
+            this.name=name;
+            this.sex=sex;
+        }else{
+            //如果不是new调用 那么转为new调用。
+            return new SafePerson(name,sex);
+        }
+    }
+
+    /**
+     * 使用作用域安全的构造函数，不加new关键字也可以如同正常使用构造函数一样，不会出现意料之外的情况。
+     */
+    var person3=SafePerson("作用域安全的构造函数","man");
+    console.log("作用域安全",window.sex===undefined);
+
+    /**
+     * 但是作用域安全的构造函数在被作为父类 使用 借用构造函数模式进行继承时，会出现问题。
+     */
+    function Chinese(name,sex,location) {
+        /**
+         * 这里不再是为Chinese构造函数创建的对象添加属性，而成了毫无意义的一段代码。
+         */
+        SafePerson.call(this,name,sex);
+        this.location=location;
+    }
+
+    var chinese1=new Chinese("reveur","man",'四川');
+    console.log("借用构造函数继承 作用域安全的构造函数类型时,会出现错误",chinese1.name===undefined);
+
+    /**
+     * 修正方法是组合使用 借用构造函数以及原型链一一也就是组合继承模式。
+     * 此时子类对象就可以直接借用父类的构造器来初始化父类的实例属性了。
+     */
+    Chinese.prototype=new SafePerson();
+    var chinese2=new Chinese("reveur","man",'四川');
+    console.log(chinese2.name==="reveur");
+
+</script>
+
+</html>

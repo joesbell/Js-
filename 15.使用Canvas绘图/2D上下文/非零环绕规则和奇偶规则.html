@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>非零环绕和奇偶规则</title>
+</head>
+<body>
+
+<canvas id="canvas1" height="400" width="400" style="border: 1px solid black"></canvas><br>
+<canvas id="canvas2" height="400" width="400" style="border: 1px solid black"></canvas><br>
+<canvas id="canvas3" height="400" width="400" style="border: 1px solid black"></canvas><br>
+<canvas id="canvas4" height="400" width="400" style="border: 1px solid black"></canvas><br>
+<canvas id="canvas5" height="400" width="400" style="border: 1px solid black"></canvas><br>
+<canvas id="canvas6" height="400" width="400" style="border: 1px solid black"></canvas><br>
+</body>
+
+<script>
+
+
+    var canvas=document.getElementsByTagName("canvas");
+    canvas=Array.from(canvas);
+    var ctx=canvas.map((value)=>{
+        return value.getContext("2d");
+    });
+
+    /**
+     * 当我们使用到 fill填充或者 clip 设置裁剪区域时，总会与什么是图形内部区域打交道。
+     * 而 canvas针对图形内部的定义，具有两种规则，这两种规则可作为参数传入 fill 或者 clip方法并生效。
+     */
+
+    /**
+     * 首先说默认的 非零环绕 nonzero 规则。 该规则的核心在于，路径的边是有方向的，
+     * 当图形内部的一点穿到图形外部，如果经过的顺时针边和逆时针边相等，那么该点就不在图形内部。
+     * 反之则在。
+     */
+
+    //这里两个都是顺时针方向，所以圆形内部的所有的点向外做射线，所经过的逆时针边和顺时针边都不可能相等，那么就在图形内部。
+    ctx[0].arc(200,200,150,0,Math.PI*2,false);
+    ctx[0].arc(200,200,100,0,Math.PI*2,false);
+    ctx[0].fill();//因此这里填充了外圆和内圆.
+
+    //而这里设置绘制方向，外圆和内圆的路径方向不一致。因此 内圆内部的点经过的顺时针边和逆时针边相同。所以不在图形内部。
+    ctx[1].arc(200,200,150,0,Math.PI*2,true);
+    ctx[1].arc(200,200,100,0,Math.PI*2,false);
+    ctx[1].fill();//因此这里只填充了外圆. 因为内圆不在图形内部。
+
+    //这里示例两个路径同向的矩形，可以看到依旧是全部位于图形内部。
+    ctx[2].rect(50,50,200,200);
+    ctx[2].rect(150,150,200,200);
+    ctx[2].fill();
+
+    //其实矩形也是有方向的.默认绘制都是顺时针方向的。
+    ctx[3].rect(50,50,200,200);
+    //这里我们逆时针画个矩形路径。
+    ctx[3].moveTo(150,150);
+    ctx[3].lineTo(150,350);
+    ctx[3].lineTo(350,350);
+    ctx[3].lineTo(350,150);
+    ctx[3].closePath();
+    ctx[3].fill(); //可以看到，相交重叠的部分已经不属于图形内部了，因为相交部分做射线，穿过的顺时针边和逆时针边相等。
+
+    /**
+     * 而 奇偶规则 evenodd 则和路径方向没关系，只跟点穿过的边的条数有关系，
+     * 从图形内区域的一点向图形外做射线,如果这个点穿过的线的条数是奇数，那么位于图形内部，否则不属于图形内部。
+     */
+    ctx[4].arc(200,200,150,0,Math.PI*2,false);
+    ctx[4].arc(200,200,100,0,Math.PI*2,false);
+    ctx[4].arc(200,200,50,0,Math.PI*2,false);
+    ctx[4].fill("evenodd");//内圆里的点肯定会穿过3次边，因此属于图形内部。中间的圆则是穿过两次，所以不属于图形内部
+
+    ctx[5].rect(50,50,200,200);
+    ctx[5].rect(150,150,200,200);
+    ctx[5].rect(175,175,50,50);
+    ctx[5].fill("evenodd"); //同理。
+</script>
+
+</html>

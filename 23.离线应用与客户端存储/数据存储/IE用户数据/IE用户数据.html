@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IE用户数据</title>
+</head>
+<body>
+
+<!-- 核心就在这里，IE专有的 behaviorCSS属性 -->
+<div style="behavior: url(#default#userData)" id="ie_data_source"></div>
+
+</body>
+
+<script>
+    var dataSource=document.getElementById("ie_data_source");
+    /**
+     * 载入 userinfo命名空间的 用户数据
+     */
+    dataSource.load("userinfo");
+
+    //如果没有初始化，那么就进行初始化并保存
+    if(!dataSource.getAttribute("init")){
+        console.log("设置用户数据");
+        dataSource.setAttribute("init","true");
+        dataSource.setAttribute("name","reveur");
+        dataSource.setAttribute("pwd","reveur000");
+        /**
+         * 设置完用户数据后需要进行save保存。
+         */
+        dataSource.save("userinfo");
+    }else{
+        //否则直接展示存储的数据
+        console.log("载入用户数据");
+        console.log(dataSource.getAttribute("name"));
+        console.log(dataSource.getAttribute("pwd"));
+    }
+
+</script>
+
+</html>

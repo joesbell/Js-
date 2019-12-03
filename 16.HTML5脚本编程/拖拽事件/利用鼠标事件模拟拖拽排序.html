@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>利用鼠标事件模拟的拖动排序</title>
+
+    <style>
+        #list {
+            position: relative;
+        }
+        #list li {
+            background: deepskyblue;
+            line-height: 40px;
+            height: 40px;
+            width: 100px;
+            text-align: center;
+            border: 1px solid blue;
+            list-style: none;
+            user-select: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div id="div1">
+    <ul id="list">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+    </ul>
+</div>
+
+
+</body>
+
+<script>
+    var ul=document.getElementById('list');
+
+    /**
+     * 利用鼠标事件来模拟拖拽排序的核心思想是， 通过监听 mousedown事件标识拖动开始，此时将元素的定位设置为absolute或者fixed。
+     * 同时将一个空白元素插入到原本位置。
+     * 在mousemove时，不停判断鼠标位置，并将该空白元素插入到鼠标位置所在的列表位置中。
+     * 在mouseup时，标识拖拽结束，此时将拖拽元素重新设置为原本的样式，同时将其和空白元素交换位置并删除空白元素。
+     */
+    ul.addEventListener("mousedown",function (event) {
+        if(event.target.tagName.toLowerCase()!=="li"){
+            return ;
+        }
+        var selectLi=event.target;
+
+        //这里计算出 鼠标位置和拖动元素的位置的关系
+        var liBoundRect=selectLi.getBoundingClientRect();
+        var liOffsetDiff={
+            left:event.clientX-liBoundRect.left,
+            top:event.clientY-liBoundRect.top
+        };
+        var ulBoundRect=ul.getBoundingClientRect();
+        var intervalHeight=liBoundRect.height; //这是每个元素的高度间隔。
+
+        //插入空白元素。
+        var blankLi=document.createElement("li");
+        ul.insertBefore(blankLi,selectLi);
+        selectLi.style.position="fixed";
+        selectLi.style.backgroundColor="lightskyblue";
+        selectLi.style.top=event.clientY-liOffsetDiff.top+"px";
+        selectLi.style.left=event.clientX-liOffsetDiff.left+"px";
+
+        ul.addEventListener("mousemove",mousemove);
+
+        function mousemove(event) {
+            selectLi.style.top=event.clientY-liOffsetDiff.top+"px";
+            selectLi.style.left=event.clientX-liOffsetDiff.left+"px";
+
+            //计算当前鼠标位置所在的列表序号。
+            var index=((event.clientY-ulBoundRect.top)/intervalHeight)>>0;
+
+            //过滤列表中的拖动元素
+            var lis=Array.from(ul.children).filter(function (li) {
+                return li.style.position!=="fixed";
+            });
+            //找到空白元素当前位置。
+            var blankIndex=lis.findIndex((li)=>{
+                return li.innerText==="";
+            });
+            //比较空白元素的位置和当前鼠标所在的列表位置的关系。决定如何插入空白元素。
+            if(blankIndex>index){
+                ul.insertBefore(blankLi,lis[index]);
+            }else {
+                ul.insertBefore(blankLi,lis[index+1]);
+            }
+        }
+
+        ul.addEventListener("mouseup", mouseup);
+        function mouseup() {
+                //交换空白元素和拖动元素的位置并且删除空白元素。
+                ul.insertBefore(selectLi,blankLi);
+                ul.removeChild(blankLi);
+                //重置拖动元素的样式
+                selectLi.style.position="";
+                selectLi.style.display="";
+                selectLi.style.backgroundColor="deepskyblue";
+                //移除事件处理
+                ul.removeEventListener("mousemove",mousemove);
+                ul.removeEventListener("mouseup",mouseup);
+        }
+    });
+
+
+
+
+</script>
+
+</html>

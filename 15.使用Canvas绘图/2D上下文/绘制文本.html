@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制文本</title>
+</head>
+<body>
+
+<h3>不同基线绘制文字的区别</h3>
+<canvas id="canvas1"> </canvas>
+
+
+<h3>不同对齐方式绘制文字的区别</h3>
+<canvas id="canvas2"> </canvas>
+
+
+<h3>填充文字和描边文字</h3>
+<canvas id="canvas3"> </canvas>
+
+<h3>利用measureText来获取文本绘制后的长度</h3>
+<canvas id="canvas4"> </canvas>
+<form>
+    tips字体大小:<input type="text" id="text1" value="14">
+    tips字体类型:<input type="text" id="text2" value="serif">
+    tips文本内容:<input type="text" id="text3" value="内容">
+    <input type="button" value="获取长度后绘制tips" id="button1">
+</form>
+<p>绘制TIPS</p>
+<div id="tip"></div>
+
+</body>
+
+<script>
+
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("fillText"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("strokeText"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("measureText"));
+
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+    canvas1.width=1300;
+    canvas1.height=200;
+
+    var canvas2=document.getElementById("canvas2");
+    var ctx2=canvas2.getContext("2d");
+    canvas2.width=1300;
+    canvas2.height=200;
+
+    var canvas3=document.getElementById("canvas3");
+    var ctx3=canvas3.getContext("2d");
+    canvas3.width=1300;
+    canvas3.height=200;
+
+    var canvas4=document.getElementById("canvas4");
+    var ctx4=canvas4.getContext("2d");
+    canvas4.style.display="none";
+    //划线
+    ctx1.stroke(linePath(0,0,1300));
+    ctx1.stroke(linePath(0,50,1300));
+    ctx1.stroke(linePath(0,100,1300));
+
+    //2D上下文的font属性可以设置字体。 格式同CSS的font属性一致。
+    ctx1.font = "50px serif";
+
+    var intervalLength=150;
+
+    /**
+     * 用于描述基线
+     */
+    function myFillText(string,x,y) {
+        ctx1.fillStyle="black";
+        ctx1.fillText(string,x,y);
+        ctx1.fillStyle="red";
+        ctx1.arc(x,y,5,0,Math.PI*2,false);
+        ctx1.fill();
+    }
+    /**
+     * 当使用top作为基线时， 绘制文字fillText传入的坐标(x,y)是文字的top基线的位置。
+     * 因此，实际文字绘制的地方在传入坐标的偏下位置。
+     * 这个基线位于文本块的顶部
+     */
+    ctx1.textBaseline="top";
+    myFillText("A哈ぁ",intervalLength,50);
+    ctx1.fill();
+    /**
+     * 当使用hanging作为基线时， 绘制文字fillText传入的坐标(x,y)是文字的hanging基线的位置。
+     * 因此，实际文字绘制的地方在传入坐标的偏下位置。 但是相比 top作为基线时，要偏上一点
+     * 这个基线位于文本块的悬挂线
+     */
+    ctx1.textBaseline="hanging";
+    myFillText("A哈ぁ",intervalLength*2,50);
+    ctx1.fill();
+
+    /**
+     * 当使用middle作为基线时， 绘制文字fillText传入的坐标(x,y)是文字的middle基线的位置。
+     * 因此，实际文字绘制的中心(垂直方向上的中心)就是这个坐标。
+     * 这个基线位于文本块的中间
+     */
+    ctx1.textBaseline="middle";
+    myFillText("A哈ぁ",intervalLength*3,50);
+    ctx1.fill();
+
+    /**
+     * alphabetic是默认的基线位置。
+     * 实际绘制的文本底部靠近这个我们传入的坐标
+     * 这个是标准的字母基线。也就是说大部分字母的底部就是这个基线。
+     */
+    ctx1.textBaseline="alphabetic";
+    myFillText("A哈ぁ",intervalLength*4,50);
+    ctx1.fill();
+
+    /**
+     * 当使用ideographic作为基线时， 绘制文字fillText传入的坐标(x,y)是文字的ideographic基线的位置。
+     * 因此，实际文字绘制的位置高于传入的坐标.
+     * 这个是表意字底部的基线。
+     */
+    ctx1.textBaseline="ideographic";
+    myFillText("A哈ぁ",intervalLength*5,50);
+    ctx1.fill();
+
+    /**
+     * 当使用bottom作为基线时， 绘制文字fillText传入的坐标(x,y)是文字的bottom基线的位置。
+     * 因此，实际文字绘制的位置高于传入的坐标
+     * 这个基线位于文本块的底部
+     */
+    ctx1.textBaseline="bottom";
+    myFillText("A哈ぁ",intervalLength*6,50);
+    ctx1.fill();
+
+    //划线
+    ctx2.stroke(linePath(0,0,1300));
+    ctx2.stroke(linePath(0,50,1300));
+    ctx2.stroke(linePath(0,100,1300));
+    ctx2.stroke();
+
+    /**
+     * 用于描述对齐方式
+     */
+    function myFillText2(string,x,y) {
+        ctx2.beginPath();
+        ctx2.font = "50px serif";
+        ctx2.fillStyle="black";
+        ctx2.fillText(string,x,y);
+        ctx2.beginPath();
+        ctx2.fillStyle="red";
+        ctx2.arc(x,y,5,0,Math.PI*2,false);
+        ctx2.fill();
+    }
+    /**
+     * 如果对齐方式是start 那么绘制文字的起始点就是传入的坐标
+     */
+    ctx2.textAlign="start";
+    myFillText2("hello",100,50);
+
+    /**
+     * 如果对齐方式是middle 那么绘制文字的中点就是传入的坐标
+     */
+    ctx2.textAlign="center";
+    myFillText2("hello",400,50);
+
+    /**
+     * 如果对齐方式是end 那么绘制文字的终点就是传入的坐标
+     */
+    ctx2.textAlign="end";
+    myFillText2("hello",700,50);
+
+
+    /**
+     * 填充文字是 fillText
+     * 描边文字是 strokeText
+     */
+    ctx3.font = "50px serif";
+    ctx3.fillStyle="red";
+    ctx3.fillText("Hello",50,50);
+    ctx3.strokeStyle="blue";
+    ctx3.strokeText("Hello",200,50);
+
+    /**
+     * 设置第四个 maxLength参数会将文字水平方向压缩为maxLength的长度。
+     */
+    ctx3.fillText("Hello",400,50,20);
+    ctx3.fillText("Hello",420,50,30);
+    ctx3.fillText("Hello",450,50,50);
+    ctx3.fillText("Hello",500,50,100);
+
+    /**
+     * 以 x y 坐标为起点 划length长度的水平线
+     */
+    function linePath(x,y,length) {
+        var path2d=new Path2D();
+        path2d.moveTo(x,y);
+        path2d.lineTo(x+length,y);
+        return path2d;
+    }
+
+    var button1=document.getElementById("button1");
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+    var text3=document.getElementById("text3");
+    var tip=document.getElementById("tip");
+    button1.addEventListener("click",function () {
+        var fontSize=text1.value;
+        var fontFamily=text2.value;
+        var content=text3.value;
+        ctx4.font=fontSize+"px"+" "+fontFamily;
+
+        /**
+         * 获取到的是一个 TextMetrics 类型的对象。这个对象有个width属性，表示文本内容的宽度。
+         */
+        var measure=ctx4.measureText(content);
+        console.log(measure.__proto__===TextMetrics.prototype);
+
+        /*
+         * 根据measureText获取到的宽度来生成tips
+         */
+        tip.style.width=measure.width+"px";
+        tip.style.display="inline-block";
+        tip.style.background="black";
+        tip.style.color="red";
+        tip.style.font=fontSize+"px"+" "+fontFamily;
+        tip.innerText=content;
+    })
+</script>
+
+</html>

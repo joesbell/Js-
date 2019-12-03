@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attr类型的相关属性</title>
+</head>
+<body>
+
+<div id="myid" ></div>
+
+</body>
+
+<script>
+    var attrNode=document.getElementById("myid").attributes["id"];
+    console.log(attrNode.__proto__===Attr.prototype);
+    console.log(Attr.prototype.hasOwnProperty("name"));
+    console.log(Attr.prototype.hasOwnProperty("value"));
+    console.log(Attr.prototype.hasOwnProperty("specified"));
+    console.log(attrNode.name==="id"); //同nodeName
+    console.log(attrNode.value==="myid"); //同nodeValue
+    console.log(attrNode.specified===true); //这个属性表示该特性是否被指定，如果没被指定，那么就是默认值.
+
+
+    attrNode=document.createAttribute("title");
+    attrNode.value="这是title";
+    //element元素通过setAttributeNode直接设置特性节点
+    document.getElementById("myid").setAttributeNode(attrNode);
+
+    //element元素通过getAttributeNode直接获取特性节点
+    attrNode=document.getElementById("myid").getAttributeNode("title");
+    console.log(attrNode.name,attrNode.value);
+</script>
+</html>

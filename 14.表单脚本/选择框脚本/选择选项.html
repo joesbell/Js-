@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>选择选项</title>
+</head>
+<body>
+
+<h3>单选框的选择</h3>
+<select id="select1">
+    <option>单选1</option>
+    <option>单选2</option>
+    <option>单选3</option>
+</select>
+
+<h3>复选框的选择</h3>
+<select id="select2" multiple>
+    <option>多选1</option>
+    <option>多选2</option>
+    <option>多选3</option>
+</select>
+
+</body>
+<script>
+    var select1=document.getElementById("select1");
+    var select2=document.getElementById("select2");
+    var options1=select1.options;
+    var options2=select2.options;
+
+    /**
+     * 设置单选框或者多选框的 选项option的selected属性值可以修改 选择框的选择
+     */
+    options1[1].selected=true;
+    console.log(select1.value==="单选2");
+    //特别地，对于多选框来说，可以同时多个元素的selected值设置为true选择状态。
+    options2[2].selected=true;
+    console.log(select2.value==="多选3");
+    options2[0].selected=true;
+    //但是此时选择框的value属性值为 index序号最小的option备选项的value值。
+    console.log(select2.value==="多选1");
+
+    /**
+     * 设置单选框或者多选框本身的 selectedIndex属性则和 设置选项option的selected属性不同。
+     * 只要设置了selectedIndex属性，其余所有的选项都会取消选择，唯独序号和selectedIndex属性相同的选项会变成选择状态。
+     * 而读取selectedIndex属性时，这个属性永远也只会返回选择了的选项中，最小的index值。
+     */
+    options1.selectedIndex=2;
+    console.log(select1.value==="单选3");
+
+    console.log(options2[0].selected===true); //原本是选择状态的。
+    options2.selectedIndex=2; //一旦设置了selectedIndex属性
+    console.log(select2.value==="多选3");
+    console.log(options2[0].selected===false); //变为取消选择状态。
+
+    /**
+     * 因此。想要获取用户到底选择了哪些选项，对于多选框来说，一定要使用selected来判断。
+     * 对于单选框则无所谓。
+     */
+    document.addEventListener("change",function (event) {
+        var optionArray=Array.prototype.slice.call(event.target.options);
+        var selectedArray=optionArray.filter(function (option) {
+            return option.selected===true;
+        });
+        var valueArray=selectedArray.map(function (option) {
+            return option.value;
+        });
+        valueArray.unshift("选择的选项值为:");
+        console.log.apply(null,valueArray);
+    })
+
+</script>
+
+</html>

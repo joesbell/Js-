@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>利用JSON的解析和序列化</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 利用 JSON的序列化和解析的 replacer(k,v) 和 receive(k,v)参数函数.我们可以实现一些特别的功能。
+     * 比如在这里。我们可以实现 函数属性的序列化和解析
+     */
+
+    /**
+     * JSON.stringify的 参数函数。
+     */
+    function replacer(key,value){
+        if(typeof value!=="function"){
+            return value;
+        }
+        return value.toString();//保存函数字符串
+    }
+
+    /**
+     * JSON.parse的 参数函数。
+     */
+    function receive(key,value) {
+        if(typeof value!=="string"){
+            return value;
+        }
+        if(!value.startsWith("function")){
+            return value;
+        }
+
+        var func=eval("("+value+")"); //利用eval根据字符串创建函数并返回。
+        return func;
+    }
+
+    var obj={
+        add:function foo (a,b) {
+            return a+b;
+        },
+        a:{
+            reduce:function (a,b) {
+                return a-b;
+            },
+            e:undefined
+        },
+        b:"1",
+        c:2
+    };
+
+    //先序列化
+    var jsonData=JSON.stringify(obj,replacer);
+    //再解析
+    obj=JSON.parse(jsonData,receive);
+    //序列化和解析函数成功。
+    console.log(obj.add(1,2)===3);
+    console.log(obj.a.reduce(3,2)===1);
+
+    /**
+     * 但是需要注意的是，序列化和解释的函数 只能是 没有自由变量和this的函数！
+     * 这是因为， 自由变量和this相关的信息在序列化的过程中是无法保存的，这涉及到执行上下文，而这是在JS代码层面无法直接访问到的.
+     */
+
+
+</script>
+
+</html>

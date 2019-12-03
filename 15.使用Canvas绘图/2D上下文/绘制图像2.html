@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制图像一一drawImage的多种传参方式</title>
+</head>
+<body>
+
+<!--这个画布仅仅作为提供直角坐标系的图片源-->
+<canvas id="canvas1" width="450" height="450" style="display: none"></canvas>
+
+<h3>drawImage第一种传参方式一一普通绘制:(图像源,绘制的x坐标,绘制的y坐标)</h3>
+<canvas id="canvas2" width="450" height="450" style="border: 1px solid black"></canvas>
+
+<h3>drawImage第二种传参方式一一缩放:(图像源,绘制的x坐标,绘制的y坐标,绘制的宽度，绘制的高度)</h3>
+<canvas id="canvas3" width="400" height="400" style="border: 1px solid black"></canvas>
+
+<!--这个画布仅仅作为裁剪的图片源-->
+<canvas id="canvas4" width="200" height="200" style="display: none"></canvas>
+<h3>drawImage第三种传参方式一一裁剪:(图像源,图像源裁剪的x坐标，图像源裁剪的y坐标,图像源裁剪的宽度,图像源裁剪的高度,绘制的x坐标,绘制的y坐标,绘制的宽度，绘制的高度)<</h3>
+<canvas id="canvas5" width="200" height="200" style="border: 1px solid black"></canvas>
+
+</body>
+
+<script>
+
+
+    /**
+     * 简单的图像绘制
+     */
+    (function () {
+        /**
+         * 这里绘制一个直角坐标系。坐标系中 x y 的坐标范围为 [0,100].
+         */
+        (function () {
+            var canvas1=document.getElementById("canvas1");
+            var ctx1=canvas1.getContext("2d");
+
+            //绘制直角坐标系
+            ctx1.save();
+            ctx1.beginPath();
+            ctx1.translate(30,20);
+            ctx1.moveTo(0,0);
+            ctx1.lineTo(0,400);
+            ctx1.lineTo(400,400);
+            ctx1.lineWidth=3;
+            ctx1.stroke();
+
+            ctx1.restore();
+            ctx1.save();
+
+            //绘制横向的虚线以及y轴坐标
+            ctx1.translate(30,420);
+            ctx1.beginPath();
+            ctx1.strokeStyle="rgba(170,170,170,0.1)";
+            ctx1.textBaseline="middle";
+            ctx1.textAlign="end";
+            ctx1.font="13px serial";
+            for(var i=1;i<=10;i++){
+                ctx1.translate(0,-40);
+                ctx1.moveTo(0,0);
+                ctx1.lineTo(400,0);
+                ctx1.stroke();
+                ctx1.fillText(i*10,-5,0)
+            }
+
+            //绘制x轴坐标
+            ctx1.restore();
+            ctx1.save();
+            ctx1.translate(30,420);
+            ctx1.beginPath();
+            ctx1.textBaseline="top";
+            ctx1.textAlign="center";
+            ctx1.font="13px serial";
+            ctx1.lineWidth=2;
+            for(i=0;i<=10;i++){
+                ctx1.moveTo(0,0);
+                ctx1.lineTo(0,-5);
+                ctx1.fillText(i*10,0,0);
+                ctx1.stroke();
+                ctx1.translate(40,0);
+            }
+            ctx1.restore();
+        }());
+
+
+        var canvas2=document.getElementById("canvas2");
+        var ctx2=canvas2.getContext("2d");
+
+        /**
+         * 最简单的 drawImage使用方式。
+         * 传入三个参数:图像源，绘制图像的左上角x坐标，绘制图像的左上角y坐标
+         */
+        ctx2.drawImage(document.getElementById("canvas1"),0,0);
+
+        /**
+         * 在背景图坐标系的的基础上绘制折线图。
+         * @param pointArray 坐标的数组，坐标的范围必须在0,100之间，绘制对原本数组无任何副作用。
+         */
+        ctx2.drawLineChart=function (pointArray) {
+            // 深拷贝以免影响原有数组
+            pointArray=JSON.parse(JSON.stringify(pointArray));
+
+            //过滤 x y 坐标在 [0,100]以内的坐标点。
+            pointArray=pointArray.filter(function (point) {
+                return point[0]>=0&&point[0]<=100&&point[1]>=0&&point[1]<=100
+            });
+
+            //按照x坐标的大小从小到大排序
+            pointArray.sort(function (a,b) {
+                return a[0]<=b[0]?-1:1;
+            });
+
+            //对点的坐标做处理。
+            pointArray=pointArray.map(function (point) {
+                return [4*point[0],-4*point[1]];
+            });
+
+            this.save();
+
+            this.resetTransform();
+            this.translate(30,420);
+            this.beginPath();
+            var currentPoint=null;
+
+            //绘制每个点并连接
+            pointArray.forEach((point,index)=>{
+                currentPoint=point;
+
+                //连接折线
+                if(index===0){
+                    this.moveTo(currentPoint[0],currentPoint[1]);
+                }else{
+                    this.lineTo(currentPoint[0],currentPoint[1]);
+                    this.stroke();
+                }
+
+                //对坐标点加粗处理
+                this.beginPath();
+                this.arc(currentPoint[0],currentPoint[1],3,0,Math.PI*2,false);
+                this.fill();
+            });
+
+            this.restore();
+        };
+
+        var array=[];
+        //生成50个坐标点,有些超出了坐标范围，用于检验功能。
+        for(var i=0;i<50;i++){
+            array.push([((Math.random()*300)>>0)-150,((Math.random()*300)>>0)-150]);
+        }
+        ctx2.drawLineChart(array);
+    }());
+
+
+    /**
+     * 绘制图像一一缩放的使用
+     */
+    (function(){
+        var canvas3=document.getElementById("canvas3");
+        var ctx3=canvas3.getContext("2d");
+        var img=new Image();
+
+        img.onload=function () {
+            for(var i=0;i<4;i++){
+                for(var j=0;j<4;j++){
+                    /**
+                     * 这里的后两个参数分别代表绘制后的宽度和高度。
+                     */
+                    ctx3.drawImage(img,i*100,j*100,100,100);
+                }
+            }
+        }
+
+        img.src="绘制图像的图像来源.png";
+    }());
+
+    /**
+     * 绘制图像一一裁剪的使用
+     */
+    (function () {
+
+        //绘制图像源
+        var canvas4=document.getElementById("canvas4");
+        var ctx4=canvas4.getContext("2d");
+
+        ctx4.beginPath();
+        ctx4.arc(100,100,100,0,Math.PI*2,false);
+        ctx4.closePath();
+        ctx4.stroke();
+
+        ctx4.beginPath();
+        ctx4.arc(50,70,20,0,Math.PI*2,false)
+        ctx4.closePath();
+        ctx4.fill();
+
+        ctx4.beginPath();
+        ctx4.arc(150,70,20,0,Math.PI*2,false)
+        ctx4.closePath();
+        ctx4.fill();
+
+        ctx4.beginPath();
+        ctx4.arc(100,120,50,0,Math.PI,false)
+        ctx4.stroke();
+
+        ctx4.beginPath();
+        ctx4.moveTo(100,80);
+        ctx4.lineTo(80,120);
+        ctx4.lineTo(100,120);
+        ctx4.stroke();
+
+
+        var canvas5=document.getElementById("canvas5");
+        var ctx5=canvas5.getContext("2d");
+        ctx5.drawImage(canvas4,0,0);
+        /**
+         * 这里前四个数字分别表示 图像源的裁剪位置: x坐标,y坐标,宽度,高度。
+         * 后四个数字代表 绘制信息: x坐标，y坐标，绘制宽度，绘制高度
+         */
+        ctx5.drawImage(canvas4,20,20,160,160,75,0,50,50)
+
+    }())
+
+
+</script>
+
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<h4>不属于简单请求的都属于需预检请求，需预检的请求必须服务器返回预检响应头，实际请求才会发送出去</h4>
+<input type="button" id="button1" value="浏览器拦截不被允许的需预检的请求">
+<input type="button" id="button2" value="成功通过预检的需预检请求">
+<br>
+<hr>
+<h4>对于GET POST HEAD方式的 需预检请求，服务器响应头可以省略 Access-Control-Allow-Methods 信息</h4>
+<input type="button" id="button3" value="不属于GET POST HEAD的 需预检请求，响应头不可省略 Access-Control-Allow-Methods">
+<input type="button" id="button4" value="GET POST HEAD请求方式的需预检请求，响应头可以省略 Access-Control-Allow-Methods">
+<br>
+<hr>
+<h4>服务器端可以对 需预检的请求 的接口进行优化</h4>
+<input type="button" id="button5" value="服务器端没有优化的预检请求，会重复返回两次数据">
+<input type="button" id="button6" value="服务器端优化后的预检请求，只会返回一次数据">
+<input type="button" id="button7" value="服务器端通过设置预检有效期来优化减少实际响应次数">
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+    var button6=document.getElementById("button6");
+    var button7=document.getElementById("button7");
+
+    /**
+     * DELETE请求方式已经不属于简单请求，属于需预检请求，
+     * 由于服务器没有发回预检响应头，因此，DELETE请求会被浏览器拦截。
+     * 最终效果上看浏览器只会发送一个OPTIONS的预检请求。
+     */
+    button1.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("DELETE","http://127.0.0.1:8081/rest/notallow");
+        xhr.send(null)
+    });
+
+    /**
+     * 正常的发送需预检的请求需要服务器端回应响应的预检响应头。
+     * Access-Control-Allow-Origin  首先得允许跨域请求
+     * Access-Control-Allow-Methods 其次得允许 需要预检请求的方式
+     * Access-Control-Allow-Headers 然后要设置请求可以设置的请求头
+     * Access-Control-Max-Age       最后设置预检请求的有效期 有效期内的再次需预检的请求不需要经过预检
+     */
+    button2.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("DELETE","http://127.0.0.1:8081/rest/a"); //不属于 GET POST HEAD 因此属于需预检请求
+        xhr.send(null);
+    });
+
+    /**
+     * 由于DELETE方式本身不在简单请求的规定内，因此服务器响应头中必须返回Access-Control-Allow-Methods信息，浏览器才会允许跨域。
+     */
+    button3.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("DELETE","http://127.0.0.1:8081/rest/b");
+        xhr.send(null)
+    });
+
+    /**
+     * 作为对比的是本身属于简单请求范围内的 GET POST HEAD请求，如果变成需预检的请求，那么服务器响应头中不用返回Access-Control-Allow-Methods信息，浏览器也会允许跨域。
+     */
+    button4.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("GET","http://127.0.0.1:8081/rest/c");
+        xhr.setRequestHeader("MY-SELF-HEADER","MY-SELF-VALUE");
+        xhr.setRequestHeader("REVEUR000","WOW");
+        xhr.send()
+    });
+
+    /**
+     * 这里服务器没对 需预检的请求 的接口进行优化，因此，
+     * 一次实际的请求，服务器会返回两次实体内容。
+     */
+    button5.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://127.0.0.1:8081/rest/d");
+        xhr.setRequestHeader("MY-SELF-HEADER","MY-SELF-VALUE");
+        xhr.setRequestHeader("REVEUR000","WOW");
+        xhr.send()
+    });
+
+    /**
+     * 这里服务器对 需预检的请求 的接口进行了优化，因此，
+     * 一次实际的请求，服务器只会返回一次实体内容。
+     */
+    button6.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://127.0.0.1:8081/rest/e");
+        xhr.setRequestHeader("MY-SELF-HEADER","MY-SELF-VALUE");
+        xhr.setRequestHeader("REVEUR000","WOW");
+        xhr.send("这是一个简单请求由于设置了额外的请求头而变成了需要预检的请求");
+    });
+
+    /**
+     * 这里服务器对 需预检的请求 的接口进行了优化，设置了预检请求的有效期，
+     * 因此，浏览器不会对有效期内每一次 需预检的请求的发送 都发送预检信息。
+     * 从而也达到了减少服务器无意义的对预检请求返回实体内容次数的目的。
+     */
+    button7.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://127.0.0.1:8081/rest/f");
+        xhr.setRequestHeader("MY-SELF-HEADER","MY-SELF-VALUE");
+        xhr.setRequestHeader("REVEUR000","WOW");
+        xhr.send("预检请求已经有了有效期了");
+    });
+
+</script>
+
+</html>

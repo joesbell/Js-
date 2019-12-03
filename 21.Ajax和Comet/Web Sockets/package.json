@@ -1,0 +1,17 @@
+{
+  "name": "web-sockets",
+  "version": "1.0.0",
+  "description": "用于测试以websocket为基础的聊天室",
+  "main": "WebSocketServer.js",
+  "scripts": {
+    "start8080":" node server8080.js ",
+    "startws":" node WebSocketServer.js",
+    "start": "concurrently \"npm run start8080\" \"npm run startws\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^4.1.0",
+    "ws": "^6.1.2"
+  }
+}

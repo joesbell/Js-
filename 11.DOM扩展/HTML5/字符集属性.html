@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--这里我们设置字符集为中文-->
+    <meta charset="GB2312">
+    <title>字符集</title>
+</head>
+<body>
+
+<div>
+
+</div>
+
+</body>
+
+<script>
+    /**
+     * 由于字符集属性各个浏览器有差异。这里先简单判断浏览器
+     */
+
+    var ua=navigator.userAgent;
+    var showArea=document.getElementsByTagName("div")[0];
+    if(ua.indexOf("Firefox")!==-1){
+        showArea.innerText="火狐浏览器的document.charset:"+document.charset+"\n"
+                        +"火狐浏览器的document.characterSet:"+document.characterSet+"\n"
+                        +"火狐浏览器的document.defaultCharset:"+document.defaultCharset;
+
+        //这些属性定义在Document类型上 并且是只读的访问器属性
+        console.log(Object.getOwnPropertyDescriptor(Document.prototype,"charset").set===undefined);
+        console.log(Object.getOwnPropertyDescriptor(Document.prototype,"characterSet").set===undefined);
+        console.log(Document.prototype.hasOwnProperty("defaultCharset")===false);
+    }else if(ua.indexOf("Chrome")!==-1){
+
+        showArea.innerText="谷歌浏览器的document.charset:"+document.charset+"\n"
+            +"谷歌浏览器的document.characterSet:"+document.characterSet+"\n"
+            +"谷歌浏览器的document.defaultCharset:"+document.defaultCharset;
+
+        console.log(Object.getOwnPropertyDescriptor(Document.prototype,"charset").set===undefined);
+        console.log(Object.getOwnPropertyDescriptor(Document.prototype,"characterSet").set===undefined);
+        console.log(Document.prototype.hasOwnProperty("defaultCharset")===false);
+    }else if (ua.indexOf("MSIE")!==-1){
+        //IE8不支持innerText
+        var result="IE浏览器的document.charset:"+document.charset+"\n"
+            +"IE浏览器的document.characterSet:"+document.characterSet+"\n"
+            +"IE浏览器的document.defaultCharset:"+document.defaultCharset;
+        showArea.appendChild(document.createTextNode(result));
+    }else {
+        showArea.innerText="无法识别浏览器";
+    }
+
+
+</script>
+</html>

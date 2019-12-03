@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Location对象</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="使用assign跳转后可以回退">
+
+<input type="button" id="button2" value="使用replace跳转后不可回退">
+
+<input type="button" id="button3" value="使用reload重新载入当前页面">
+</body>
+
+<script>
+    console.log(location===document.location);//true
+
+    print("location的hash属性表示URL#号后的hash值:   "+location.hash);
+    print("location的protocol属性表示该资源的协议: "+location.protocol);
+    print("location的host属性表示服务器名称和端口号:  "+location.host);
+    print("location的hostname属性表示服务器名称(不带端口号):   "+location.hostname);
+    print("location的port属性表示服务器的端口号:    "+location.port);
+    print("location的href属性表示URL地址(浏览器地址栏显示的): "+location.href);
+    print("location的pathname属性表示资源路径:   "+location.pathname);
+    print("location的search属性表示URL?号后的参数字符串: "+location.search);
+    print("location的toString方法返回完整URL地址(等同于href): "+location.toString());
+
+
+    document.getElementById("button1").addEventListener("click",function () {
+       location.assign("http://github.com/reveur000");
+
+       //下面的写法等价于 调用 assign方法。
+       // location="http://github.com/reveur000";
+       // location.href="http://github.com/reveur000";
+    });
+
+    document.getElementById("button2").addEventListener("click",function () {
+        location.replace("http://github.com/reveur000");
+    });
+
+    document.getElementById("button3").addEventListener("click",function () {
+        location.reload();
+    });
+
+
+    function print(msg) {
+        var node=document.createElement("p");
+        node.innerText=msg;
+        document.body.appendChild(node);
+    }
+
+
+
+</script>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>鼠标和滚轮事件</title>
+</head>
+<body>
+
+<div>
+    <h2>测试mouseover和mouseenter的区别</h2>
+
+    <ul id="ul1">
+        <li>mouseover事件移动到元素的子元素会触发。</li>
+        <li id="li1">1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+
+
+    <ul id="ul2">
+        <li>mouseenter移动到元素的子元素不会触发。</li>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+
+</div>
+
+<hr>
+
+<div>
+    <h2>测试点击事件触发顺序:mousedown,mouseup,click,dblclick</h2>
+    <input type="button" id="button1" value="测试按钮1">
+</div>
+
+<hr>
+
+<div>
+    <h2>阻止mousedown,mouseup事件并不会影响click,dblclick事件的触发</h2>
+    <input type="button" id="button2" value="测试按钮2">
+</div>
+
+
+
+</body>
+
+<script>
+    var ul1=document.getElementById("ul1");
+    /**
+     * mouseover和mouseout事件是冒泡的，但是mouseover和mouseout事件是非常特殊的。
+     * 对于mouseover和mouseout事件来说，currentTarget的确是挂载事件处理的元素。
+     * 但是target却是实际触发的元素。
+     * 因此对于mouseover和mouseout事件来说，鼠标移动进入和移出其子元素也会触发mouseover和mouseout事件，并且target指向真实的子元素。
+     */
+    ul1.addEventListener("mouseover",function(event){
+        event.target.style.color="red";
+        console.log("mouseover事件是冒泡的",event.bubbles===true);
+        console.log("当前元素currentTarget是ul",event.currentTarget===ul1);
+        console.log("目标元素target却是li",event.target.nodeName==="LI",event.eventPhase===3); //冒泡阶段，因为实际target是li。但是目前currentTarget已经到了ul了
+
+    });
+    ul1.addEventListener("mouseout",function(event){
+        event.target.style.color="";
+        console.log("mouseout事件是冒泡的",event.bubbles===true);
+        console.log("当前元素currentTarget是ul",event.currentTarget===ul1);
+        console.log("目标元素target却是li",event.target.nodeName==="LI",event.eventPhase===3);//冒泡阶段，因为实际target是li。但是目前currentTarget已经到了ul了
+
+    });
+
+    var ul2=document.getElementById("ul2");
+    /**
+     * mouseenter和mouseleave不是冒泡的。并且currentTarget和target总是一致的。
+     * 因此鼠标指向
+     */
+    ul2.addEventListener("mouseenter",function(event){
+        event.target.style.color="red";
+        console.log("mouseenter事件是不冒泡的",event.bubbles===false);
+        console.log("当前元素currentTarget是ul",event.currentTarget===ul2);
+        console.log("目标元素target也是ul",event.target.nodeName==="UL",event.eventPhase===2);//内部处于目标阶段。
+
+    });
+    ul2.addEventListener("mouseleave",function(event){
+        event.target.style.color="";
+        console.log("mouseleave事件是不冒泡的",event.bubbles===false);
+        console.log("当前元素currentTarget是ul",event.currentTarget===ul2);
+        console.log("目标元素target也是ul",event.target.nodeName==="UL",event.eventPhase===2);//内部处于目标阶段
+    });
+
+
+    /**
+     * 点击事件的触发顺序是 mousedown mouseup click
+     */
+    var button1=document.getElementById("button1");
+    button1.addEventListener("mousedown",function () {
+        console.log("点击时首先触发的是mousedown事件")
+    });
+    button1.addEventListener("mouseup",function () {
+        console.log("点击时其次触发的是mouseup事件")
+    });
+    button1.addEventListener("click",function () {
+        console.log("点击时最后触发的才是click事件");
+    });
+    button1.addEventListener("dblclick",function (event) {
+        console.log("如果是双击,最后还会触发dblclick事件",event.detail===2); //点击次数为2
+    });
+
+    /**
+     * 阻止mousedown mouseup的触发并不能阻止click事件的触发
+     */
+    var button2=document.getElementById("button2");
+    button2.addEventListener("mousedown",function (event) {
+        console.log("mousedown事件可以阻止:",event.cancelable===true,event.defaultPrevented===false);
+        event.preventDefault();
+        console.log("mousedown事件阻止完毕",event.defaultPrevented===true);
+    });
+    button2.addEventListener("mouseup",function (event) {
+        console.log("mouseup事件可以阻止:",event.cancelable===true,event.defaultPrevented===false);
+        event.preventDefault();
+        console.log("mouseup事件阻止完毕",event.defaultPrevented===true);
+    });
+    button2.addEventListener("click",function () {
+        console.log("依旧可以触发click事件");
+    });
+    button2.addEventListener("dblclick",function (event) {
+        console.log("依旧可以触发dblclick事件",event.detail===2); //点击次数为2
+    });
+
+
+</script>
+
+</html>

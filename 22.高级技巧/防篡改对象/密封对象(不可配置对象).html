@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>密封对象(不可配置对象)</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    var obj={
+        a:"可以配置的属性"
+    };
+    console.log(Object.getOwnPropertyDescriptor(obj,"a").configurable===true);
+
+    /**
+     * 默认的对象是可以配置的对象
+     */
+    console.log(Object.isSealed(obj)===false);
+
+    /**
+     * 密封后，变成不可配置的对象
+     */
+    Object.seal(obj);
+    console.log(Object.isSealed(obj)===true);
+    /**
+     * 此时对象的属性的configurable特性为false。
+     * 并且对象变成不可扩展对象
+     */
+    console.log(Object.getOwnPropertyDescriptor(obj,"a").configurable===false);
+    console.log(Object.isExtensible(obj)===false);
+
+    /**
+     * 此时由于对象是不可配置的 configurable特性为false。因此是无法删除属性的。
+     * 非严格模式下，删除属性会静默失败。
+     */
+    console.log(delete obj.a === false);
+    console.log(typeof obj.a ==="string");
+    /**
+     * 严格模式下则会报错
+     */
+    (function () {
+        "use strict";
+        try{
+            delete obj.a
+        }catch (e) {
+            console.log("严格模式下删除密封对象的属性会报错")
+        }
+    }());
+
+    /**
+     * 并且也是无法重定义属性的特性。
+     */
+    try{
+        Object.defineProperty(obj,"a",{
+            enumerable:false
+        });
+    }catch (e) {
+        console.log("密封对象是无法重新定义属性的特性的(有个例外是writable特性为true时可以重定义value特性)")
+    }
+
+    /**
+     * 不可配置对象是可以通过赋值语句修改已有的属性
+     */
+    obj.a="不可配置对象依旧可以通过赋值修改已有的属性或者方法";
+    console.log(obj.a);
+
+    /**
+     * 这里有个例外，对于 数据属性并且在 writable特性为true的情况下， 不可配置对象依旧是可以重定义 writable和value特性的。
+     */
+    Object.defineProperty(obj,"a",{
+        writable:false,
+        value:"并且数据属性在writable特性为true的情况下，可以重定义writable和value特性"
+    });
+    console.log(Object.getOwnPropertyDescriptor(obj,"a").writable===false);
+    console.log(obj.a);
+</script>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comment属性的相关类型和方法</title>
+</head>
+<body>
+
+</body>
+<script>
+    /**
+     * Comment 和 text一样，都继承自 CharacterData类型。
+     */
+    console.log(Document.prototype.hasOwnProperty("createComment"));
+    var comment=document.createComment("注释内容");
+    document.body.appendChild(comment);
+    console.log(comment instanceof CharacterData);
+    console.log(comment.data==="注释内容");
+    console.log(comment.length===4);
+
+    comment.appendData("添加的注释");
+</script>
+</html>

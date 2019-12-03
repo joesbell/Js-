@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>事件模拟的自动移动方块demo</title>
+</head>
+<body>
+
+<div id="box" style="position: absolute;top:0;left:0;height: 100px;width: 100px;background: black;color:red;">
+    <p>自动移动的元素</p>
+</div>
+
+<div id="des" style="position: absolute;height: 10px;width:10px;background: red"></div>
+
+<h2 id="tip"></h2>
+</body>
+
+<script>
+    var box=document.getElementById("box");
+    var des=document.getElementById("des");
+    var tip=document.getElementById("tip");
+
+    var running=false; //是否在模拟拖拽
+    var runningEle;    //移动中的元素
+
+    document.addEventListener("mousedown",function (event) {
+        /**
+         * 如果是模拟点击的，那么说明移动启动了。
+         * 否则，停止移动。
+         */
+        if(event.isTrusted===false){
+            //按下的时候就说明开始准备拖拽了
+            running=true;
+            runningEle=event.target;
+        }else{
+            running=false;
+            runningEle=null;
+        }
+    });
+
+    document.addEventListener("mouseup",function (event) {
+        /**
+         * 如果是模拟松开的，那么说明移动完毕了
+         */
+        if(event.isTrusted===false){
+            running=false;
+            runningEle=null;
+        }
+    });
+
+    document.addEventListener("mousemove",function (event) {
+        /**
+         * 如果是模拟移动的，那么就设置元素的位置为模拟鼠标移动的位置。
+         */
+        if(event.isTrusted===false){
+            runningEle.style.top=event.clientY+"px";
+            runningEle.style.left=event.clientX+"px";
+        }
+    });
+
+
+    /**
+     * 让ele(左上角)自动到达(desX,desY)坐标。 采用事件模拟
+     */
+    function simulateAutoGoto(ele,desX,desY,speed,fps) {
+        if(running){
+            return ;
+        }
+
+        tip.innerText="当前前往坐标("+desX+","+desY+"),速度"+speed+"px每秒,fps为"+fps;
+        des.style.top=desY+"px";
+        des.style.left=desX+"px";
+
+        var boundingRect=ele.getBoundingClientRect();
+        var currentX=boundingRect.left;
+        var currentY=boundingRect.top;
+
+        /**
+         * 模拟按下，标志着自动移动开始。
+         */
+        simulateMouseDown(currentX,currentY,ele);
+
+
+        /**
+         * 根据参数计算 横纵轴速度。
+         */
+        var distanceX=desX-currentX;
+        var distanceY=desY-currentY;
+        var angel=Math.atan(distanceY/distanceX);
+        var xSpeed=Math.abs(Math.cos(angel)*speed);
+        var ySpeed=Math.abs(Math.sin(angel)*speed);
+        var intervalTime=1000/fps;
+
+        /**
+         * 开始模拟移动
+         */
+        var intervalId=setInterval(()=>{
+            if(!running){
+                clearInterval(intervalId);
+                return ;
+            }
+
+            distanceX=desX-currentX;
+            distanceY=desY-currentY;
+            /**
+             * 如果坐标差值小于每帧移动的距离，那么说明这一帧以内，可以移动到目标坐标了。
+             */
+            if(Math.abs(distanceX) < Math.abs(xSpeed/fps)){
+                currentX=desX;
+            }else{
+                currentX += xSpeed/fps * (distanceX>0?1:-1);
+            }
+            if(Math.abs(distanceY) < Math.abs(ySpeed/fps)){
+                currentY=desY;
+            }else{
+                currentY += ySpeed/fps * (distanceY>0?1:-1);
+            }
+
+            /**
+             * 利用mouseover事件传递位置。 模拟的鼠标移动
+             */
+            simulateMouseMove(currentX,currentY,document);
+
+            /**
+             * 当横纵坐标都到了目标点，那么就可以停止移动了。
+             */
+            if(currentX===desX&&currentY===desY){
+                clearInterval(intervalId);
+                /**
+                 * 此时应该松开按键
+                 */
+                simulateMouseUp(currentX,currentY,ele);
+                document.dispatchEvent(new Event("arrive"));
+            }
+
+        },intervalTime);
+    }
+
+    /**
+     * 模拟鼠标在文档视口(x,y)按下的事件。将其派发给ele元素
+     */
+    function simulateMouseDown(x,y,ele) {
+        var event=new MouseEvent("mousedown",
+            {
+                bubbles:true,
+                cancelable:false,
+                view:document.defaultView,
+                clientX:x,
+                clientY:y
+            }
+        );
+        ele.dispatchEvent(event);
+    }
+
+    /**
+     * 模拟鼠标在文档视口(x,y)松开的事件。将其派发给ele元素
+     */
+    function simulateMouseUp(x,y,ele) {
+        var event=new MouseEvent("mouseup",
+            {
+                bubbles:true,
+                cancelable:false,
+                view:document.defaultView,
+                clientX:x,
+                clientY:y
+            }
+        );
+
+        ele.dispatchEvent(event);
+    }
+
+    /**
+     * 模拟鼠标在文档视口(x,y)移动的事件。将其派发给ele元素
+     */
+    function simulateMouseMove(x,y,ele) {
+        var event=new MouseEvent("mousemove",
+            {
+                bubbles:true,
+                cancelable:false,
+                view:document.defaultView,
+                clientX:x,
+                clientY:y
+            }
+        );
+
+        ele.dispatchEvent(event);
+    }
+
+    /**
+     * 每当移动过程完毕后，再次移动到随机坐标
+     */
+    document.addEventListener("arrive",function () {
+        var randomX=Math.random()*(window.innerWidth);
+        var randomY=Math.random()*(window.innerHeight);
+        var randomSpeed=Math.random()*1000+500;
+        var fps=Math.random()*30+30;
+        simulateAutoGoto(box,Math.ceil(randomX),Math.ceil(randomY),Math.ceil(randomSpeed),Math.ceil(fps));
+    });
+
+    simulateAutoGoto(box,1000,500,1500,20);
+</script>
+</html>

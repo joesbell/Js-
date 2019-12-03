@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Node类型中操作节点的方法</title>
+</head>
+<body>
+
+<div id="parent"></div>
+
+
+<div id="father">
+    <div>
+        <p>p1</p>
+        <p>p2</p>
+    </div>
+
+    <div>
+        <p>p3</p>
+        <p>p4</p>
+    </div>
+</div>
+
+<input type="button" id="button1">
+
+</body>
+
+<script>
+    /**
+     * 首先我们要明白的是，Node类型中有关 节点关系的属性都基本是 访问器属性，并且其访问器属性的set方法为undefined，因此可以说是只读属性。
+     * 所以我们不能通过改变 节点的 关系属性来操作节点。
+     */
+    console.log(Object.getOwnPropertyDescriptor(Node.prototype,"parentNode").set===undefined);
+    console.log(Object.getOwnPropertyDescriptor(Node.prototype,"childNodes").set===undefined);
+    console.log(Object.getOwnPropertyDescriptor(Node.prototype,"lastChild").set===undefined);
+    console.log(Object.getOwnPropertyDescriptor(Node.prototype,"firstChild").set===undefined);
+    console.log(Object.getOwnPropertyDescriptor(Node.prototype,"previousSibling").set===undefined);
+    console.log(Object.getOwnPropertyDescriptor(Node.prototype,"nextSibling").set===undefined);
+
+
+    var parent=document.getElementById("parent");
+
+    console.log(parent.childNodes.length===0);
+
+    var node=createP(0);
+
+    //当父节点中没有子节点时，appendChild依旧能添加一个子节点
+    //同时,appendChild方法返回被添加的节点
+    console.log(parent.appendChild(node)===node);
+
+    //只不过这个时候,该节点既是firstChild，也是lastChild;
+    console.log(parent.lastChild===node);
+    console.log(parent.firstChild===node);
+
+    //可以看到 这里手动设置 关系属性，想要操作节点是无效的。因为这些关系属性的访问器属性的set方法为undefined，赋值从而set设置是无效的。
+    node.parentNode=document.body;
+    console.log(node.parentNode===parent);
+
+    //insertBefore用于将一个节点添加到另一个节点前面。 作为前一个同胞子节点存在。
+    parent.insertBefore(createP(-1),node);
+
+    //如果在null之前插入一个节点，那么效果等效于 appendChild
+    parent.insertBefore(createP(1),null);
+
+    node=createP(2);
+
+    //插入方法的返回值就是插入后的该节点。
+    console.log(parent.insertBefore(node,null)===node);
+
+    var node1=parent.firstChild;
+    var node2=parent.lastChild;
+
+    //插入时，如果要插入的节点本身就在子节点中，那么会先移除该节点后再插入操作。从表现上来看，就是移动操作了。
+    parent.insertBefore(node1,node2);
+
+    try{
+        parent.insertBefore(node1,createP(100));
+    }catch (e){
+        console.log("如果作为参考节点的节点本身不存在于子节点列表中，那么执行插入操作将会抛出Error:",e.toString())
+    }
+
+
+    new Promise((resolve)=>{
+        setTimeout(function () {
+            alert("开始removeChild");
+            while(parent.hasChildNodes()){
+                parent.removeChild(parent.firstChild);
+            }
+            alert("节点被移除后，依旧属于文档，仅仅只是在文档中没有位置罢了:"+(node.ownerDocument===window.document));
+            alert("对应的，是节点的isConnected属性为:"+node.isConnected+",从而表示该节点是没有和其他节点连接的");
+            resolve();
+        },1000);
+    }).then(()=>{
+        //从父节点中删除一个本身就不是子节点的节点会报错
+        try{
+            console.log(node.parentNode!==parent);
+            parent.removeChild(node);
+        }catch (e){
+            console.log("不能在父节点中删除一个本来就不属于其子节点的节点，会抛出Error:",e.toString())
+        }
+        try{
+            parent.removeChild(null);
+        }catch (e){
+            console.log("同样也不能删除一个不是节点的对象，会抛出Error:",e.toString())
+        }
+
+        new Promise((resolve)=>{
+            setTimeout(function () {
+                alert("重新恢复新的子节点用于后续实验");
+                for(var i=0;i<4;i++){
+                    parent.appendChild(createP(i));
+                }
+                resolve();
+            },1000)
+        }).then(()=>{
+            var node=parent.lastChild;
+            //replaceChild方法能替换节点， 该方法的返回值为 被替换的节点。 和之前的方法有所不同。
+            console.log(parent.replaceChild(createP(4),node)===node);
+
+            node=parent.lastChild;
+            //该方法可以 两个参数相同，此时效果和没有执行替换是一样的。
+            parent.replaceChild(node,node);
+
+            try{
+                parent.replaceChild(null,node);
+            }catch (e){
+                console.log("replaceChild的两个参数都必须为节点，否则会抛出Error:",e.toString())
+            }
+            try{
+                parent.replaceChild(node,null);
+            }catch (e){
+                console.log("replaceChild的两个参数都必须为节点，否则会抛出Error:",e.toString())
+            }
+
+
+            alert("开始进行cloneNode方法实验");
+            var father=document.getElementById("father");
+
+            //浅复制仅仅复制节点本身。
+            var node=father.cloneNode();
+
+            //因此页面中不会显示其后代节点
+            document.body.appendChild(node);
+            console.log(document.body.lastChild===node);
+            document.body.removeChild(node);
+
+            //深复制不仅复制节点本身还有复制其整个后代节点树。
+            node=father.cloneNode(true);
+            document.body.appendChild(node);
+
+
+            /**
+             * 节点的复制还有一个特点。 被复制的仅仅是节点的特性。而不包括属性。
+             * 因此，节点上的监听事件这种属于节点属性的是不会被复制的。
+             * 关于特性和属性 后面细讲。
+             */
+            var button1=document.getElementById("button1");
+
+            var cloneButton1=button1.cloneNode(true);
+            button1.onclick=function () {
+                alert("按钮点击事件被触发");
+            };
+            document.body.insertBefore(document.createTextNode("原本元素"),button1.nextSibling);
+
+            document.body.appendChild(cloneButton1);
+            document.body.insertBefore(document.createTextNode("被克隆的元素没有监听事件"),cloneButton1.nextSibling);
+
+        });
+
+    });
+
+
+    function createP(info) {
+        var node=document.createElement("p");
+        node.innerText=info;
+        return node;
+    }
+</script>
+</html>

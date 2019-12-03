@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM中的选择文本</title>
+</head>
+<body>
+
+
+    <input type="text" id="input1" value="input" size="25" maxlength="30">
+    <hr>
+    <input type="button" id="button1" value="选择全部内容" >
+    <hr>
+    设置选择的起始索引<input type="text" id="input2"  size="1"><br>
+    设置选择的结束索引(不包含)<input type="text" id="input3"  size="1"><br>
+    <input type="button" id="button2" value="选择部分内容" >
+
+
+</body>
+
+<script>
+
+    /**
+     * 标准DOM中  单行文本框和多行文本框类型均支持 以下属性。
+     */
+    console.log(HTMLInputElement.prototype.hasOwnProperty("selectionStart"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("selectionEnd"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("setSelectionRange"));
+
+    console.log(HTMLTextAreaElement.prototype.hasOwnProperty("selectionStart"));
+    console.log(HTMLTextAreaElement.prototype.hasOwnProperty("selectionEnd"));
+    console.log(HTMLTextAreaElement.prototype.hasOwnProperty("setSelectionRange"));
+
+
+    var input1=document.getElementById("input1");
+    var input2=document.getElementById("input2");
+    var input3=document.getElementById("input3");
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    document.addEventListener("click",function (event) {
+       switch (event.target.id){
+           case "button1":
+               /**
+                * 文本框的select() 方法会将该文本框的内容全部选中，并将该文本框设置为焦点
+                */
+               input1.select();
+               console.log("select后成为了焦点",document.activeElement===input1);
+               break;
+           case "button2":
+               var start=input2.value;
+               var end=input3.value;
+               /**
+                * setSelectionRange是选择部分文本的方法。
+                * 实际选择到的文本的字符索引范围为 [start,end)。
+                * 需要注意的是，真要选中文本还需要使文本框成为焦点元素。
+                */
+               input1.setSelectionRange(start,end);
+               input1.focus();
+               break;
+       }
+    });
+
+    document.addEventListener("select",function (event) {
+        if(event.target===input1){
+            var ele=event.target;
+            /**
+             * selectionStart 和 selectionEnd分别表示选中区域的起始位置和终止位置。
+             * 这个位置是相对于整个文本的。
+             * 终止位置的字符不包含在选中的文本中。
+             */
+            var start=ele.selectionStart;
+            var end=ele.selectionEnd;
+            console.log("选择的是:",ele.value.substring(start,end));
+        }
+    })
+
+</script>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>过滤输入</title>
+</head>
+<body>
+
+<hr>
+<span>普通按键输入只能输入数字:</span><input type="text" id="input1">
+<hr>
+<span>接受只为数字的粘贴输入:</span><input type="text" id="input2">
+<hr>
+<span>过滤粘贴输入中的非数字(只粘贴进数字内容):</span><input type="text" id="input3">
+<hr>
+<span>只能复制纯数字的内容:</span><input type="text" id="input4">
+<hr>
+<span>过滤剪切内容中的非数字(只剪切非数字内容):</span><input type="text" id="input5">
+<hr>
+<span>输入法输入只能输入数字:</span><input type="text" id="input6">
+</body>
+
+<script>
+
+    var input1=document.getElementById("input1");
+    var input2=document.getElementById("input2");
+    var input3=document.getElementById("input3");
+    var input5=document.getElementById("input5");
+    var input6=document.getElementById("input6");
+
+    /**
+     * 检测字符或者字符串是否为 纯数字
+     */
+    function isNumber(str){
+        var numberReg=/^\d+$/;
+        return numberReg.test(str);
+    }
+
+    /**
+     * 简单的字符屏蔽， 只考虑keypress事件，根据条件取消事件默认行为即可屏蔽字符输入。
+     */
+    input1.addEventListener("keypress",function(event){
+        var char=String.fromCharCode(event.charCode);
+
+        if(isNumber(char)){
+
+        }else{
+            event.preventDefault();
+        }
+    });
+
+    /**
+     * ClipboardEvent剪贴板事件具有一个属性 clipboardData。这个属性具有3个方法用于操作剪切板的内容。
+     * 1. setData(MIME类型,value) 设置剪切板的内容
+     * 2. getData(MIME类型) 获取剪切板的内容
+     * 3. clearData(MIME类型) 清空剪切板的内容
+     * 这里的MIME类型可以是text/plain text/html 。 对于text/plain来说也可以简写为text
+     *
+     * 在IE中，clipboardData对象则是window对象的属性，可以随时访问剪切板的内容。
+     */
+    console.log(ClipboardEvent.prototype.hasOwnProperty("clipboardData"))
+    /**
+     * 跨浏览器获取粘贴板文字内容的方法。
+     */
+    function getClipData(event){
+        var clipboardData=event.clipboardData||window.clipboardData;
+        return clipboardData.getData("text")||clipboardData.getData("text/plain");
+    }
+    /**
+     * 跨浏览器设置粘贴板文字内容的方法。
+     */
+    function setClipData(event,data){
+        var clipboardData=event.clipboardData||window.clipboardData;
+        return clipboardData.setData("text/plain",data);
+    }
+
+    /**
+     * 跨浏览器清空粘贴板内容的方法。
+     */
+    function clearClipData(event){
+        var clipboardData=event.clipboardData||window.clipboardData;
+        return clipboardData.clearData();
+    }
+
+    /**
+     * clipboardData属性其实指向的是一个DataTransfer类型对象。
+     * DataTransfer类型包含以下方法。
+     */
+    console.log(DataTransfer.prototype.hasOwnProperty("setData"));
+    console.log(DataTransfer.prototype.hasOwnProperty("getData"));
+    console.log(DataTransfer.prototype.hasOwnProperty("clearData"));
+    /**
+     * ClipboardEvent有以下6种:
+     * 1.beforecopy 复制之前触发
+     * 2.copy       复制完成后触发
+     * 3.beforecut  剪切之前触发
+     * 4.cut        剪切完成后触发
+     * 5.beforepaste 粘贴之前触发 (实际不会触发)
+     * 6.paste      粘贴完成后触发
+     */
+    input2.addEventListener("beforepaste",function(event){
+        console.log("beforepaste实际并不会触发");
+    });
+    /**
+     * 这个文本框的功能是 只允许粘贴进 原始文本为纯数字的内容。
+     * 通过preventDefault取消paste事件的默认行为，就可以取消粘贴。
+     */
+    input2.addEventListener("paste",function(event){
+        console.log("clipboardData属性指向的是一个DataTransfer类型对象",event.clipboardData.__proto__===DataTransfer.prototype);
+        console.log("paste事件属于ClipboardEvent",event.__proto__===ClipboardEvent.prototype);
+        if(isNumber(getClipData(event))){
+
+        }else{
+            console.log("paste触发被阻止,内容为",getClipData(event));
+            event.preventDefault();
+        }
+    });
+
+    input3.addEventListener("beforepaste",function(event){
+        console.log("beforepaste实际并不会触发");
+    });
+    /**
+     * 这个文本框的功能是 将粘贴进来的内容过滤为纯数字内容。
+     * 需要注意的是，在paste粘贴事件时，并不能setData设置粘贴板的内容，这是无效的。
+     */
+    input3.addEventListener("paste",function(event){
+        console.log("paste事件属于ClipboardEvent",event.__proto__===ClipboardEvent.prototype);
+        var pasteStr=getClipData(event);
+        var result=""; //最终粘贴的文本
+        if(isNumber(pasteStr)){
+
+        }else{
+            for(var i=0;i<pasteStr.length;i++){
+                if(isNumber(pasteStr.charAt(i))){
+                    result=result.concat(pasteStr.charAt(i))
+                }
+            }
+            /**
+             * 在paste事件里是不能设置粘贴板内容的.因此只能通过对 粘贴后的数据进行处理来模拟实现这个功能。
+             */
+            // setClipData(event,"result"); //这是无效的。
+            event.preventDefault();
+            //文本框的选中区域
+            var input=event.target.value;
+            var start=event.target.selectionStart;
+            var end=event.target.selectionEnd;
+
+            //替换文本框选区的内容为最终粘贴的文本。
+            var originArray=Array.prototype.slice.call(input);
+            Array.prototype.splice.call(originArray,start,end-start,result);
+            var resultStr=originArray.reduce((cur,prev)=>{
+                return cur+prev;
+            })
+            event.target.value=resultStr;
+            console.log("paste被阻止,原始内容为",pasteStr,",过滤非数字后粘贴进入的内容为",result);
+        }
+    });
+
+    /**
+     * 正如paste粘贴事件里不能setData设置剪贴板的内容。
+     * copy 和beforecopy事件里也不能通过getData获取剪切板的内容一一获取到的内容永远是空字符串，没有意义。
+     */
+    input4.addEventListener("beforecopy",function(event){
+        console.log("beforecopy事件属于ClipboardEvent",event.__proto__===ClipboardEvent.prototype);
+        console.log("beforecopy时不能获取粘贴板内容",getClipData(event)==="");
+
+    });
+
+    /**
+     * 尽管在复制时无法通过getData来获取复制的内容，但是却可以用另外一种方式来获取。
+     * 因为复制的时候永远需要选中文本，因此可以  利用选择文本的方式来获取复制的内容并进行过滤操作。
+     *
+     * 这个文本框的功能是将非纯数字的文本复制取消掉。
+     */
+    input4.addEventListener("copy",function(event){
+        console.log("copy事件属于ClipboardEvent",event.__proto__===ClipboardEvent.prototype);
+        console.log("copy时不能获取粘贴板内容",getClipData(event)==="");
+        /**
+         * 通过特殊手段一一选择文本 来获取正准备复制的内容
+         */
+        var input=event.target.value;
+        var start=event.target.selectionStart;
+        var end=event.target.selectionEnd;
+        var copyContent=input.substring(start,end);
+        if(isNumber(copyContent)){
+
+        }else{
+            console.log("copy被阻止,内容为",copyContent)
+            event.preventDefault();
+        }
+    });
+    /**
+     * 和copy以及beforecopy事件一样 ,cut 和beforcut事件里也不能通过getData获取剪切板的内容一一获取到的内容永远是空字符串，没有意义。
+     */
+    input5.addEventListener("beforecut",function(event){
+        console.log("beforecut事件属于ClipboardEvent",event.__proto__===ClipboardEvent.prototype);
+        console.log("beforecut时不能获取粘贴板的内容",getClipData(event)==="");
+    });
+    /**
+     * 这个文本框的功能主要是将 过滤文本内容为纯数字并进行剪切。
+     * 通过setData设置剪贴板内容,并取消默认的cut剪切事件来达到目的。
+     */
+    input5.addEventListener("cut",function(event){
+        console.log("cut事件属于ClipboardEvent",event.__proto__===ClipboardEvent.prototype);
+        console.log("cut时不能获取粘贴板的内容",getClipData(event)==="");
+        //同样利用 文本选择获取最初要进行剪切的文本内容
+        var input=event.target.value;
+        var start=event.target.selectionStart;
+        var end=event.target.selectionEnd;
+        var copyContent=input.substring(start,end);
+        if(isNumber(copyContent)){
+
+        }else{
+            var result="";
+            for(var i=0;i<copyContent.length;i++){
+                if(isNumber(copyContent.charAt(i))){
+                    result=result.concat(copyContent.charAt(i))
+                }
+            }
+            console.log("cut被阻止,原始内容为",copyContent,",过滤非数字后剪切的内容为",result);
+            /**
+             * 这里需要注意的是，setData修改剪贴板内容后必须阻止原本的事件的默认行为，否则修改粘贴板是无效的。
+             */
+            setClipData(event,result);
+            event.preventDefault();
+        }
+    });
+
+    /**
+     * 这个文本框的功能是 过滤输入法输入的内容为纯数字。
+     * 原理是在compositionend事件触发后一一也就是输入法输入结束后。将原本输入法输入的内容替换为过滤后的内容。
+     */
+    input6.addEventListener("compositionend",function(event){
+        if(isNumber(event.data)){
+
+        }else{
+            /**
+             * 输入法事件虽然可以取消默认行为，但是当取消后，实际是屏蔽不了的，没有效果的。
+             */
+            // event.preventDefault();
+            console.log("虽然IME事件是可以取消的，但是取消后实际上是没有任何效果的",event.cancelable===true)
+            var result="";
+            /**
+             * 只能手动替换输入文本的内容。看起来效果就跟字符屏蔽了一样。
+             */
+            for(var i=0;i<event.data.length;i++){
+                if(isNumber(event.data.charAt(i))){
+                    result=result.concat(event.data.charAt(i))
+                }
+            }
+            event.target.value=event.target.value.replace(event.data,result);
+            console.log("IME输入法输入内容：",event.data,"被过滤非数字字符后:",result)
+        }
+    });
+    //这里能清楚的看到，整个屏蔽过程。 原始输入依旧是具有非数字内容的。
+    input6.addEventListener("textInput",function(event){
+        console.log("textInput实际依旧输入了本应该屏蔽的字符:",event.data)
+    })
+
+
+</script>
+</html>

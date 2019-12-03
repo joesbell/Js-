@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document节点类型</title>
+</head>
+<body>
+
+</body>
+<script>
+    /**
+     * Document节点自身的一些属性
+     */
+    console.log(document.nodeValue===null);
+    console.log(document.parentNode===null);
+    console.log(document.ownerDocument===null);
+    console.log(document.nodeName==="#document");
+    console.log(document.nodeType===9);
+
+
+    /**
+     * Document节点的 索引属性
+     */
+    // document.documentElement属性永远指向文档中的html节点元素
+    console.log(document.documentElement===document.getElementsByTagName("html")[0]);
+    // document.doctype属性指向标识整个文档类型的DocumentType节点。
+    console.log(document.doctype);
+    // document.body属性指向html页面的body节点
+    console.log(document.body===document.getElementsByTagName("body")[0]);
+
+    /**
+     * 请求相关的属性
+     */
+    console.log(Document.prototype.hasOwnProperty("title"));
+    console.log(document.title==="Document节点类型");
+    setTimeout(()=>{
+        if(confirm("改变title吗?")){
+            document.title="被改变后的title";
+        }
+    },1000);
+
+    //可以看到 referrer属性是只读的。
+    console.log(Document.prototype.hasOwnProperty("referrer"));
+    console.log(Object.getOwnPropertyDescriptor(Document.prototype,"referrer").set===undefined);
+    console.log("当前页面的referrer:",document.referrer);
+    //URL属性也是只读的
+    console.log(Document.prototype.hasOwnProperty("URL"));
+    console.log(Object.getOwnPropertyDescriptor(Document.prototype,"URL").set===undefined);
+    console.log("当前页面的URL:",document.URL);
+    //domain属性是可以设置的，domain属性的设置主要是为了同源策略
+    console.log(Document.prototype.hasOwnProperty("domain"));
+    console.log(Object.getOwnPropertyDescriptor(Document.prototype,"domain").set!==undefined);
+    console.log("当前页面的domain:",document.domain);
+
+
+</script>
+</html>

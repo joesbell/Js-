@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>历史状态管理</title>
+</head>
+<body>
+
+<a data-my-router="/router1">router1</a>
+<a data-my-router="/router2">router2</a>
+<a data-my-router="#hash">pushState修改hash不会触发hashchange事件</a>
+
+</body>
+
+<script>
+
+    var count=0; //用于当前文档的计数，目的是证明 pushState的状态管理实际使用的依旧是原本的文档。
+
+
+    /**
+     * 阻止默认的 链接跳转
+     */
+    document.addEventListener("click",function (event) {
+        if(event.target.tagName.toLowerCase()!=="a"){
+            return ;
+        }
+
+        var a=event.target;
+        if(a.dataset.myRouter){
+            if(RouterService.routerHandler(a.dataset.myRouter)){
+                event.preventDefault();
+            }
+        }
+    });
+
+    /**
+     * 路由服务
+     */
+    var RouterService={
+        /**
+         * 处理路由URL并进行
+         */
+        routerHandler:function (routerPath) {
+            var find=this.routerList.find((router)=>{
+                return router.router===routerPath;
+            });
+            if(find){
+                history.pushState({router:find.router},"",routerPath);
+                find.handler.call(null);
+                return true;
+            }
+            return false;
+        },
+        routerList:[], //路由列表
+        /**
+         * 添加路由
+         */
+        addRoute:function (path,handler) {
+            var obj={
+                router:path,
+                handler:handler
+            };
+            this.routerList.push(obj);
+        }
+
+    };
+
+    /**
+     * 监听浏览器的历史记录变动。
+     */
+    window.addEventListener("popstate",function (event) {
+        /**
+         * 只有当该历史记录是 pushState创建或者replaceState替换的，其state信息才不为null
+         */
+        if(event.state){
+            alert(event.state.router+",当前计数器:"+count++)
+        }else{
+            alert("当前页没有state信息,因为不是pushState创建或者replaceState替换来的历史记录")
+        }
+    });
+
+    RouterService.addRoute("/router1",function () {
+       alert("触发router1回调")
+    });
+
+    RouterService.addRoute("/router2",function () {
+        alert("触发router2回调")
+    });
+
+    RouterService.addRoute("#hash",function () {
+        alert("pushState修改hash")
+    });
+
+    /**
+     * 证明 pushState修改url不会触发hashchange事件。
+     */
+    window.addEventListener("hashchange",function () {
+        alert("pushState修改历史记录的url中的hash时并不会触发hashchange事件！")
+    })
+
+</script>
+</html>

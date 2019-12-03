@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>提交表单</title>
+</head>
+<body>
+
+<form id="form1" name="myForm1">
+    <h3>利用元素type特性提交表单</h3>
+    <input type="submit"  value="submit按键提交表单">
+    <button type="submit" >submit按键提交表单</button>
+    <input type="image" src="提交按钮图片.png">
+</form>
+
+<hr>
+
+<form id="form2" name="myForm2">
+    <h3>利用对象的submit()方法提交表单</h3>
+    <input type="button"  value="submit()方法提交表单" onclick="validateAndSubmit()">
+</form>
+</body>
+
+<hr>
+
+<form id="form3" name="myForm3">
+    <h3>阻止重复提交表单</h3>
+    <input type="button" id="button1" value="该表单5秒内只能提交一次" onclick="preventRepeatSubmit()">
+</form>
+
+
+<script>
+
+    /**
+     * 利用type特性submit属性提交表单的方式会触发submit事件，而且这个事件是可以阻止默认行为的。
+     */
+
+    document.addEventListener("submit",function (event) {
+        console.log("submit事件是可以阻止默认行为的冒泡事件",event.bubbles===true,event.cancelable===true);
+        event.preventDefault();
+        console.log("阻止表单提交成功",event.defaultPrevented===true);
+    });
+
+    /**
+     * 或者利用表单对象的submit方法进行提交，但是这种方式不会触发submit事件
+     */
+    function validateAndSubmit() {
+       var form=document.getElementById("form2");
+       var right=false;
+
+        /**
+         * 这里先进行数据校验.
+         */
+
+        //校验通过则通过表单对象的submit方法提交表单
+        right=true;
+        if(right){
+            window.addEventListener("beforeunload",function (event) {
+                event.returnValue="确定提交?";
+                return event.returnValue;
+            });
+
+            form.submit();
+        }
+    }
+
+
+    /**
+     * 利用表单的提交机制，我们可以很方便的做出防止重复提交表单的功能。
+     */
+    var prevSubmitTime=0;
+    var currentSubmitTime;
+
+    function preventRepeatSubmit() {
+        var form=document.getElementById("form3");
+        var button=document.getElementById("button1");
+        currentSubmitTime=Date.now();
+        if(currentSubmitTime-prevSubmitTime > 5000){
+
+            // form.submit();
+            console.log("假装提交表单了");
+            prevSubmitTime=currentSubmitTime;
+            var second=4;
+            var intervalId=setInterval(()=>{
+                if(second===0){
+                    button.value="该表单5秒内只能提交一次";
+                    clearInterval(intervalId);
+                    return ;
+                }
+                button.value="还有"+second+"秒可以提交表单";
+                second--;
+            },1000)
+        }else{
+            console.log("请勿重复提交")
+        }
+
+    }
+</script>
+</html>

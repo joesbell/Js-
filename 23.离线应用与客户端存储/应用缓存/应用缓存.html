@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" manifest="offline.manifest">
+<head>
+    <meta charset="UTF-8">
+    <title>应用缓存</title>
+    <link rel="stylesheet" href="1.css">
+</head>
+<body>
+    <div class="box">
+        离线后，css文件依旧生效,因为CSS文件被配置在了 CACHE MANIFEST 下面
+    </div>
+    <hr>
+    <input type="button" id="button1" value="修改服务器manifest文件,使得静态文件得以更新">
+    <hr>
+    <input type="button" id="button2" value="客户端可以手动检测缓存是否需要更新">
+    <input type="button" id="button3" value="如果有缓存可以更新，并且缓存已经下载完毕，此时可以手动应用缓存">
+
+</body>
+
+<script src="1.js">
+
+</script>
+</html>

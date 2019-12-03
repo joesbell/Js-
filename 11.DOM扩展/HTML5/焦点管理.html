@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    .focus{
+        background: red;
+    }
+</style>
+
+<script>
+    console.log("文档未加载完成时,document.activeElement为null:",document.activeElement===null)
+</script>
+<body>
+
+    <div>
+        <input type="button" value="按钮1" onclick="changeFocus()">
+        <input type="button" value="按钮2" onclick="noUseChangeFocus()">
+    </div>
+    <div>
+        <select>
+            <option>1</option>
+            <option>2</option>
+        </select>
+    </div>
+    <div>
+        <input id="myinput" type="text" value="文本输入是可以成为焦点的">
+    </div>
+
+    <show-area>
+        
+    </show-area>
+</body>
+<script>
+    console.log("文档加载完成后，document.activeElement为body:",document.activeElement===document.body);
+
+    //Document类型上的 activeElement属性为只读的访问器属性，因此无法通过修改activeElement来修改文档的焦点对象。
+    console.log(Object.getOwnPropertyDescriptor(Document.prototype,"activeElement").set===undefined);
+
+    //Document类型上新增 hasFocus方法判断当前页面是否获得了焦点。
+    console.log(Document.prototype.hasOwnProperty("hasFocus"));
+    //HTML元素具有focus方法可以将调用元素设置为焦点。 但是需要注意的是，不是每一种元素都可以成为焦点。
+    console.log(HTMLElement.prototype.hasOwnProperty("focus"));
+
+
+    var prev;
+    var current=document.body;
+    var showArea=document.querySelector("show-area");
+
+
+    function showFocus() {
+        prev=current;
+        prev.classList.remove("focus");
+        current=document.activeElement;
+        current.classList.add("focus");
+        showArea.innerText="当前文档是否失去焦点:"+!document.hasFocus()+"\n当前文档的焦点元素是:"+(document.activeElement.type||document.activeElement.nodeName);
+    }
+
+    //像input等元素就是可以成为焦点的元素
+    function changeFocus() {
+        document.getElementById("myinput").focus();
+        console.log(document.activeElement===document.getElementById("myinput"));
+    }
+
+    //而这种自定义的标签元素或者是文本元素是无法成为焦点的。
+    //可以成为焦点的重要标志之一就是可以在页面通过tab键切换
+    function noUseChangeFocus() {
+        document.getElementsByTagName("show-area")[0].focus();
+        console.log(document.activeElement!==document.getElementsByTagName("show-area")[0]);
+    }
+    setInterval(showFocus,100);
+
+
+    //这里在文档失去焦点状态后，文档的焦点元素在input元素之间随机跳动
+    setInterval(function () {
+        if(document.hasFocus()){
+
+        }else{
+            //不处于焦点状态的文档，依旧能拥有焦点元素并且焦点元素依旧能发生改变。
+            var inputs=document.querySelectorAll("input");
+
+            inputs[Math.ceil(inputs.length*Math.random())-1].focus();
+        }
+    },100);
+</script>
+</html>

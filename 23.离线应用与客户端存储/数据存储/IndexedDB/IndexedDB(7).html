@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>删除数据</title>
+</head>
+<body>
+<input type="button" id="button1" value="通过默认递增主键删除数据">
+<input type="button" id="button2" value="通过自定义主键删除数据">
+<input type="button" id="button3" value="删除所有数据">
+</body>
+
+<script>
+
+    var IDBName="test"+Math.random(); //保证每次打开页面连接数据库都是新建操作。
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    /**
+     * 新建一个数据库以及对象仓库
+     */
+    var req=indexedDB.open(IDBName);
+    var db;
+    req.onupgradeneeded=function (event) {
+        db=event.target.result;
+
+        //创建自动递增主键的对象仓库users1
+        var store1=db.createObjectStore("users1",{ autoIncrement:true});
+        //创建自定义主键的对象仓库users2
+        var store2=db.createObjectStore("users2",{ keyPath:"userId"});
+
+        var versionChangeTransaction=event.target.transaction;
+        versionChangeTransaction.oncomplete=function () {
+            console.log("数据库创建Schema完毕");
+        };
+        versionChangeTransaction.onerror=function () {
+            console.log("数据库创建Schema失败");
+        }
+    };
+    req.onsuccess=function (event) {
+        console.log("连接到新创建的数据库成功");
+        var transaction1=db.transaction("users1","readwrite");
+        var store1=transaction1.objectStore("users1");
+        var transaction2=db.transaction("users2","readwrite");
+        var store2=transaction2.objectStore("users2");
+
+        //写入10个随机数据
+        var total=10;
+        var datas=[];
+        for(var i=0;i<total;i++){
+            datas.push({
+                name:generateWord(6),
+                age:(Math.random()*30>>0),
+                userId:"user"+i
+            })
+        };
+
+        datas.forEach((data)=>{
+            store1.add(data);
+            store2.add(data);
+        });
+
+        //当两个事物都执行完毕时，表明数据初始化成功
+        Promise.all(
+            [
+                new Promise((resolve,reject)=>{
+
+                transaction1.oncomplete=function(){
+                    console.log("users1初始化完毕");
+                    resolve();
+                };
+
+                transaction1.onerror=function(){
+                    console.log("users1初始化失败");
+                    reject();
+                };
+            }),
+                new Promise((resolve,reject)=>{
+                 transaction2.oncomplete=function(){
+                    console.log("users2初始化完毕");
+                    resolve();
+                };
+
+                transaction2.onerror=function(){
+                    console.log("users2初始化失败");
+                    reject();
+                };
+            })
+            ]
+        ).then(()=>{
+            console.log("数据初始化成功");
+        }).catch(()=>{
+            console.log("数据初始化失败");
+        });
+
+
+        //关闭页面时，删除数据库
+        window.onunload=function () {
+            indexedDB.deleteDatabase(IDBName);
+        }
+    };
+
+    /**
+     * 根据递增主键删除数据
+     */
+    button1.addEventListener("click",function () {
+        var transaction=db.transaction("users1","readwrite");
+        var store=transaction.objectStore("users1");
+
+        /**
+         * 对于默认的递增主键来说，使用IDBObjectStore的delete方法的参数就是自动递增的主键值。
+         */
+        var req=store.delete(1); //这里删的是主键为1的数据。
+
+        req.onsuccess=function (event) {
+            console.log("删除成功")
+        }
+    });
+
+    /**
+     * 根据自定义主键删除数据
+     */
+    button2.addEventListener("click",function () {
+        var transaction=db.transaction("users2","readwrite");
+        var store=transaction.objectStore("users2");
+
+        /**
+         * 对于自定义的主键来说，IDBObjectStore的delete方法的参数为 自定义主键的值。此时会删除该自定主键值的数据。
+         */
+        var req=store.delete("user0"); //这里会删除自定义主键值为 users0的数据。
+
+        req.onsuccess=function (event) {
+            console.log("删除成功")
+        }
+
+    });
+
+    /**
+     *  IDBObjectStore的clear方法可以用于清空表中的所有数据
+     */
+    button3.addEventListener("click",function () {
+        var transaction=db.transaction("users1","readwrite");
+        var store=transaction.objectStore("users1");
+
+        //清空对象仓库中的所有数据
+        var req=store.clear();
+
+        req.onsuccess=function (event) {
+            console.log("删除所有数据成功")
+        }
+    });
+    /**
+     * 生成 length长度的字符串 ，这些字符串的每个字符均是 A-Z
+     * @param length
+     * @returns {string}
+     */
+    function generateWord(length) {
+        var result="";
+        for(var i=0;i<length;i++){
+            result+=String.fromCharCode(((Math.random()*26)>>0)+65);
+        }
+        return result;
+    }
+
+</script>
+
+</html>

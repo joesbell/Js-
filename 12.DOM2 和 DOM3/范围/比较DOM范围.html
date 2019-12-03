@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>比较DOM范围</title>
+</head>
+<body>
+
+<p>hello world</p>
+
+
+<div>
+
+    <div>
+        <p id="p1">1</p>
+    </div>
+
+    <p id="p2">2</p>
+
+</div>
+
+</body>
+<script>
+    /**
+     * 比较方法在 Range类型上
+     */
+    console.log(Range.prototype.hasOwnProperty("compareBoundaryPoints"));
+
+    var p=document.querySelector("p");
+    var text=p.firstChild;
+    var range1=document.createRange();
+    var range2=document.createRange();
+    range1.setStart(text,0);
+    range2.setStart(text,0);
+
+    /**
+     *  这里唯一要注意的一点，how参数 sRange.START_TO_END 表示的是 比较 自身的结束节点和 待比较范围的开始节点的位置关系。
+     */
+    //比较range1的开始节点和range2的开始节点，相等所以返回0
+    console.log(range1.compareBoundaryPoints(Range.START_TO_START,range2)===0);
+
+    range1.setEnd(text,5);
+    range2.setEnd(text,6);
+    //比较range1的结束节点和range2的结束节点，由于  range1的在前面，所以返回-1
+    console.log(range1.compareBoundaryPoints(Range.END_TO_END,range2)===-1);
+
+    range1.setStart(text,1);
+    //比较range1的开始节点和range2的开始节点，由于 range1的在后面，所以返回1
+    console.log(range1.compareBoundaryPoints(Range.START_TO_START,range2)===1);
+    //比较range1的结束节点和range2的开始节点，range1的结束节点在range2的开始节点后面，所以返回1
+    console.log(range1.compareBoundaryPoints(Range.START_TO_END,range2)===1);
+
+    var p1=document.getElementById("p1");
+    var p2=document.getElementById("p2");
+
+    range1.selectNode(p1);
+    range2.selectNode(p2);
+
+    /**
+     * 方法返回的位置关系中的前后关系是按照 深度遍历优先的前后来的。
+     */
+
+    var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_ALL,null,false);
+    var nodes=[];
+    var node=walker.nextNode();
+    while(node!=null){
+        nodes.push(node);
+        node=walker.nextNode();
+    }
+    var index1=nodes.findIndex(function (value) {
+        return value===range1.startContainer.childNodes[range1.startOffset];
+    });
+
+    var index2=nodes.findIndex(function (value) {
+        return value===range2.startContainer.childNodes[range2.startOffset];
+    });
+
+    console.log(index1<index2);
+    console.log(range1.compareBoundaryPoints(Range.START_TO_START,range2)===-1);
+
+</script>
+</html>

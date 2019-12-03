@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>冒泡和捕获</title>
+</head>
+<body>
+
+<div>
+    <span>冒泡中最具体的元素</span>
+</div>
+
+<div>
+    <span>捕获中最具体的元素</span>
+</div>
+</body>
+
+<script>
+    /**
+     * 我们以这里的2个标签为例子说明冒泡和捕获。
+     * 假设我们点击了 span元素：
+     * 在冒泡机制中，首先被触发的应该是span元素的事件，其次是div元素的事件。 从最具体的元素逐级传播到上层不具体的元素
+     * 在捕获机制中，首先被触发的应该是div元素的事件，然后是span元素的事件。 从最不具体的元素传播到最具体的元素。
+     */
+
+
+    //冒泡  先触发span 再触发div
+    document.querySelectorAll("div")[0].addEventListener("click",function () {
+        console.log("top",this.nodeName);
+    },false);
+    document.querySelectorAll("span")[0].addEventListener("click",function () {
+        console.log("bottom",this.nodeName);
+    },false);
+
+    //捕获 先触发div 再触发span
+    document.querySelectorAll("div")[1].addEventListener("click",function () {
+        console.log("top",this.nodeName);
+    },true);
+    document.querySelectorAll("span")[1].addEventListener("click",function (e) {
+        console.log("bottom",this.nodeName);
+        e.stopPropagation();
+    },true);
+
+</script>
+
+</html>

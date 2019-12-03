@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>请求的超时设定</title>
+</head>
+
+<body>
+设置超时时间(ms):<input type="text" id="text1">
+<input type="button" id="button1" value="提交请求">
+
+</body>
+
+<script>
+
+    /**
+     * 在XMLHttpRequest和XMLHttpRequestEventTarget类型中分别提供了 timeout属性以及ontimeout事件监听程序。
+     */
+    console.log(XMLHttpRequest.prototype.hasOwnProperty("timeout")===true);
+    console.log(XMLHttpRequestEventTarget.prototype.hasOwnProperty("ontimeout")===true);
+
+    var button1=document.getElementById("button1");
+    var text1=document.getElementById("text1");
+    button1.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log(xhr.responseText);
+                }else{
+                    console.log("超时终止自动取消请求,xhr的readyState状态依旧为完成状态,受影响的只是status一一HTTP状态码");
+                }
+            }
+        };
+
+        /**
+         * 如果在timeout毫秒内，没有受到服务器响应，则会取消请求。
+         * 但是此时readyState属性是会变成完成状态，也就4。
+         * 而statusHTTP状态码则会变成无意义的0.
+         */
+        xhr.ontimeout=function(){
+            console.log("已经自动超时终止了");
+            console.log(xhr.readyState===4,xhr.status===0);
+        };
+
+        /**
+         * 超时timeout属性仅限在异步请求中使用
+         */
+        try{
+            xhr.open("POST","/rest/timeout",false);
+            xhr.timeout=text1.value;
+        }catch(err){
+            console.log("超时只能在异步请求中使用，否则会报错:",err);
+            xhr.open("POST","/rest/timeout");
+            /**
+             * 为了保证在IE中的兼容性， timeout属性的设置最好放在 xhr调用open()方法之后。
+             */
+            xhr.timeout=text1.value;
+        }
+        xhr.send();
+    })
+</script>
+
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>焦点事件</title>
+</head>
+<body>
+
+    <input id="input1" type="text">
+
+</body>
+
+<script>
+
+    var input1=document.getElementById("input1");
+
+    input1.addEventListener("DOMFocusIn",function(event){
+        console.log("DOMFocusIn类型",event.bubbles===true,event.currentTarget);//冒泡
+    });
+    input1.addEventListener("focusin",function(event){
+        console.log("focusin类型",event.bubbles===true,event.currentTarget);//冒泡
+    });
+    input1.addEventListener("focus",function(event){
+        console.log("focus类型",event.bubbles===false,event.currentTarget);//不冒泡
+    });
+
+    input1.addEventListener("DOMFocusOut",function(event){
+        console.log("DOMFocusOut类型",event.bubbles===true,event.currentTarget);//冒泡
+    });
+    input1.addEventListener("focusout",function(event){
+        console.log("focusout类型",event.bubbles===true,event.currentTarget);//冒泡
+    });
+    input1.addEventListener("blur",function(event){
+        console.log("blur类型",event.bubbles===false,event.currentTarget);//不冒泡
+    });
+
+    document.body.addEventListener("DOMFocusIn",function(event){
+        console.log("DOMFocusIn类型",event.bubbles===true,event.currentTarget);//冒泡
+    });
+    document.body.addEventListener("focusin",function(event){
+        console.log("focusin类型",event.bubbles===true,event.currentTarget);//冒泡
+    });
+    document.body.addEventListener("focus",function(event){
+        console.log("focus类型",event.bubbles===false,event.currentTarget);//不冒泡
+    });
+
+    document.body.addEventListener("DOMFocusOut",function(event){
+        console.log("DOMFocusOut类型",event.bubbles===true,event.currentTarget);//冒泡
+    });
+    document.body.addEventListener("focusout",function(event){
+        console.log("focusout类型",event.bubbles===true,event.currentTarget);//冒泡
+    });
+    document.body.addEventListener("blur",function(event){
+        console.log("blur类型",event.bubbles===false,event.currentTarget);//不冒泡
+    });
+
+    input1.focus();
+    input1.blur();
+
+</script>
+
+</html>

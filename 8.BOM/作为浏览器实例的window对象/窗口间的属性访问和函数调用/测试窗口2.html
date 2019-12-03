@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试窗口2</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    var b="b";
+    //这里通过打开这个窗口的window对象访问到了窗口1的a属性
+    console.log("访问窗口1的属性a:"+this.opener.a);
+
+
+    /**
+     * 而对于函数来说，不同的调用方式，有不同的效果。
+     */
+
+    //这种方式进行的调用，本质上是在 窗口1中进行的。 因为调用者是 this.opener == 窗口1的window对象
+    setTimeout(()=>{
+        this.opener.foo("这里是在窗口1中调用");
+    },1500);
+
+    var foo=this.opener.foo;
+
+    //如果想要在窗口2中调用窗口1中的方法，必须显式指定this对象
+    setTimeout(()=>{
+        this.foo("这里才是在窗口2中调用，因为显式地指定了this");
+    },1000);
+
+    //使用call方法来指定this取值也是可以的
+    setTimeout(()=>{
+        foo.call(this,"这里才是在窗口2中调用，因为使用call方法显式地指定了this对象");
+    },1500);
+
+    /**
+     * 然而这里，却出现了奇怪的情况。 必须使用 函数调用规范 才能解释这个现象。
+     *
+     * 此时当前全局环境中是具有 foo 这个标识符的并且可以成功被解析，
+     * 此时执行函数调用， 解释执行 foo 这个CallExpression调用表达式，获取其引用规范类型是获取的到的。
+     * 其引用规范类型数据为 { referenceName:"foo", baseValue:窗口2的window对象,IsStrictReference:false }. 因此this绑定为 window对象的ImplicitThisValue()抽象方法的返回值，为undefined。
+     *
+     * 此时开始函数调用，需要注意到的是，这个函数本身是在窗口1中的全局环境中定义的。
+     * 因此最终执行替换this取值的undefined为全局对象时，会采用窗口1中的全局对象window而不是这里的窗口2的全局对象window。
+     *
+     * 这里的函数调用就有点 严格模式中调用非严格模式代码的味道。
+     *
+     * 同时，这也说明了 this.foo 和 缺省的 foo 本质上是不同的调用方式:
+     * 1.this.foo() 是一种的普通的函数调用，指明了调用者对象。
+     * 2. foo() 是一种缺省的函数调用，其this取值会按照 函数调用规范来。
+     */
+
+    setTimeout(()=>{
+        foo("不同窗口间的函数调用，必须显式指定this！这里依旧是在窗口2中控制窗口1调用函数");
+    },2000);
+
+
+</script>
+
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document类型的变化</title>
+</head>
+<body>
+
+</body>
+<script>
+    /**
+     * Document类型上新增了属性和方法。
+     */
+    console.log(Document.prototype.hasOwnProperty("importNode"));
+    console.log(Document.prototype.hasOwnProperty("defaultView"));
+
+    /**
+     * document.defaultView属性永远指向当前文档的窗口对象self(window)
+     */
+    console.log(document.defaultView===self);
+
+    var window1=window.open("frame1.html");
+    var window2=window.open("frame2.html");
+
+    setTimeout(()=>{
+        var div1=window1.document.getElementById("div1");
+        var ul1=window2.document.getElementById("ul1");
+
+        var ul2;
+        if(confirm("是否在left页面中深度导入right页面中的节点树")){
+            /**
+             * importNode方法可以实现在不同文档间的节点克隆操作。
+             * 虽然从效果来看和Element类型的cloneNode方法相同，但是从规范上来说，cloneNode方法并不能跨文档工作
+             */
+            ul2=window1.document.importNode(ul1,true);
+
+            //(在浏览器的实际实现中，cloneNode可以跨文档，不过最好还是别这样用)
+            // ul2=ul1.cloneNode(true)
+
+            console.log("深度导入后产生的是新的节点:",ul1!==ul2);
+            console.log("这两个节点的所属文档是不同的:",
+                ul2.ownerDocument===window1.document,
+                ul1.ownerDocument===window2.document,
+                window1.document!==window2.document);
+            div1.appendChild(ul2);
+        }else{
+            ul2=window1.document.importNode(ul1);
+            div1.appendChild(ul2);
+        }
+    },1000);//加上延时，保证新的窗口已经被打开了，可以成功获取打开窗口中的元素
+</script>
+
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 3000px;width: 2000px;">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div style="position: absolute;overflow: scroll;height: 100px;width: 100px;top:2000px;left:800px;">
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <p id="p1" style="background: red">
+        ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+        ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+        ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+    </p>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</div>
+
+</body>
+
+<script>
+    var p1=document.getElementById("p1");
+    p1.scrollIntoView();
+
+
+    /**
+     * 模拟实现 Element.prototype.getBoundingClientRect。
+     * 需要注意的是，这里不支持具有margin属性的元素的定位获取。
+     * 同时对个别特殊样式比如position：fixed的元素失效。
+     * 另外，获取到的距离大小不一定是真实大小，这边获取的距离永远是整数。
+     *
+     */
+    function getBoundingClientRect(ele) {
+        var top, //元素上边界(包含边框)距离浏览器视口上方的距离
+            left, //元素左边界(包含边框)距离浏览器视口左边的距离
+            right,//元素右边界(包含边框)距离浏览器视口左边的距离
+            bottom,//元素下边界(包含边框)距离浏览器视口上方的距离
+            x,  // x===left
+            y, // y===top
+            height, //元素的offsetHeight 包含边框宽度
+            width; //元素的offsetWidth 包含边框宽度
+
+        /**
+         * 模拟getBoundingClientRect的核心就在于：
+         * 根据元素自身的offset定位信息，结合该元素的定位元素的scroll滚动信息，获取该元素位于定位元素的视口的相对位置。
+         * 直到定位元素为body元素时，就获取到了该元素在body视口上的相对位置了。
+         */
+        if(ele===document.documentElement){
+            //如果元素是html元素，那么直接就可以计算了。这里需要注意的一点就是获取浏览器滚动条进度的的兼容。
+            top=ele.offsetTop-(document.body.scrollTop||document.documentElement.scrollTop);
+            left=ele.offsetLeft-(document.body.scrollLeft||document.documentElement.scrollLeft);
+        }else if(ele===document.body){
+            /**
+             * 如果元素是body元素，就会麻烦很多。
+             * 因为浏览器默认样式里对body元素的样式设，会为body元素设置margin。
+             * 这会影响到body元素距离浏览器视口的实际距离。
+             */
+            var computedStyle=getComputedStyle(ele);
+
+            //这里优先假设 marginTop和top属性都设置有值,此时真实的位置应该相加，然后才是各自设置有值。最后都没设置时，就当是0
+            var topInt=(parseInt(computedStyle.top)+parseInt(computedStyle.marginTop))||parseInt(computedStyle.top)||parseInt(computedStyle.marginTop)||0;
+            var leftInt=(parseInt(computedStyle.left)+parseInt(computedStyle.marginLeft))||parseInt(computedStyle.left)||parseInt(computedStyle.marginLeft)||0;
+
+            //对于body元素来说，同样要考虑获取浏览器滚动条进度的的兼容
+            top=topInt-(document.body.scrollTop||document.documentElement.scrollTop);
+            left=leftInt-(document.body.scrollLeft||document.documentElement.scrollLeft);
+        }else{
+            /**
+             * 如果是一般的元素，此时就得注意了。
+             * 需要不停地获取定位元素的滚动条和元素的offset偏移位置。
+             */
+            var originEle=ele;
+            var eleOffsetParent=ele.offsetParent;
+            top=0;
+            left=0;
+            while(eleOffsetParent!=null){
+                var offsetTop=ele.offsetTop;
+                var offsetLeft=ele.offsetLeft;
+                top+=offsetTop;
+                left+=offsetLeft;
+
+                //浏览器滚动条的兼容获取。
+                var scrollTop=eleOffsetParent.scrollTop;
+                var scrollLeft=eleOffsetParent.scrollLeft;
+                if(eleOffsetParent===document.body){
+
+                    scrollTop=scrollTop||document.documentElement.scrollTop;
+                    scrollLeft=scrollLeft||document.documentElement.scrollLeft;
+                }
+                top=top-scrollTop;
+                left=left-scrollLeft;
+
+                if(eleOffsetParent===document.body){
+                    //当定位元素为body时，就不需要再进行迭代了。
+                    break;
+                }
+
+                ele=eleOffsetParent;
+                eleOffsetParent=ele.offsetParent;
+            }
+            ele=originEle;
+        }
+
+
+        x=left;
+        y=top;
+        height=ele.offsetHeight;
+        width=ele.offsetWidth;
+        right=left+width;
+        bottom=top+height;
+
+        return {
+            top:top,
+            left:left,
+            right:right,
+            bottom:bottom,
+            x:x,
+            y:y,
+            height:height,
+            width:width
+        }
+    }
+
+
+
+
+    /**
+     * 用于检测模拟实现的getBoundingClientRect和浏览器支持的getBoundingClientRect是否效果一致。
+     */
+    function check(ele) {
+        var a=ele.getBoundingClientRect();
+        var b=getBoundingClientRect(ele);
+
+        var props=[];
+        Array.prototype.push.apply(props,Object.keys(b));
+        var notSame=props.find(function (prop) {
+            if(b[prop]===a[prop]){
+                return false;
+            }
+            //这里用于处理我们的方法的精度问题。
+            if(typeof b[prop]==="number" && typeof a[prop]==="number"){
+                var aInt=parseInt(a[prop]);
+                var bInt=parseInt(b[prop]);
+                //默认精度相差在3以下我们就当做是正确的。
+                if(Math.abs(aInt-bInt)<=3){
+                    return false;
+                }
+            }
+            return true;
+        });
+        return notSame===undefined;
+    }
+
+    /**
+     * 利用整个页面的元素对我们实现的getBoundingClientRect进行效果检测。
+     * 对所有使用了margin的元素都失效。因为实现的时候没考虑margin带来的影响。
+     */
+    function checkAll() {
+        var eles=document.getElementsByTagName("*");
+        eles=Array.prototype.slice.call(eles);
+
+        //这些元素不支持
+        var blackList=["HEAD","TITLE","META","SCRIPT","BR","LINK","STYLE","LINK","NOSCRIPT","A"];
+
+        eles.forEach((ele,index,array)=>{
+            //对所有元素进行筛选。排除黑名单中的元素
+            blackList.find((value)=>{
+                if(value===ele.tagName){
+                    array[index]=undefined;
+                    return true;
+                }
+            })
+        });
+
+        eles.forEach((ele)=>{
+            if(ele===undefined){
+                return;
+            }
+
+            if(check(ele)===false){
+                console.log("模拟实现getBoundingClientRect出问题的元素:",ele);
+            }
+        })
+    }
+    
+    
+    
+    
+    
+    /**
+     * 判断元素是否位置在浏览器视口中(不要求可以看见)
+     *
+     * 需要注意的是，虽然在浏览器视口中，但是可能看不见。因为元素可能被其他元素遮挡。
+     *
+     * 如果要实现一个元素真正的在视口中可见，是非常麻烦的。
+     *
+     * 思路是:判断元素在其定位元素中是否可见，求出可见区域范围。依次迭代定位元素到body元素上。
+     * 最后判断这个可见区域的交集是否在视口中。 然而由于各种样式信息比如margin的影响，实际上达不到完美的效果适配任何样式的元素。
+     */
+    function isInView(ele){
+        var eleRect=ele.getBoundingClientRect();
+        var eleMinY=eleRect.top;
+        var eleMaxY=eleRect.bottom;
+        var eleMinX=eleRect.left;
+        var eleMaxX=eleRect.right;
+
+        var minX=0;
+        var minY=0;
+        var maxX=document.documentElement.clientWidth||document.body.clientWidth;
+        var maxY=document.documentElement.clientHeight||document.body.clientHeight;
+
+        if(eleMinX>maxX){ //在视口右边
+            return false;
+        }else if(eleMaxX<minX){ //在视口左边
+            return false;
+        }else if(eleMinY>maxY){ //在视口下边
+            return false;
+        }else if(eleMaxY<minY){//在视口上边
+            return false;
+        }else{
+            //元素总有一部分位于浏览器视口内。
+            return true;
+        }
+
+    }
+    
+    
+    
+
+    /**
+     * 用于判断元素是否在其定位元素的视口中
+     */
+    function isInOffsetParentView(ele){
+
+        if(ele===document.body||ele===document.documentElement){
+            //html元素和body元素是百分百能被看到的。
+            return true;
+        }
+
+        var parent=ele.offsetParent;
+        var scrollTop=parent.scrollTop;
+        var scrollLeft=parent.scrollLeft;
+
+        /**
+         * 元素的offsetParent最多只会是body元素。
+         * 此时就是要获取浏览器的滚动条了。
+         * 由于不同浏览器的实现问题，浏览器的滚动条的滚动距离可能在body元素上也可能在html元素上
+         */
+        if(parent===document.body){
+
+            scrollTop=scrollTop||document.documentElement.scrollTop;
+            scrollLeft=scrollLeft||document.documentElement.scrollLeft;
+        }
+
+        /*
+        * 定位元素的长方形展示区域
+        */
+        var minY=scrollTop; //最小垂直坐标
+
+        /**
+         * 就算是本身的客户区再大，客户区的真实的视口也永远不会超过浏览器本身的视口大小。因此这里取两者间小的。
+         */
+        var maxY=scrollTop+Math.min(parent.clientHeight,document.documentElement.clientHeight); //最大垂直坐标为 垂直滚动距离加上本身客户区高度。
+        var minX=scrollLeft; //最小水平坐标
+        var maxX=scrollLeft+Math.min(parent.clientWidth,document.documentElement.clientWidth); //最大水平坐标为 水平滚动距离加上本身客户区宽度。
+
+        /**
+         * 元素位于定位元素中的长方形区域
+         */
+        var eleOffsetMinX=ele.offsetLeft;
+        var eleOffsetMaxX=eleOffsetMinX+ele.offsetWidth;
+        var eleOffsetMinY=ele.offsetTop;
+        var eleOffsetMaxY=eleOffsetMinY+ele.offsetHeight;
+
+        if(eleOffsetMaxX <= minX ){ //完全位于定位元素视口左边
+            return false;
+        }else if(eleOffsetMaxY <= minY){ //完全位于定位元素视口上方
+            return false;
+        }else if(eleOffsetMinX >= maxX){ //完全位于定位元素视口右边
+            return false;
+        }else if(eleOffsetMinY >= maxY){ //完全位于定位元素视口下方
+            return false;
+        }else{
+            return true; //此时肯定有部分ele可以在offsetParent的客户区视口呈现。
+        }
+
+    }
+
+</script>
+
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Path2D的使用</title>
+</head>
+<body>
+<h3>利用Path2D对象复用路径绘制方法来绘制吃豆人</h3>
+<canvas id="canvas1"></canvas>
+
+</body>
+
+<script>
+
+    /**
+     * Path2D类型具有基本和 2D上下文对象一样的绘图API。
+     */
+    console.log(Path2D.prototype.hasOwnProperty("arc"));
+    console.log(Path2D.prototype.hasOwnProperty("moveTo"));
+    console.log(Path2D.prototype.hasOwnProperty("lineTo"));
+    console.log(Path2D.prototype.hasOwnProperty("quadraticCurveTo"));
+    console.log(Path2D.prototype.hasOwnProperty("rect"));
+    console.log(Path2D.prototype.hasOwnProperty("closePath"));
+
+
+    console.log(Path2D.prototype.hasOwnProperty("beginPath")===false);//path2D并不需要开始路径，因为他本身默认就是开始状态了。
+
+    /**
+     * path2D并不能自己真正的绘制出来。 必须要依靠 2D上下文使用 stroke 或者 fill 来绘制。
+     */
+    console.log(Path2D.prototype.hasOwnProperty("fill")===false);
+    console.log(Path2D.prototype.hasOwnProperty("stroke")===false);
+
+    /**
+     * 此外还具有自身的一些特别的便于绘图的API。
+     */
+    console.log(Path2D.prototype.hasOwnProperty("addPath"));
+
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+    canvas1.height=600;
+    canvas1.width=600;
+
+    /**
+     * path2d对象的最重要的功能就是能够复用路径。
+     * 绘制时作为参数传给 2D上下文的stroke或者fill方法。
+     */
+    ctx1.stroke(roundAngleRectPath(10,10,520,520,50));
+    ctx1.stroke(roundAngleRectPath(20,20,500,500,40));
+    ctx1.stroke(roundAngleRectPath(120,120,200,100,40));
+    ctx1.stroke(roundAngleRectPath(120,320,200,50,20));
+
+    var x,y;
+    for(x=120;x<=500;x+=50){
+        for(y=70;y<=500;y+=200){
+            ctx1.fill(roundAngleRectPath(x,y,10,10,5));
+        }
+    }
+
+    ctx1.fill(playerPath(70,70));
+
+    ctx1.fill(monsterPath(395,170));
+    ctx1.fill(monsterPath(195,270));
+    ctx1.fill(monsterPath(295,470));
+
+    /**
+     * 返回吃豆人形状的路径path2d对象
+     */
+    function playerPath(x,y) {
+        var path2d=new Path2D();
+        var r=40;
+        path2d.arc(x,y,r,Math.PI/6,Math.PI/6*11,false);
+        path2d.lineTo(x-r/3,y);
+        path2d.closePath();
+
+        return path2d;
+    }
+
+    /**
+     * 返回怪物形状的路径path2d对象
+     */
+    function monsterPath(x,y) {
+        var path2d=new Path2D();
+        var r=40;
+        var startX=x-r;
+        var startY=y+r;
+        path2d.moveTo(startX,startY);
+        var interLength=2*r/6;
+        path2d.lineTo(startX+interLength,startY-interLength);
+        path2d.lineTo(startX+interLength*2,startY);
+
+        path2d.lineTo(startX+interLength*3,startY-interLength);
+        path2d.lineTo(startX+interLength*4,startY);
+
+        path2d.lineTo(startX+interLength*5,startY-interLength);
+        path2d.lineTo(startX+interLength*6,startY);
+
+        path2d.lineTo(x+r,y);
+        path2d.arc(x,y,r,Math.PI*2,Math.PI,true);
+        path2d.closePath();
+
+        //这里绘制眼睛的方式是添加另一个path2D对象。
+        path2d.addPath(roundAngleRectPath(startX+r/6,y-r/3,r*2/3,r/1.4,r/3));
+        path2d.addPath(roundAngleRectPath(x+r/6,y-r/3,r*2/3,r/1.4,r/3));
+
+        return path2d;
+    }
+    
+
+    /*
+    * 获取一个新的path2d路径，这个路径是一个圆角的矩形。 圆角的长宽由roundR控制。
+    */
+    function roundAngleRectPath(x,y,width,height,roundR) {
+        var path2d=new Path2D();
+        var pointTopLeft=[x+roundR,y];
+        var pointTopRight=[x+width-roundR,y];
+        var pointRightTop=[x+width,y+roundR];
+        var pointRightBot=[x+width,y+height-roundR];
+        var pointBotRight=[x+width-roundR,y+height];
+        var pointBotLeft=[x+roundR,y+height];
+        var pointLeftBot=[x,y+height-roundR];
+        var pointLeftTop=[x,y+roundR];
+        var controlTopLeft=[x,y];
+        var controlTopRight=[x+width,y];
+        var controlBotLeft=[x,y+height];
+        var controlBotRight=[x+width,y+height];
+        path2d.moveTo(pointLeftTop[0],pointLeftTop[1]);
+        path2d.quadraticCurveTo(controlTopLeft[0],controlTopLeft[1],pointTopLeft[0],pointTopLeft[1]);
+        path2d.lineTo(pointTopRight[0],pointTopRight[1]);
+        path2d.quadraticCurveTo(controlTopRight[0],controlTopRight[1],pointRightTop[0],pointRightTop[1]);
+        path2d.lineTo(pointRightBot[0],pointRightBot[1]);
+        path2d.quadraticCurveTo(controlBotRight[0],controlBotRight[1],pointBotRight[0],pointBotRight[1]);
+        path2d.lineTo(pointBotLeft[0],pointBotLeft[1]);
+        path2d.quadraticCurveTo(controlBotLeft[0],controlBotLeft[1],pointLeftBot[0],pointLeftBot[1]);
+        path2d.closePath();
+        return path2d;
+    }
+
+
+
+</script>
+
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>响应数据类型</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="响应Text类型">
+<br>
+<input type="button" id="button2" value="响应JSON类型">
+<br>
+<input type="button" id="button3" value="响应Document类型">
+<br>
+<input type="button" id="button4" value="响应Blob类型">
+<br>
+<input type="button" id="button5" value="响应ArrayBuffer类型">
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+
+
+    /**
+     * 测试 设置纯文本类型的响应信息。
+     */
+    button1.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        xhr.open("POST","/rest/text");
+        xhr.responseType="text"; // 等同于不设置
+        //xhr.responseType="";  //等同于设置为空字符串
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log(xhr.response);
+                }
+            }else if(xhr.readyState===2){
+                //当响应类型设置为 "" 或者 "text"类型时， 如果响应未完成，访问response属性会返回 ""空字符串。
+                console.log(xhr.response==="");
+            }
+        };
+        xhr.send("这是纯文本");
+    });
+
+    /**
+     * 测试 设置JSON类型的响应信息。
+     */
+    button2.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        xhr.open("POST","/rest/json");
+        // xhr.responseType="text"; //如果是text类型，那么会被原封不动的解释为 "这是JSON"
+        xhr.responseType="json"; //而设置为JSON后，则会 将 "这是JSON" 解析为对象一一 字符串 这是JSON
+
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log(xhr.response);
+                }
+            }else if(xhr.readyState===2){
+                console.log(xhr.response===null);
+            }
+        };
+        xhr.send(JSON.stringify("这是JSON"));
+    });
+
+    /**
+     * 测试 设置document类型的响应信息
+     */
+    button3.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        xhr.open("POST","/rest/document");
+        xhr.responseType="document";
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    try{
+                        console.log(xhr.responseText);
+                    }catch (e) {
+                        console.log("responseText属性只能在 responseType为 'text' 和 ''值时使用,否则会报错",e);
+                        console.log(xhr.response);
+                    }
+                    /**
+                     * 注意的是，此时返回的数据自动被解析为了 文档类型了。 而且是XML类型文档。
+                     */
+                    console.log(xhr.response.__proto__===XMLDocument.prototype);
+                    var h1=xhr.response.querySelector("h1");
+                    document.body.appendChild(h1);
+                    var i=3;
+                    var id=setInterval(()=>{
+                        if(i===0){
+                            document.body.removeChild(h1);
+                            clearInterval(id);
+                            return ;
+                        }
+                        console.log(i+"秒后消失");
+                        i--;
+                    },1000)
+                }
+            }else if(xhr.readyState===2){
+                console.log(xhr.response===null);
+            }
+        };
+        xhr.send("<h1>这是请求的document格式数据</h1>");
+    });
+
+
+    /**
+     * 测试 设置 blob类型的响应信息
+     */
+    button4.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        xhr.open("POST","/rest/blob");
+        xhr.responseType="blob";
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    try{
+                        console.log(xhr.responseText);
+                    }catch (e) {
+                        console.log("responseText属性只能在 responseType为 'text' 和 ''值时使用,否则会报错",e);
+                        console.log(xhr.response);
+                    }
+                    /**
+                     * 响应类型为Blob类型。
+                     */
+                    console.log(xhr.response.__proto__===Blob.prototype);
+                    var img=document.createElement("img");
+                    img.onload=function () {
+                        var canvas=document.createElement("canvas");
+                        var ctx=canvas.getContext("2d");
+                        canvas.height=img.height;
+                        canvas.width=img.width;
+                        document.body.appendChild(canvas);
+                        ctx.drawImage(img,0,0,img.width,img.height);
+                        var i=3;
+                        var id=setInterval(()=>{
+                            if(i===0){
+                                document.body.removeChild(canvas);
+                                clearInterval(id);
+                                return ;
+                            }
+                            console.log(i+"秒后消失");
+                            i--;
+                        },1000)
+                    };
+                    img.src=URL.createObjectURL(xhr.response);
+                }
+            }else if(xhr.readyState===2){
+                console.log(xhr.response===null);
+            }
+        };
+        xhr.send();
+    });
+
+    /**
+     * 测试 设置 ArrayBuffer类型的响应信息
+     */
+    button5.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        xhr.open("POST","/rest/arraybuffer");
+        xhr.responseType="arraybuffer";
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    try{
+                        console.log(xhr.responseText);
+                    }catch (e) {
+                        console.log("responseText属性只能在 responseType为 'text' 和 ''值时使用,否则会报错",e);
+                        console.log(xhr.response);
+                    }
+
+                    /**
+                     * 响应信息为ArrayBuffer类型。
+                     */
+                    console.log(xhr.response.__proto__===ArrayBuffer.prototype);
+                    /**
+                     * 这里我们将ArrayBuffer对象转化为 Blob对象再进行操作。
+                     */
+                    var blob=new Blob([xhr.response],{type:"image/png"});
+                    var img=document.createElement("img");
+                    img.onload=function () {
+                        var canvas=document.createElement("canvas");
+                        var ctx=canvas.getContext("2d");
+                        canvas.height=img.height;
+                        canvas.width=img.width;
+                        document.body.appendChild(canvas);
+                        ctx.drawImage(img,0,0,img.width,img.height);
+                        var i=3;
+                        var id=setInterval(()=>{
+                            if(i===0){
+                                document.body.removeChild(canvas);
+                                clearInterval(id);
+                                return ;
+                            }
+                            console.log(i+"秒后消失");
+                            i--;
+                        },1000)
+                    };
+                    img.src=URL.createObjectURL(blob);
+                }
+            }else if(xhr.readyState===2){
+                console.log(xhr.response===null);
+            }
+        };
+        xhr.send();
+    });
+
+</script>
+
+</html>

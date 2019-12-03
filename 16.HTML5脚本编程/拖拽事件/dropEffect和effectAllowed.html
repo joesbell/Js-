@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>dropEffect和effectAllowed</title>
+
+    <style>
+        .box{
+            height: 100px;
+            width: 100px;
+            border: 1px solid black;
+            text-align: center;
+            line-height: 100px;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+<h3>切换 effectAllowed和dropEffect属性，查看不同的浏览器鼠标样式</h3>
+dragstart时时,effectAllowed值:<select id="select1">
+    <option value="all">all</option>
+    <option value="copy">copy</option>
+    <option value="move">move</option>
+    <option value="link">link</option>
+    <option value="none">none</option>
+    <option value="uninitialized">uninitialized</option>
+</select>
+
+dragenter/dragover时,dropEffect值:<select id="select2">
+    <option value="copy">copy</option>
+    <option value="move">move</option>
+    <option value="link">link</option>
+    <option value="none">none</option>
+</select>
+
+<hr>
+<div draggable="true" id="box" class="box">
+    all
+</div>
+
+<br>
+
+<div draggable="true" id="zone" class="box">
+copy
+</div>
+
+</body>
+
+<script>
+
+    /**
+     * effectAllowed和dropEffect属性的作用仅仅在于改变浏览器拖拽时的鼠标样式。
+     */
+    var effectAllowedValue="all";
+    var dropEffectValue="copy";
+
+    var select1=document.getElementById("select1");
+    select1.addEventListener("change",function () {
+        effectAllowedValue=select1.value;
+    });
+    var select2=document.getElementById("select2");
+    select2.addEventListener("change",function () {
+       dropEffectValue=select2.value;
+    });
+
+    var zone=document.getElementById("zone");
+    var box=document.getElementById("box");
+    /**
+     * 在dragstart事件中 设置effectAllowed值
+     */
+    document.addEventListener("dragstart",function (event) {
+        if(event.target.classList.contains("box")===false){
+            return ;
+        }
+        event.dataTransfer.effectAllowed=effectAllowedValue;
+        console.log("dragstart的effectAllowed值设为",event.dataTransfer.effectAllowed)
+        box.innerText= event.dataTransfer.effectAllowed;
+    });
+
+    document.addEventListener("drop",function (event) {
+        if(event.target.classList.contains("box")===false){
+            return ;
+        }
+    });
+
+    /**
+     * 在dragover和dragenter中，设置dropEffect属性的值
+     */
+    document.addEventListener("dragover",function (event) {
+        if(event.target.classList.contains("box")===false){
+            return ;
+        }
+        event.preventDefault();
+        event.dataTransfer.dropEffect = dropEffectValue;
+        console.log("dragover的dropEffect值设为",event.dataTransfer.dropEffect);
+        zone.innerText= event.dataTransfer.dropEffect;
+    });
+    document.addEventListener("dragenter",function (event) {
+        if(event.target.classList.contains("box")===false){
+            return ;
+        }
+        event.preventDefault();
+        event.dataTransfer.dropEffect = dropEffectValue;
+        console.log("dragenter的dropEffect值设为",event.dataTransfer.dropEffect);
+        zone.innerText= event.dataTransfer.dropEffect;
+    });
+
+</script>
+
+</html>

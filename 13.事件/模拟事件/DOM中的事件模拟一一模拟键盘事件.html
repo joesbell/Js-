@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM中的事件模拟一一键盘事件</title>
+<style>
+    .text{
+        width: 700px;
+    }
+</style>
+
+</head>
+
+
+<body>
+
+<h3>键盘事件的模拟</h3>
+<hr>
+<p>initEvent初始化事件对象:</p>
+<input type="text" class="text" id="text1" >
+<hr>
+<p>
+    initKeyBoardEvent初始化事件对象:
+</p>
+<input type="text" class="text" id="text2" >
+<hr>
+<p>KeyBoardEvent构造器初始化事件对象:</p>
+<input type="text" class="text" id="text3">
+
+</body>
+
+<script>
+    var input1=document.getElementById("text1");
+    var input2=document.getElementById("text2");
+    var input3=document.getElementById("text3");
+
+
+    document.addEventListener("keypress",function (event) {
+        event.target.value="模拟keypress事件输入的charCode是:"+(event.charCode||"浏览器已经不支持这个方式的键盘按键输入模拟")+"。\t是否是模拟事件?"+(event.isTrusted===false);
+    });
+    var event=document.createEvent("KeyBoardEvent");
+
+    /**
+     * 第一种方法:已废弃的initEvent 。 完全无法模拟 键盘事件，因为没有相应的属性设置方式
+     */
+    event.initEvent("keypress",true,true);
+
+    input1.dispatchEvent(event);
+
+
+    event=document.createEvent("KeyBoardEvent");
+    /**
+     * 第二种方法:已废弃的initKeyBoardEvent 。
+     * 虽然可以设置，但是实际上浏览器已经不支持这种方式的模拟输入了
+     */
+    event.initKeyboardEvent(
+        "keypress",             //type 表明鼠标事件类型名称
+        true,                   //canBubble 是否冒泡
+        true,                   //cancelable 是否可以取消默认行为
+        document.defaultView,    //view表示事件所在的视图，一般而言就是 **document.defaultView**, 也就是 window
+        false,                   //ctrlKey是否按下了ctrl键
+        false,                  //altKey是否按下了alt键
+        false,                  //shiftKey是否按下了shift键
+        false,                   //metaKey是否按下了meta键
+        65,                       //keyCode   键码值
+        65                       //charCode  字符码值
+    );
+
+    input2.dispatchEvent(event);
+
+    /**
+     * 第三种方法:标准的KeyBoardEvent构造器方式。
+     */
+    event=new KeyboardEvent(
+        "keypress",   //事件类型
+        //键盘事件的属性字典对象。
+        {
+            //相当于在直接设置键盘事件对象的对应属性的值.
+            bubbles:true,
+            cancelable:true,
+            charCode:65,
+            view:document.defaultView
+        }
+    );
+    input3.dispatchEvent(event);
+
+</script>
+
+</html>

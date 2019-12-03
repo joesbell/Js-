@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>服务器发送事件</title>
+</head>
+<body>
+
+<h4>服务器发送事件的状态介绍</h4>
+<input type="button" id="button1" value="打开服务器事件">
+<input type="button" id="button2" value="关闭服务器事件">
+<br>
+<hr>
+<h4>服务器发送的 data:数据 事件流格式 和 event:自定义事件 事件流格式</h4>
+<input type="button" id="button3" value="服务器事件">
+<br>
+<hr>
+<h4>服务器发送的 id:数字 事件流格式 以及 请求头中的Last-Event-ID</h4>
+<input type="button" id="button4" value="重连后可以恢复状态的服务器事件">
+</body>
+
+<script>
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var source;
+
+
+    /**
+     * EventSource的readyState值有3种:
+     * 0 表示正在连接服务器
+     * 1 表示已经连接服务器
+     * 2 表示关闭连接
+     */
+    button1.addEventListener("click",function(){
+        /**
+         * 通过EventSource 构造函数我们可以获取到一个连接到URL的SSE连接。
+         */
+        source=new EventSource("/rest/sse");
+        /**
+         * 此时由于还没连接上，因此readyState值为0
+         */
+        console.log("正在连接服务器时， readyState为0 ",source.readyState===0);
+
+
+        source.onopen=function () {
+            console.log("成功连接后, readyState为1",source.readyState===1);
+        };
+        /**
+         * error事件触发时，表示连接失败，此时默认的会重新请求连接。
+         */
+        source.onerror=function () {
+            console.log("连接出错后会重新尝试连接，readyState为0",source.readyState===0);
+        };
+        /**
+         * message事件会在收到服务器 data:数据  格式的响应内容时触发。
+         * 其事件对象的data属性就是服务器发送来的数据。
+         * 需要注意的是message事件不能捕获 event:自定义事件 格式的响应内容
+         */
+        source.onmessage=function (event) {
+            console.log("服务器发送的信息是:",event.data,source.readyState===1);
+        };
+    });
+
+    /**
+     * 除非主动的 close()关闭连接，否则客户端的SSE会不断地尝试与服务器重新连接。
+     */
+    button2.addEventListener("click",function () {
+        if(source){
+            source.close();
+            /**
+             * 只有当 close()调用后主动关闭与服务器SSE的连接，readyState的值才会变为2
+             */
+            console.log("关闭后，readyState为2",source.readyState===2);
+            source=null;
+        }
+    });
+
+    /**
+     * 通过 addEventListener可以监听服务器发送过来的 event:自定义事件
+     */
+    button3.addEventListener("click",function(){
+        var source=new EventSource("/rest/user-define-event");
+        var number;
+        source.onopen=function () {
+            console.log("已连接");
+        };
+        source.onerror=function () {
+            console.log("连接出错");
+        };
+        source.onmessage=function (event) {
+            console.log("服务器信息是:",event.data,",当前数据为:",number);
+        };
+        /**
+         * 这些监听的 event:自定义事件 不会被message事件处理程序捕获。
+         */
+        source.addEventListener("init",function (event) {
+            console.log("设置初始值为:",event.data);
+            number=Number.parseInt(event.data);
+        });
+        source.addEventListener("add",function (event) {
+            number+=Number.parseInt(event.data);
+            console.log("增加:",event.data,",更新后的值为:",number);
+        });
+        source.addEventListener("end",function (event) {
+            console.log("关闭服务器事件:",event.data);
+            source.close();
+        });
+    });
+
+    /**
+     * 如果服务器发送来的内容里包含 id:数字 的内容，那么在客户端断线重连后，
+     * 浏览器会自动将最后一次id的内容作为 Last-Event-ID请求头的值，发送到服务器，有助于帮服务器恢复原本的服务状态。
+     */
+    button4.addEventListener("click",function(){
+        var source=new EventSource("/rest/id");
+        source.onopen=function () {
+            console.log("已连接");
+        };
+        source.onerror=function () {
+            console.log("连接出错");
+        };
+        source.onmessage=function (event) {
+            console.log("当前收到的服务器信息是:",event.data);
+        };
+    });
+</script>
+
+</html>

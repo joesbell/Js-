@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>变动事件一一新增节点</title>
+</head>
+<body>
+
+<div id="div1">
+</div>
+
+</body>
+<script>
+    /**
+     * 插入或者替换节点会触发的变动事件有：
+     * 1.DOMNodeInserted  这个是冒泡的，可以在顶层元素上声明后进行捕获。
+     * 2.DOMNodeInsertedIntoDocument 这个不冒泡，必须提前在被插入的元素上声明。
+     */
+
+    /**
+     * DOMSubtreeModified 监听子树上DOM结构的变化。在其他变动事件后触发。
+     */
+    document.body.addEventListener("DOMSubtreeModified",function(event){
+        console.log("DOMSubtreeModified事件允许冒泡,并且不允许取消冒泡",event.bubbles===true,event.cancelBubble===false,event.eventPhase===3);
+        console.log("变更的子树是:",event.target);
+        console.log("此时div的子元素个数",div1.children.length);
+    });
+
+    /**
+     * DOMNodeInserted 节点被 添加后 触发。由于冒泡，因此可以在顶层捕获。
+     * 其 relatedTarget指向插入后，现在的节点的父节点。
+     */
+
+    document.body.addEventListener("DOMNodeInserted",function(event){
+        console.log("DOMNodeInserted事件允许冒泡,并且不允许取消冒泡",event.bubbles===true,event.cancelBubble===false,event.eventPhase===3);
+        console.log("插入的节点是:",event.target);
+        console.log("其relatedNode指向插入后的父元素,由于不为null,因此可以看出事件触发于DOM结构更改以后",event.relatedNode===event.target.parentNode,event.relateNode!==null);
+    });
+
+
+    var div1=document.getElementById("div1");
+
+    var p1=document.createElement("p");
+    p1.appendChild(document.createTextNode("新增的p元素"));
+    var p2=document.createElement("p");
+    p2.appendChild(document.createTextNode("替换后的p元素"));
+    /**
+     * DOMNodeInsertedIntoDocument 节点 被插入后 触发。但是不冒泡，因此必须在节点插入之前在节点上声明。
+     * 其 relatedTarget指向null。但是父节点不指向null
+     */
+    p1.addEventListener("DOMNodeInsertedIntoDocument",function(event){
+        console.log("DOMNodeInsertedIntoDocument事件不允许冒泡",event.bubbles===false);
+        console.log("插入的节点是:",event.target);
+        console.log("relatedNode属性指向null,但是父节点不为null，说明依旧是添加后触发",event.relatedNode===null,event.target.parentNode!==null);
+    });
+    p2.addEventListener("DOMNodeInsertedIntoDocument",function(event){
+        console.log("DOMNodeInsertedIntoDocument事件不允许冒泡",event.bubbles===false);
+        console.log("插入的节点是:",event.target);
+        console.log("relatedNode属性指向null,但是父节点不为null，说明依旧是添加后触发",event.relatedNode===null,event.target.parentNode!==null);
+    });
+
+
+    /**
+     * 插入节点操作的时候，事件触发顺序如下:
+     * p1的DOMNodeInserted -> p1的DOMNodeInsertedIntoDocument -> p1插入后的DOMSubtreeModified
+     */
+    div1.appendChild(p1);
+
+    /**
+     * 替换节点操作的时候，事件触发顺序如下:
+     * p1删除后的DOMSubtreeModified->p2的DOMNodeInserted -> p2的DOMNodeInsertedIntoDocument -> p2添加后的DOMSubtreeModified
+     * 这里要注意的是发生了2次DOMSubtreeModified！
+     * 同时也可以看出来，replaceChild操作其实是 先删除节点，再添加节点。
+     */
+    div1.replaceChild(p2,p1);
+
+</script>
+</html>

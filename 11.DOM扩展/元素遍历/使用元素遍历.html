@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用元素遍历</title>
+</head>
+<body>
+
+<p>hello</p>
+<!--注释-->
+<p>world</p>
+
+<script>
+    /**
+     * 如果我们不使用元素遍历，而是使用DOM1级方法想要获取该文档的body标签下的所有直接子元素的个数，那么我们得这样实现
+     */
+    // 首先直接通过childNodes.length获取直接子元素的个数是不可以的，因为childNodes获取的是直接子节点的NodeList集合。
+    console.log(document.body.childNodes.length!==2);
+
+    var nodes=document.body.childNodes;
+    var result=0;
+    for(var i=0,len=nodes.length;i<len;i++){
+        if(nodes[i].nodeType===Node.ELEMENT_NODE){
+            //只能遍历所有直接子节点，然后判断nodeType来识别Element类型
+            result++;
+            console.log("元素标签名:",nodes[i].nodeName);
+        }
+    }
+    console.log(result===3); //这里是3个，包含2个p元素和1个script元素
+
+
+    /**
+     * 可以看到，使用这种方法来进行元素遍历是非常麻烦的。
+     * 而使用元素遍历规范提供的属性，则会非常简单.
+     */
+
+    result=0;
+    var element=document.body.firstElementChild;
+    while(element!==null){
+        console.log("元素标签名",element.nodeName);
+        result++;
+        element=element.nextElementSibling;
+    }
+    console.log(result===3);
+
+</script>
+
+</body>
+
+
+</html>

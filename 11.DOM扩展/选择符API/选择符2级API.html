@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>选择符2级API</title>
+</head>
+<body>
+
+<div>
+    <p id="myid">0</p>
+    <p class="myclass1">1</p>
+    <p class="myclass1">2</p>
+    <p class="myclass2">3</p>
+    <p class="myclass2">4</p>
+
+</div>
+</body>
+
+<script>
+    /**
+     * 选择符2级API主要提供1个方法:matchesSelector
+     */
+
+
+    /**
+     * 在实现的浏览器实现中，不同浏览器的该方法的名称是不同的。因此如果要跨浏览器支持，那么必须人为封装、
+     */
+    (function () {
+        //这里直接在原型上进行封装。
+        Element.prototype.matchesSelector  =
+            Element.prototype.matchesSelector||
+            Element.prototype.webkitMatchesSelector||
+            Element.prototype.mozMatchesSelector||
+            Element.prototype.msMatchesSelector;
+    })();
+
+    //这个方法是放在Element原型上的。
+    console.log(Element.prototype.hasOwnProperty("webkitMatchesSelector"));
+
+    var ps=document.querySelectorAll("p");
+    console.log(ps[0].matchesSelector("#myid"));
+    console.log(ps[1].matchesSelector(".myclass1"));
+    console.log(ps[2].matchesSelector("p.myclass1"));
+    console.log(ps[3].matchesSelector(".myclass2"));
+    console.log(ps[4].matchesSelector("div.myclass2")===false);
+
+</script>
+</html>

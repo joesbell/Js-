@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM事件流</title>
+</head>
+<body>
+
+<div id="top">
+    <div id="center">
+        <span id="buttom">DOM事件流中最具体的元素</span>
+    </div>
+</div>
+
+
+</body>
+
+<script>
+
+    /**
+     * DOM事件流分为三个阶段：
+     * 1.捕获阶段：在这里就是 top div 到 center div的阶段
+     * 2.处于目标阶段: 在这里就是bottom span 阶段
+     * 3.冒泡阶段：从bottom span 到 center div 到 top div的阶段
+     */
+    document.getElementById("top").addEventListener("click",function () {
+        console.log("捕获阶段:top",this.nodeName);
+    },true);
+    document.getElementById("center").addEventListener("click",function () {
+        console.log("捕获阶段:center",this.nodeName);
+    },true);
+
+    /**
+     * 在浏览器的实际实现中，其实处于目标阶段也可以进行捕获。
+     */
+    // document.getElementById("buttom").addEventListener("click",function () {
+    //     console.log("处于目标阶段(属于冒泡阶段):bottom",this.nodeName);
+    // },true);
+
+    document.getElementById("buttom").addEventListener("click",function () {
+        console.log("处于目标阶段(属于冒泡阶段):bottom",this.nodeName);
+    },false);
+
+    document.getElementById("top").addEventListener("click",function () {
+        console.log("冒泡阶段:top",this.nodeName);
+    },false);
+    document.getElementById("center").addEventListener("click",function () {
+        console.log("冒泡阶段:center",this.nodeName);
+    },false);
+
+</script>
+
+</html>

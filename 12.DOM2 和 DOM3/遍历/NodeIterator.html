@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NodeIterator遍历</title>
+</head>
+<body>
+
+
+<div>
+    <p>开始</p>
+    <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <p>结束</p>
+</div>
+
+
+</body>
+
+<script>
+    /**
+     * NodeIterator是用于遍历DOM的类型。 通过document.createNodeIterator函数创建
+     * 该函数具有4个参数： 遍历的根节点 遍历的节点类型 节点过滤器 是否要扩展实体(在HTML文档中无用)
+     */
+    var rootNode=document.querySelector("div");
+    var nodeIterator=document.createNodeIterator(rootNode,NodeFilter.SHOW_ELEMENT,null,false);
+    console.log(nodeIterator.__proto__===NodeIterator.prototype);
+    /**
+     * NodeIterator只有两个方法 nextNode 和 previousNode.
+     */
+    console.log(NodeIterator.prototype.hasOwnProperty("nextNode"));
+    console.log(NodeIterator.prototype.hasOwnProperty("previousNode"));
+
+    //首次调用nextNode方法 返回的是指定的遍历的根节点。
+    var node=nodeIterator.nextNode();
+    console.log(node===rootNode);
+
+    var nodes1=[];
+    //如果节点已经是遍历的最后一个节点了，那么下次调用nextNode方法返回null
+    while(node!==null){
+        nodes1.push(node);
+        node=nodeIterator.nextNode();
+    }
+    console.log("顺序深度遍历",nodes1);
+    var nodes2=[];
+
+
+    node=nodeIterator.previousNode();
+    //当调用nextNode为null后，调用previousNode可以定位到最后一个节点。
+    console.log(node===nodes1[nodes1.length-1]);
+
+    while(node!==null){//当遍历到最初根节点时，再调用previousNode返回null
+        nodes2.push(node);
+        node=nodeIterator.previousNode();
+    }
+    console.log("逆序深度遍历",nodes2);
+
+
+    /**
+     * NodeIterator支持的过滤器有两种：
+     * 1. 单纯包含 acceptNode方法的对象
+     * 2. 过滤函数
+     */
+
+    //包含 acceptNode方法的对象 式的过滤器
+    var filter1={
+        acceptNode:function (node) {
+            //返回NodeFilter.FILTER_ACCEPT表示该节点可以遍历，返回NodeFilter.FILTER_SKIP表示这个节点会被跳过(过滤掉)。
+            return node.nodeName.toLowerCase()==="li"?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP;
+        }
+    };
+    nodeIterator=document.createNodeIterator(rootNode,NodeFilter.SHOW_ALL,filter1,false);
+    node=nodeIterator.nextNode();
+    var nodes3=[];
+
+    while(node!==null){
+        nodes3.push(node);
+        node=nodeIterator.nextNode();
+    }
+    console.log("包含cceptNode方法的对象式的过滤器 进行遍历：",nodes3);
+
+    // 过滤函数
+    var filter2=function (node) {
+        return node.nodeName.toLowerCase()==="li"?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP;
+    };
+
+    nodeIterator=document.createNodeIterator(rootNode,NodeFilter.SHOW_ALL,filter2,false);
+    node=nodeIterator.nextNode();
+    var nodes4=[];
+
+    while(node!==null){
+        nodes4.push(node);
+        node=nodeIterator.nextNode();
+    }
+    console.log("过滤函数式的过滤器 进行遍历：",nodes4);
+    //这两种方式的相同之处在于，传入的第一个参数都是被遍历的节点。
+
+
+    /**
+     * NodeIterator是基于DOM结构中的内部指针进行工作，因此，会随着DOM结构进行动态变化。
+     * @type {NodeIterator}
+     */
+    nodeIterator=document.createNodeIterator(rootNode,NodeFilter.SHOW_ELEMENT,null,false);
+    while(nodeIterator.nextNode()!==null){
+
+    }
+    console.log(nodeIterator.nextNode()===null);//已经遍历到了最后了 没有节点了
+    rootNode.appendChild(document.createElement("p")); //此时新增一个p节点
+    console.log(nodeIterator.nextNode().nodeName==="P"); //动态更新了
+
+
+</script>
+
+</html>

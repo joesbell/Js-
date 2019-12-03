@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<someNode>
+
+</someNode>
+
+</body>
+
+<script>
+    console.log(document.body instanceof Element);
+    console.log(document.body.nodeType===1);
+    console.log(document.body.nodeName==="BODY");
+    console.log(Element.prototype.hasOwnProperty("tagName"));
+    console.log(document.body.tagName==="BODY");
+    console.log(document.body.nodeValue===null);
+    var someNode=document.getElementsByTagName("someNode")[0];
+    console.log(someNode.tagName)
+</script>
+</html>

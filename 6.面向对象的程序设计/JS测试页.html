@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代码测试页</title>
+
+    <script>
+        function test(JSPath){
+            var temp=JSPath.substring(0,JSPath.indexOf(".js"));
+            document.write( "<script> console.log('开始进行 "+temp+" 的测试');"+"<\/script>" );
+            document.write("<script src='"+JSPath+"'><\/script>");
+            document.write( "<script> console.log('结束对  "+temp+" 的测试');"+"<\/script>" );
+            temp=null;
+        }
+    </script>
+</head>
+<body>
+
+
+<!-- 在测试时最好逐个测试，以防不同JS文件的变量互相干扰-->
+
+<!--<script>-->
+    <!--test("理解对象.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("创建对象.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("继承.js");-->
+<!--</script>-->
+
+<script>
+    test("深入[[prototype]]和__proto__.js");
+</script>
+
+
+</body>
+</html>

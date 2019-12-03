@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>canvas动画</title>
+</head>
+
+<body>
+
+<h3>轮播全景图</h3>
+<canvas id="canvas1" width="800" height="200"></canvas>
+
+<h3>弹球</h3>
+<canvas id="canvas2" width="400" height="400" style="border: 1px solid black"></canvas>
+
+</body>
+
+<script>
+
+    /**
+     * 在canvas中绘制动画的方式其实是调用 setInterval setTimeout 或者  requestAnimationFrame
+     * 来不停地绘制这一帧的内容以及 使用 clearRect或者fillRect等方式擦除上一帧的内容。 以此来达到动画的目的。
+     */
+
+    var cannvas1=document.getElementById("canvas1");
+    playPanorama(canvas1,'全景轮播图.jpg',2);
+
+    /**
+     * 循环绘制全景图片
+     * @param canvas
+     * @param src
+     * @param speed
+     */
+    function playPanorama(canvas,src,speed) {
+        var img=new Image();
+        img.onload=function () {
+            var ctx=canvas.getContext("2d");
+            var size=canvas.width;
+            var width=img.width;
+
+            if(size>=width){
+                ctx.drawImage(img,0,0,img.width,img.height,0,0,canvas.width,canvas.height);
+            }else {
+                var x=0;
+                function animate() {
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+                    x=x%width;
+                    if((x+size)<=width){
+                        //将图片横轴 [x,x+size]的区域画到整个画布上
+                        ctx.drawImage(img,x,0,size,img.height,0,0,size,canvas.height);
+                    }else{
+                        //分成两部分画.
+                        // 将图片 [x,width]的区域画到[0,width-x]。
+                        ctx.drawImage(img,x,0,width-x,img.height,0,0,width-x,canvas.height);
+                        // 将图片[0,size-width+x]的区域画到[width-x,size]
+                        ctx.drawImage(img,0,0,x+size-width,img.height,width-x,0,size-width+x,canvas.height);
+                    }
+                    x+=speed;
+
+                    //绘制动画效果
+                    requestAnimationFrame(animate);
+                }
+                animate();
+            }
+        };
+        img.src=src;
+    }
+
+    var cannvas2=document.getElementById("canvas2");
+    var ctx2=cannvas2.getContext("2d");
+
+    /**
+     * 弹球
+     * @param x
+     * @param y
+     * @param r
+     * @param color
+     * @param xSpeed
+     * @param ySpeed
+     * @constructor
+     */
+    function Ball(x,y,r,color,xSpeed,ySpeed) {
+        this.x=x;
+        this.y=y;
+        this.r=r;
+        this.color=color;
+        this.xSpeed=xSpeed;
+        this.ySpeed=ySpeed;
+    }
+
+    //在画布上绘制弹球
+    Ball.prototype.draw=function (canvas) {
+        var ctx=canvas.getContext("2d");
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle=this.color;
+        ctx.arc(this.x,this.y,this.r,0,Math.PI*2,false);
+        ctx.fill();
+        ctx.restore();
+    };
+
+    //弹球的运动
+    Ball.prototype.move=function (canvas) {
+        var ctx=canvas.getContext("2d");
+        ctx.save();
+
+        // ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        /**
+         * 利用具有透明度的矩形来消除上一帧，可以达到拖尾效果。
+         */
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+
+        /**
+         * 边界速度反向
+         */
+        if(this.x+this.xSpeed>canvas.width|| this.x+this.xSpeed<0){
+            this.xSpeed=-this.xSpeed;
+        }
+        if(this.y+this.ySpeed>canvas.height|| this.y+this.ySpeed<0){
+            this.ySpeed=-this.ySpeed;
+        }
+        this.x+=this.xSpeed;
+        this.y+=this.ySpeed;
+
+        /**
+         * 模仿重力
+         */
+        this.ySpeed*=0.99;
+        this.ySpeed+=0.5;
+
+        this.draw(canvas);
+        ctx.restore();
+
+        /**
+         * 这是向requestAnimationFrame 的callback传入参数最好的方法一一通过封装一层外层的函数包裹里面真实的函数。
+         * 当然也可以使用bind方式 this.move.bind(this,canvas) 作为callback
+         */
+        this.moveId=requestAnimationFrame(()=>{
+            this.move(canvas);
+        })
+    };
+
+    var ball=new Ball(150,150,30,"blue",5,5);
+
+    cannvas2.addEventListener("mouseenter",function () {
+        ball.moveId=requestAnimationFrame(()=>{
+            ball.move(canvas2)
+        });
+    });
+
+    cannvas2.addEventListener("mouseleave",function () {
+        cancelAnimationFrame(ball.moveId);
+    });
+
+    cannvas2.addEventListener("click",function (event) {
+        var boundingRect=canvas2.getBoundingClientRect();
+        ball.x=event.clientX-boundingRect.left;
+        ball.y=event.clientY-boundingRect.top;
+        ball.r=30;
+        ball.color="blue";
+        ball.xSpeed=5;
+        ball.ySpeed=5;
+    });
+
+</script>
+</html>

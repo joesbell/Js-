@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>操作样式表</title>
+
+    <link rel="stylesheet"  media="screen"  type="text/css" href="css1.css" title="这是通过link引入的外部样式表">
+    <style type="text/css" media="all">
+        p{
+            color: red;
+        }
+        div{
+            color: yellow;
+        }
+</style>
+
+</head>
+
+
+<body>
+
+<p class="my-p">P元素</p>
+文本节点
+
+</body>
+
+<script>
+    /**
+     * 通用样式表StyleSheet类型上定义的一系列属性
+     */
+    console.log(CSSStyleSheet.prototype.__proto__===StyleSheet.prototype);
+    console.log(StyleSheet.prototype.hasOwnProperty("disabled"));
+    console.log(StyleSheet.prototype.hasOwnProperty("href"));
+    console.log(StyleSheet.prototype.hasOwnProperty("media"));
+    console.log(StyleSheet.prototype.hasOwnProperty("ownerNode"));
+    console.log(StyleSheet.prototype.hasOwnProperty("parentStyleSheet"));
+    console.log(StyleSheet.prototype.hasOwnProperty("title"));
+    console.log(StyleSheet.prototype.hasOwnProperty("type"));
+
+    /**
+     * CSS样式表 CSSStyleSheet在 StyleSheet类型基础上新增的属性和方法
+     */
+    console.log(CSSStyleSheet.prototype.hasOwnProperty("cssRules"));
+    console.log(CSSStyleSheet.prototype.hasOwnProperty("ownerRule"));
+    console.log(CSSStyleSheet.prototype.hasOwnProperty("deleteRule"));
+    console.log(CSSStyleSheet.prototype.hasOwnProperty("insertRule"));
+
+    /**
+     * 通过link或者style节点获取样式表信息的方式是通过元素的 sheet属性， 在IE下为 styleSheet属性。
+     */
+    console.log(HTMLLinkElement.prototype.hasOwnProperty("sheet"));
+    console.log(HTMLStyleElement.prototype.hasOwnProperty("sheet"));
+
+    var styleNode=document.getElementsByTagName("style")[0];
+    var linkNode=document.getElementsByTagName("link")[0];
+
+    //兼容IE地获取style，link节点下的样式表信息。
+    var style=styleNode.sheet || styleNode.styleSheet;
+    var link=linkNode.sheet || linkNode.styleSheet;
+
+    console.log(link.disabled===false,style.disabled===false); //disabled属性控制的是样式表生效与否
+    console.log(link.href!=null,style.href===null); //只有通过link引入的样式表href属性才不为null
+    console.log(link.media[0]==="screen",style.media[0]==="all"); //media表示的是节点上的media特性值
+    console.log(link.ownerNode===linkNode,style.ownerNode===styleNode);//ownerNode属性表示的是引入样式表的style或link节点
+    console.log(link.parentStyleSheet===null,style.parentStyleSheet===null); //parentStyleSheet表示的是import引入的父样式表。如果不是import引入的则为null
+    console.log(link.title===linkNode.title,style.title===null);//title表示的是ownerNode的title特性值，如果没有，则为null
+    console.log(link.type==="text/css",style.type==="text/css");//type表示的是样式表的类型字符串。 CSS为 text/css
+
+    /**
+     * 除了通过style link节点的sheet属性获取样式表信息，还能直接通过document上的styleSheets属性获取文档中所有CSSStyleSheet对象集合。
+     * 需要注意的是这个对象也是动态的。
+     */
+
+    console.log(Document.prototype.hasOwnProperty("styleSheets"));
+
+    var styleSheets=document.styleSheets;
+    console.log(styleSheets.length===2); //为2的原因是因为有style和link引入的两个样式表
+
+    //再引入一个样式表
+    var node=document.createElement("style");
+    document.head.appendChild(node);
+    node.innerHTML="body{ font-size:20px;}";
+
+    //说明 document.styleSheets返回的样式表集合对象是动态的集合。
+    console.log(styleSheets.length===3);
+
+    /**
+     * CSSRule类型，表示的是样式表中的每一项规则.
+     */
+    console.log(CSSRule.prototype.hasOwnProperty("cssText"));
+    console.log(CSSRule.prototype.hasOwnProperty("parentRule"));
+    console.log(CSSRule.prototype.hasOwnProperty("parentStyleSheet"));
+    console.log(CSSRule.prototype.hasOwnProperty("type"));
+    /**
+     * CSSStyleRule继承自CSSRule。并新增了一些属性
+     */
+    console.log(CSSStyleRule.prototype.hasOwnProperty("selectorText"));
+    console.log(CSSStyleRule.prototype.hasOwnProperty("style"));
+
+    var rule1=style.cssRules[0];
+
+    /**
+     * 需要注意的是 CSSRule的 cssText属性是只读的！ 这点和 元素的style属性返回的CSSStyleDeclaration类型对象的cssText属性不同，那个是可读可写的。
+     */
+    console.log(rule1.cssText);
+    rule1.cssText="p{color:black}";
+    console.log("CSSRule的cssText属性是只读的",rule1.cssText);
+    console.log(rule1.parentRule===null); //并非import引入 所以为null
+    console.log(rule1.parentStyleSheet===style); //parentStyleSheet指向的就是包含这个rule的CSSStyleSheet对象
+    console.log(rule1.type===CSSRule.prototype.STYLE_RULE);//type属性用于分辨rule的类型， rule的类型在CSSRule原型上定义的，是常量
+    console.log(rule1.selectorText==="p"); // selectorText表示该规则的选择符
+    console.log(rule1.style.cssText==="color: red;"); //style属性返回的是一个CSSStyleDeclaration对象。用于描述样式。这个cssText是可以改变的。
+    rule1.style.cssText="color: yellow"; //这个cssText属性是可写的。 不同于不可写的CSSRule类型的cssText属性。
+
+    /**
+     * 为CSSStyleSheet新增一条CSSRule
+     */
+    function insertRule(styleSheet,selector,styleBody,index) {
+        if(styleSheet.insertRule){
+            styleSheet.insertRule(selector+"{"+styleBody+"}",index);
+        }else{
+            //兼容IE
+            styleSheet.addRule(selector,styleBody,index);
+        }
+    }
+    console.log(style.cssRules.length===2);
+    insertRule(style,"span","font-size:13px",0);
+    console.log(style.cssRules.length===3);
+
+    /**
+     * 为CSSStyleSheet删除一条CSSRule
+     */
+    function deleteRule(styleSheet,index) {
+        if(styleSheet.deleteRule){
+            styleSheet.deleteRule(index);
+        }else{
+            //兼容IE
+            styleSheet.removeRule(index);
+        }
+    }
+    deleteRule(style,0);
+    console.log(style.cssRules.length===2)
+</script>
+
+</html>

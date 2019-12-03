@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>新增DOM范围中的内容</title>
+</head>
+<body>
+<div>
+    <p id="p1">hello</p>
+</div>
+<p id="p2">world</p>
+
+</body>
+
+<script>
+    /**
+     * Range类型提供两种新增范围内的内容的方法。llo
+     */
+    console.log(Range.prototype.hasOwnProperty("insertNode"));
+    console.log(Range.prototype.hasOwnProperty("surroundContents"));
+
+
+    var p1=document.getElementById("p1");
+    var p2=document.getElementById("p2");
+    var range=document.createRange();
+
+    var span=document.createElement("span");
+    span.appendChild(document.createTextNode("insert span"));
+    span.style.color="red";
+
+    setTimeout(()=>{
+        if(confirm("插入节点")){
+            range.setStart(p1.firstChild,3);
+            range.setEnd(p2.firstChild,2);
+            /**
+             * insertNode方法会把待插入的节点直接插入到范围开始的节点之前，和范围结束节点无关。
+             * 同时源DOM不会自动补全标签。
+             */
+            range.insertNode(span);
+        }
+    },1000);
+
+
+    var div=document.createElement("div");
+    div.style.color="blue";
+
+    /**
+     * surroundContents插入内容是在整个范围外部插入一个节点，达到包围这个范围的目的。
+     * 但是这个范围必须整个都在同一个直接父节点下，不然会抛出异常，插入失败。
+     */
+    setTimeout(()=>{
+        if(confirm("尝试跨父节点插入环绕节点")){
+            try{
+                console.log("不在同一个直接父节点下:",range.startContainer!==range.endContainer);
+                range.surroundContents(div);
+            }catch (e){
+                console.log("围绕插入的范围必须是同一个直接父节点下。",e)
+            }
+        }
+    },1500);
+
+
+    setTimeout(()=>{
+        if(confirm("对同一直接父节点下的范围插入环绕节点")){
+            range.selectNode(p1);
+            console.log("在同一个直接父节点下:",range.startContainer===range.endContainer);
+            range.surroundContents(div);
+        }
+    },2000)
+
+
+</script>
+</html>

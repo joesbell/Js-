@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>函数柯里化</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    /**
+     * 普通多参函数.
+     */
+    function add1(a,b){
+        return a+b;
+    }
+    console.log(add1(1,2)===3);
+
+
+    /**
+     * 但是如果我们要求固定和某一个任意数相加。如果总是传入两个参数就太麻烦了。
+     * 此时运用柯里化，我们就可以获得一种类似于函数生成工厂的效果，而这也是柯里化最直观的效果.
+     */
+    function add2(a){
+        //可以看到 返回值是一个函数
+        return function(b){
+            return a+b;
+        }
+    }
+    var add3=add2(3);
+    console.log(add3(5)===8);
+    console.log(add2(10)(5)===15);
+
+    /**
+     * 将这个方法提炼出来，也就有了柯里化的第一种形式
+     */
+    function currying(method){
+        var args=Array.prototype.slice.call(arguments,1);
+        return function(){
+            /**
+             * 这里切记不能使用Array.prototype.push.apply(args,Array.prototype.slice.call(arguments,0))。
+             * 这样会将最终返回的函数的执行效果固定了。因为args从头到尾保存的只有一份，这也是闭包的作用。
+             */
+            var finalArgs=args.concat(Array.prototype.slice.call(arguments,0));
+            return method.apply(this,finalArgs);
+        }
+    }
+    /**
+     * 但是这种柯里化太简陋了，并不好用。
+     * 我们只能在首次柯里化时传入固定的一些参数。
+     * 随后就只能使用根据这些固定参数生成的函数了。
+     * 后续如果我们想要新增固定的参数，只能通过修改首次柯里化时传入的参数来办到。
+     * 或者将函数再次柯里化。
+     */
+    console.log(currying(add1)(4,5)===9);
+    console.log(currying(add1,4)(5)===9);
+
+    var add4=currying(function (a,b,c) {
+        return a+b+c
+    },4); //这里固定了a
+    console.log(add4(5,6)===15);
+    //再次柯里化，固定了b
+    var add5=currying(add4,5);
+    console.log(add5(6)===15);
+
+    /**
+     * 由上面的方式我们可以感受到，一个好用的柯里化函数，应该是可以简单的修改固定参数以及多次固定参数的。
+     * 再由柯里化本身我们可以明白，柯里化最多能固定的参数上限其实是最初函数的参数上限，多固定的参数是没意义的一一因为传进去后函数体内部没法使用。
+     * @param method 需要柯里化的函数
+     * @param length 人为指定最大可固定的参数个数。
+     * @returns {Function}
+     */
+    function currying2(method,length){
+        var length=length||method.length;//最大的待定参数个数，如果没有指定则为函数自身的参数个数。
+
+        return function(){
+            /**
+             * 当传入的参数少于设置的固定参数个数时，说明函数还需要继续柯里化设置其他待定参数。
+             */
+            if(arguments.length<length){
+                var params=[method];
+                params=params.concat(Array.prototype.slice.call(arguments,0));
+                /**
+                 * 这里将柯里化后的函数再次柯里化。 用到了上面所写的currying方法。
+                 * 本质上，这里的实现和我们人为的多次使用currying方法固定参数是一样的。
+                 */
+                return currying2(currying.apply(this,params),length-arguments.length);
+            }else{
+                return method.apply(this,arguments);
+            }
+        }
+    }
+
+    var add6=currying2(function(a,b,c){return a+b+c},3);
+    /**
+     * 可以随意的传入固定参数了。
+     * 这就是真正的柯里化的含义 一一 将一个多个参数的函数调用 转化为 多个函数的连续调用。
+     * 或者说 将一个多个参数的函数转换成一系列使用一个参数的函数。
+     * 通过固定参数的方式，降低函数的通用性，但是提高了函数的复用性。
+     * 每个柯里化后返回的函数，都是一个可以重复使用的固定了某些参数的函数。
+     */
+    console.log(add6(1)(2)(3)===6);
+    console.log(add6(1,2)(3)===6);
+    console.log(add6(1)(2,3)===6);
+
+    /**
+     * 第三种柯里化函数的实现，更加直观，但是和第二种实现在参数上有所区别。
+     */
+    function currying3(method) {
+        var args=Array.prototype.slice.call(arguments,1); //获取首次柯里化时传入的初始参数
+        var length=method.length; //无法再指定固定参数的个数了。而是默认使用函数的参数个数。
+        return function () {
+            var innerArgs=Array.prototype.slice.call(arguments,0);
+            var finalArgs=[].concat(args).concat(innerArgs);
+            if(finalArgs.length<length){
+                return currying3.apply(this,[method].concat(finalArgs));
+            }else{
+                return method.apply(this,finalArgs);
+            }
+        }
+    }
+    var add7=currying3(function(a,b,c){return a+b+c},1);
+    console.log(add7(2)(3)===6);
+    console.log(add7(2,3)===6);
+
+    /**
+     * 利用柯里化，我们可以做到延时求值的目的。
+     */
+    function currying4(method){
+        var args=Array.prototype.slice.call(arguments,1);
+        return function () {
+            /**
+             * 当不传参数时，就是真正执行求值。
+             */
+            if(arguments.length===0){
+                return method.apply(this,args);
+            }else{
+                /**
+                 * 否则就是累计参数。需要注意的是，这里是直接操作args，也就是说，至始至终该函数的参数列表都是同一个对象。
+                 */
+                var innerArgs=Array.prototype.slice.call(arguments,0);
+                Array.prototype.push.apply(args,innerArgs);//直接操作args
+                return currying4.apply(this,[method].concat(args));
+            }
+        }
+    }
+
+    /**
+     * 用于延时求值的 求和函数
+     */
+    function sum() {
+        return Array.prototype.reduce.call(arguments,(prev,current)=>{
+           return prev+current;
+        },0);
+    }
+
+    /**
+     * 将该函数柯里化后，就可以进行延时累计调用了。
+     */
+    var curryingSum=currying4(sum);
+    curryingSum(1);
+    curryingSum(2,3);
+    console.log(curryingSum()===6);
+
+</script>
+
+</html>

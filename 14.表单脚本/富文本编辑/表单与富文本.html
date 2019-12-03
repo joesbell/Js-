@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>表单中提交富文本内容</title>
+</head>
+<body>
+
+<iframe name="editableFrame"></iframe>
+
+<div id="editableDiv" contenteditable="true">富文本编辑区一一元素型</div>
+
+<form id="form1" method="post">
+    <input type="text" name="text1" style="display: none">
+    <input type="text" name="text2" style="display: none">
+    <input type="button"  id="button1" value="submit">
+</form>
+
+</body>
+
+<script>
+
+    window.onload=function () {
+        var editableFrame=window.frames["editableFrame"];
+        editableFrame.document.designMode="on";
+        var editableDiv=document.getElementById("editableDiv");
+        var button1=document.getElementById("button1");
+        var form1=document.getElementById("form1");
+        button1.addEventListener("click",function (event) {
+            /**
+             * 获取富文本编辑区中的内容
+             */
+            var text1=editableFrame.document.body.innerHTML;
+            var text2=editableDiv.innerHTML;
+
+            /**
+             * 将不可见字段的value赋值后再提交表单
+             */
+            form1.elements["text1"].value=text1;
+            form1.elements["text2"].value=text2;
+            form1.submit();
+        })
+    }
+</script>
+</html>

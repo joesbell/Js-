@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<!--网速较慢的情况下，可以非常容易的观察到，文档被加载完毕后，图片资源还没有下载完成，document.readyState="interactive"-->
+<img src="readyState.png">
+
+
+</body>
+
+<script>
+
+    /**
+     * 这里虽然说的是HTMLDocument上新增的属性，实际上这些属性是加在Document类型上的。 HTMLDocument从Document上继承了这些新增的属性。
+     * 这三个属性都是只读的访问器属性
+     */
+    console.log(Object.getOwnPropertyDescriptor(Document.prototype,"readyState").set===undefined);
+    console.log(Object.getOwnPropertyDescriptor(Document.prototype,"head").set===undefined);
+    console.log(Object.getOwnPropertyDescriptor(Document.prototype,"compatMode").set===undefined);
+
+    //head属性可以方便的引用head元素
+    console.log(document.getElementsByTagName("head")[0]===document.head);
+    //compatMode属性可以获取页面渲染的方式
+    console.log(document.compatMode);
+
+
+    /**
+     * 而readyState属性值分为3种：
+     * 1. loading 正在加载文档
+     * 2. interactive 文档加载完毕，但是资源还没加载完。
+     * 3. complete 文档和资源全部加载完毕
+     *
+     * 这个属性值的改变会触发document上的事件
+     * *
+     */
+
+    console.log("当前文档状态:",document.readyState);
+    document.onreadystatechange=function () {
+        console.log("事件触发，当前文档状态:",document.readyState)
+    };
+    window.onload=function () {
+        console.log("onload事件触发的时候，document.readyState肯定为complete:",document.readyState==="complete");
+    }
+
+</script>
+</html>

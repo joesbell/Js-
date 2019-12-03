@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>访问器类型属性实现双向绑定</title>
+</head>
+<body>
+
+    <span>输入你的姓名:</span><input type="text" id="myInput" oninput="updateName()" onfocus="updateName()">
+    <br>
+    <span>你的名字是:</span><span id="name"></span>
+</body>
+
+<script>
+    var info={};
+
+    //这里实现双向绑定的核心原理是:
+    // 通过数据类型的数据来存储数据值。通过访问器属性来 读取和访问值并同时触发对应的get set方法。访问器类型数据就成了桥梁。
+    //
+    // 当用户输入时触发事件， 会给 Model层的对象进行属性赋值，而此时访问器属性的set方法成为了赋值的桥梁，普通的赋值并不会调用方法，因此无法实时更新显示，
+    // 但是访问器属性的赋值或者说写入操作的唯一作用触发 set指向的函数，在这个函数中我们既可以完成对model层数据的更新，又能同时通知View层更新显示。
+    // 由此非常方便地实现了 View层操作，更新Model层，再返回来更新View层的 这种同步状态，这就叫 双向绑定。
+
+    info.name=""; //真实存储数据的 数据类型的属性
+
+    Object.defineProperty(info,"_name",{
+        configurable:false,
+        enumerable:false,
+        set:function(newName){
+            console.log("set:"+newName);
+            this.name=newName;
+            //通知View层更新显示
+            updateShow();
+        },
+        get:function(){
+            console.log("get");
+            return this.name;
+        }
+    });
+
+    //View层更新显示
+    function updateShow(){
+        var show=document.getElementById("name");
+        show.innerText=info._name;
+    }
+
+    //View层操作向Model层修改数据
+    function updateName(){
+        var myInput=document.getElementById("myInput");
+        info._name=myInput.value;
+    }
+</script>
+</html>

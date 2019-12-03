@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>函数绑定</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    /**
+     * 第一种实现函数绑定的方式: 通过保存this值
+     */
+    var obj={};
+    obj.name="reveur";
+    obj.getMethod=function(){
+        //保存this指向。
+        console.log(obj===this);
+        var that=this;
+        return function(){
+            //利用闭包，该函数引用的that永远是这里执行环境的this一一也就是obj对象。
+            console.log(that.name);
+        }
+    };
+
+    obj.sayHello=obj.getMethod();
+    obj.sayHello();
+    var method=obj.getMethod();
+    method();
+    method.call(window);
+    console.log("--------------------------------");
+
+    /**
+     * 第二种实现函数绑定的方式:通过call apply直接设置this取值。
+     */
+    function bind(method,context){
+        return function(){
+            return method.apply(context,arguments);//apply可以直接接受数组作为参数数组。
+        }
+    }
+
+    function bind2(method,context){
+        return function(){
+            /**
+             * 手动拼接参数字符串。
+             */
+            var argsStr="";
+            for(var i=0;i<arguments.length;i++){
+                argsStr+="arguments["+i+"],";
+            }
+            if(argsStr!==""){
+                argsStr=argsStr.slice(0,argsStr.length-1);
+            }
+            var result;
+            /**
+             * 利用eval的方式执行拼接后的代码。
+             */
+            eval("result=method.call(context,"+argsStr+");");
+            return result;
+        }
+    }
+
+    /**
+     * 用来测试函数绑定的函数。
+     */
+    function introduce(){
+        console.log(this.name,this.favor);
+    }
+
+    bind(introduce,{name:"apply",favor:["coding","gaming"]})();
+    bind2(introduce,{name:"call",favor:["book","math"]})();
+
+    /**
+     * 第三种方式:自带的bind方法
+     */
+    introduce.bind({name:"bind",favor:["music"]})();
+
+</script>
+
+</html>

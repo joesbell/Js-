@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IDBFactory对象</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="连接数据库">
+<input type="button" id="button2" value="再次连接数据库">
+<input type="button" id="button3" value="删除数据库">
+
+<hr>
+比较数字主键大小
+<input type="text" id="text1" value="1">
+<input type="text" id="text2" value="2">
+<input type="button" id="button4" value="比较主键值大小">
+
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+    var db;
+
+    console.log(indexedDB instanceof IDBFactory);
+    /**
+     * IndexedD的第一个对象是IDBFactory对象,
+     * 该对象具有 open方法用于连接数据库或者初始化数据库。
+     */
+    button1.addEventListener("click",function () {
+        /**
+         * 如果不带版本号那么就是连接数据库，如果test数据库不存在，那么就是新建数据库，此时版本号为1.
+         */
+        var req=indexedDB.open("test");
+
+        req.onupgradeneeded=function (event) {
+            db=event.target.result;
+            console.log("数据库Schema升级成功，初始化数据库");
+        };
+
+        req.onsuccess=function () {
+            console.log("数据库连接成功");
+            //关闭页面后自动删除数据库
+            window.onunload=function () {
+                indexedDB.deleteDatabase("test");
+            }
+        };
+    });
+
+
+    button2.addEventListener("click",function () {
+        /**
+         * 如果当前数据库正在连接中，此时如果升级版本号，那么就会触发IDBOpenRequest对象的block事件。表示连接已经阻塞了
+         */
+        var req=indexedDB.open("test",2);
+        console.log(req instanceof IDBOpenDBRequest);
+        req.onblocked=function (event) {
+            console.log("由于数据库正在使用中，无法进行versionChange升级连接，阻塞",event.type);
+        };
+    });
+
+    /**
+     * IDBFactory对象的deleteDatabase方法用于删除数据库。
+     */
+    button3.addEventListener("click",function () {
+        /**
+         * 需要注意的是，删除数据库之前必须要确保数据库已经关闭了。
+         */
+        db.close();
+
+        var req=indexedDB.deleteDatabase("test");
+        req.onsuccess=function () {
+            console.log("数据库删除成功");
+        };
+        req.onerror=function () {
+            console.log("数据库删除失败");
+        };
+    });
+
+    /**
+     * IDBFactory的cmp方法用于比较两个主键的大小。需要注意的是这个方法并不是异步方法，而是直接返回值
+     */
+    button4.addEventListener("click",function () {
+        switch (indexedDB.cmp(text1.value,text2.value)) {
+            case 0:
+                console.log(text1.value,"=",text2.value);
+                break;
+            case 1:
+                console.log(text1.value,">",text2.value);
+                break;
+            case -1:
+                console.log(text1.value,"<",text2.value);
+                break;
+        }
+    })
+
+
+
+</script>
+
+</html>

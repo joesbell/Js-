@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>动态载入样式</title>
+</head>
+<body>
+<p>这是P元素</p>
+
+<div>
+    <input type="button" id="button1" value="显示当前p元素的字号">
+    <input type="button" id="button2" value="显示当前p元素的背景色">
+    <input type="button" id="button3" value="动态载入css1">
+    <input type="button" id="button4" value="动态载入css2">
+    <input type="button" id="button5" value="动态载入css code">
+</div>
+<!--这里用于展示动态引入的样式文件和代码-->
+<show-area></show-area>
+</body>
+
+<script>
+
+    /**
+     * 动态引入样式文件的方法。
+     * 通过创建link元素并设置其href特性值为样式文件的地址，并将该link元素添加到文档树中，达到动态引入CSS文件的目的。
+     *
+     * @param path
+     */
+    function loadCssFile(path) {
+        var node=document.createElement("link");
+        node.type="text/css";
+        node.rel="stylesheet";
+        node.href=path;
+
+        node.setAttribute("name","cssfile"); //这里仅仅用来标明动态引入样式文件的的标签。
+        document.body.appendChild(node);
+    }
+
+    /**
+     * 动态引入样式代码的方法。
+     * 通过创建style元素并设置其内部文本为样式代码，并将该style元素添加到文档树中，达到动态引入CSS代码的目的。
+     *
+     * 这里需要注意的是IE下的兼容问题: 对于IE浏览器只能访问style元素的styleSheet属性获取样式对象再获取样式对象的cssText属性设置样式文本。
+     * @param code
+     */
+    function loadCssCode(code) {
+        var node=document.createElement("style");
+        node.type="text/css";
+        try{
+            //非IE可以直接操作style元素的子节点
+            node.appendChild(document.createTextNode(code));
+        }catch (e){
+            //IE下只能通过这种方式操作style元素的内部文本
+            node.styleSheet.cssText=code;
+        }
+        node.setAttribute("name","csscode"); //这里仅仅用来标明动态引入样式代码的的标签。
+        document.body.appendChild(node);
+    }
+
+
+    /**
+     * 在页面展示被动态加载的内容
+     */
+    function updateShowArea() {
+        var node=document.getElementsByTagName("show-area")[0];
+        var cssfiles=Array.prototype.slice.call(document.getElementsByName("cssfile"),0);
+        var csscodes=Array.prototype.slice.call(document.getElementsByName("csscode"),0);
+
+        var fileresult="动态载入的css文件:\n";
+        var coderesult="动态载入的css code:\n";
+        cssfiles.forEach(function (value) {
+            fileresult+=value.getAttribute("href")+"\n";
+        });
+
+        csscodes.forEach(function (value) {
+            coderesult+=value.innerHTML+"\n"
+        });
+        node.innerText=fileresult+coderesult;
+    }
+
+    updateShowArea();
+
+
+    document.getElementById("button1").addEventListener("click",function () {
+        var p=document.getElementsByTagName("p")[0];
+        alert("p元素的字号是:"+getComputedStyle(p).fontSize);
+    });
+
+    document.getElementById("button2").addEventListener("click",function () {
+        var p=document.getElementsByTagName("p")[0];
+        alert("p元素的字号是:"+getComputedStyle(p).backgroundColor);
+    });
+
+    document.getElementById("button3").addEventListener("click",function () {
+        loadCssFile("css1.css");
+        updateShowArea()
+    });
+
+    document.getElementById("button4").addEventListener("click",function () {
+        loadCssFile("css2.css");
+        updateShowArea()
+    });
+
+    document.getElementById("button5").addEventListener("click",function () {
+        var code;
+        code=prompt("请输入想要添加的样式","p{color:red}");
+        if(code){
+            loadCssCode(code);
+            updateShowArea()
+        }
+
+    });
+
+</script>
+</html>

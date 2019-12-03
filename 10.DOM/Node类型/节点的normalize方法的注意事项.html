@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>节点的normalize方法的注意事项</title>
+</head>
+<body>
+
+<div id="parent">
+    <p>1</p>1
+    2<p>2</p>
+    <p>3</p>3
+</div>
+
+<div id="parent2"><p>normalize方法的真正用途是用于将后代中的 连续的文本节点合并 以及 删除nodeValue=""的文本节点</p></div>
+
+</body>
+
+<script>
+    /**
+     * normalize方法的用处并不是 清除html中的空白。
+     * 而是用于将后代中的 连续的文本节点合并 以及 删除nodeValue=""的文本节点
+     */
+    var parent=document.getElementById("parent");
+    var childs=parent.childNodes;
+    /**
+     * 可以看到第一个div下的子节点长度为7。一共有4个文本节点和3个p节点。
+     * 一般而言，我们正常书写html并不会出现连续两个文本节点的情况以及 nodeValue=""的文本节点的情况。
+     * 因此一般而言，我们调用normalize方法是没有任何实际效果的。
+     */
+    console.log(childs.length);
+    parent.normalize();
+    console.log(childs.length);
+
+
+    /**
+     * 一般而言，只有在我们手动添加文本节点时，才可能出现 normalize方法用的着的情况。
+     */
+    var parent2=document.getElementById("parent2");
+    //手动添加两个连续的文本节点
+    parent2.appendChild(document.createTextNode("1"));
+    parent2.appendChild(document.createTextNode("2"));
+    //手动添加一个nodeValue=""的文本节点
+    parent2.insertBefore(document.createTextNode(""),parent2.firstChild);
+    console.log(parent2.firstChild.nodeValue==="");
+    var childs2=parent2.childNodes;
+    /**
+     * 可以看到，这种情况下调用normalize方法，nodeValue=""的文本节点被删除了，并且连续文本节点被合并了。
+     */
+    console.log(childs2.length);
+    parent2.normalize();
+    console.log(childs2.length);
+</script>
+</html>

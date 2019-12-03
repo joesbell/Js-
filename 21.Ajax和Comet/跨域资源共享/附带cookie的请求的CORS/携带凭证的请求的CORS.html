@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>携带凭证的请求的CORS</title>
+</head>
+<body>
+
+<h4>携带cookie信息的跨域请求必须请求和响应头都同时允许凭证才行</h4>
+<input type="button" id="button1" value="成功的携带凭证">
+<br>
+<hr>
+<h4>请求头和响应头任意一方没有设置 允许凭证，请求的cookie的发送均会失败</h4>
+<input type="button" id="button2" value="请求没有设置withCredentials属性">
+<input type="button" id="button3" value="响应没有设置Access-Control-Allow-Credentials,此时还会报错">
+<br>
+<hr>
+<h4>请求头和响应头任意一方没有设置 允许凭证，响应的set-cookie也会出问题</h4>
+<input type="button" id="button4" value="请求没有设置withCredentials属性，此时cookie设置无效">
+<input type="button" id="button5" value="响应没有设置Access-Control-Allow-Credentials，此时虽然cookie可以设置，但是控制台会报错">
+<input type="button" id="button6" value="因此最好请求和响应都允许凭证，此时既能设置cookie又可以不报错">
+<input type="button" id="button7" value="发送cookie">
+<br>
+<hr>
+<h4>服务器响应信息设置错误，也会导致cookie发送失败</h4>
+<input type="button" id="button8" value="响应中Access-Control-Allow-Origin不能设置为 * ">
+<br>
+<hr>
+<h4>对于需预检的请求的跨域cookie发送，只需要在简单请求的跨域cookie发送的基础上添加预检处理即可</h4>
+<input type="button" id="button9" value="预检的请求的跨域cookie发送">
+<br>
+<hr>
+<h4>我们可以利用自定义请求头来发送任意的凭证信息(不局限于cookie)。</h4>
+<input type="button" id="button10" value="自定义请求头的cookie发送">
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+    var button6=document.getElementById("button6");
+    var button7=document.getElementById("button7");
+    var button8=document.getElementById("button8");
+    var button9=document.getElementById("button9");
+
+    /**
+     * 请求中允许凭证并且响应中也允许凭证，此时跨域cookie发送成功。
+     */
+    button1.addEventListener("click",function(){
+        document.cookie="this-cookie=client-set"; //手动设置cookie
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/a");
+        xhr.withCredentials=true; //允许凭证
+        xhr.send(null)
+    });
+
+    /**
+     * 请求中不允许凭证而响应中允许凭证，此时跨域cookie发送失败。
+     * 但是接受的到响应，不会报错。
+     */
+    button2.addEventListener("click",function(){
+        document.cookie="this-cookie=client-set"; //手动设置cookie
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/b");
+        // xhr.withCredentials=true; //请求没有设置允许cookie
+        xhr.send(null)
+    });
+
+    /**
+     * 请求中允许凭证而响应中不允许凭证，此时跨域cookie发送失败。
+     * 并且会直接报错。
+     */
+    button3.addEventListener("click",function(){
+        document.cookie="this-cookie=client-set"; //手动设置cookie
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/c");
+        xhr.withCredentials=true;
+        xhr.send(null)
+    });
+
+    /**
+     * 请求中不允许凭证而响应中允许凭证，此时跨域set-cookie出问题。
+     * 服务器设置cookie的响应头不会生效。
+     */
+    button4.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/getcookie1");
+        // xhr.withCredentials=true; //请求没有设置允许cookie
+        xhr.send(null)
+    });
+
+    /**
+     * 请求中允许凭证而响应中不允许凭证，此时跨域set-cookie出问题。
+     * 服务器设置cookie的响应头会生效。但是会报错，接受不到响应
+     */
+    button5.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/getcookie2");
+        xhr.withCredentials=true;
+        xhr.send(null)
+    });
+
+    /**
+     * 请求中允许凭证并且响应中允许凭证，此时跨域set-cookie成功。
+     * 服务器设置cookie的响应头会生效。并且不会报错，接受的到响应。
+     */
+    button6.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/getcookie3");
+        xhr.withCredentials=true;
+        xhr.send(null)
+    });
+
+    /**
+     * 用于单纯的发送cookie。
+     */
+    button7.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/sendcookie");
+        xhr.withCredentials=true;
+        xhr.send(null)
+    });
+
+    /**
+     * 如果 Access-Control-Allow-Origin 响应头设置为 * 也会导致 cookie发送失败
+     */
+    button8.addEventListener("click",function(){
+        document.cookie="wrong=setting1";
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/wrongsetting");
+        xhr.withCredentials=true;
+        xhr.send(null)
+    });
+
+    /**
+     * 对于 需预检的请求的跨域cookie发送，服务器在处理预检请求时也必须携带Access-Control-Allow-Credentials响应头允许凭证，
+     * 并且 Access-Control-Allow-Origin不能设置为 * 了，必须设置为请求的origin
+     */
+    button9.addEventListener("click",function(){
+        document.cookie="cookie_type=preflight";
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("PUT","http://localhost:8081/rest/preflightcookie"); //PUT请求方式是需预检的请求了
+        xhr.withCredentials=true;
+        xhr.send(null)
+    });
+    /**
+     * 当然我们也可以直接使用自定义请求头来携带我们的凭证信息 并发送需预检的请求。
+     * 此时，凭证信息不再仅限于 cookie。 任何凭证都可以发送。
+     */
+    button10.addEventListener("click",function(){
+        document.cookie="cookie_type=just_token";
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("错误",event)
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/mydefinecookie");
+        /**
+         * 这里设置自定义的请求头，存放我们的凭证信息。
+         */
+        xhr.setRequestHeader("MY-DEFINE-COOKIE",document.cookie);
+        xhr.send(null)
+    });
+
+</script>
+
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>navigator对象的plugins插件检测</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="刷新插件,但是不刷新页面">
+
+<input type="button" id="button2" value="刷新插件同时刷新页面">
+
+<input type="button" id="button3" value="开始检测插件是否存在">
+</body>
+
+<script>
+
+
+    /**
+     * IE上进行插件检测的方法， 这里的name是插件的COM对象的标识符而不是插件名。
+     */
+    function hasIEPlugin(COMID){
+        try{
+            new ActiveXObject(COMID); //尝试创建该插件的实例。 如果创建成功那么就存在该插件。
+            return true;
+        }catch (e){
+            return false;   //否则抛出异常，说明不存在该插件
+        }
+    }
+
+    /**
+     * 非IE中检测插件的方法
+     */
+    function hasPlugin(name) {
+        var plugins=Array.prototype.slice.call(navigator.plugins);
+        var result=plugins.filter(function (value) {
+            return value.name==name;
+        });
+        return result.length>0;
+    }
+
+
+    function print(msg) {
+        var node=document.createElement("p");
+        node.innerText=msg;
+        document.body.appendChild(node);
+    }
+    
+    
+    var plugins=Array.prototype.slice.call(navigator.plugins); 
+    plugins.forEach(function (value) {
+        print("插件名称:"+value.name+",插件描述:"+value.description+",插件文件名:"+value.filename+",插件所支持的MIME类型数量:"+value.length);
+    });
+
+
+    document.getElementById("button1").addEventListener("click",function () {
+        //只刷新插件不刷新页面
+        navigator.plugins.refresh()
+    });
+
+    document.getElementById("button2").addEventListener("click",function () {
+        //不仅刷新插件还要刷新包含插件的所有页面
+        navigator.plugins.refresh(true)
+    });
+
+    document.getElementById("button3").addEventListener("click",function () {
+        var name=prompt("请输入要检测的插件名:","Shockwave Flash");
+        if(name!=null){
+            if(hasPlugin(name)){
+                alert("当前浏览器包含该:"+name+"插件");
+            }else{
+                alert("当前浏览器不包含该:"+name+"插件");
+            }
+        }
+    });
+
+
+
+</script>
+</html>

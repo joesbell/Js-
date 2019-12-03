@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加自定义事件后的模拟拖动</title>
+    <style>
+        .box{
+            height: 100px;
+            width: 100px;
+            background: black;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+
+<input type="button" id="button1" value="开启拖拽">
+<input type="button" id="button2" value="关闭拖拽">
+
+<div class="box draggable"></div>
+
+
+</body>
+
+<script>
+    function MyEventTarget(){
+        //handlers属性里包含了各种类型的事件处理函数。
+        this.handlers={};
+    }
+
+    /**
+     * 为事件对象添加事件监听的方法。
+     */
+    MyEventTarget.prototype.addHandler=function(type,handler){
+
+        if(!this.handlers[type]){
+            /**
+             * 如果事件处理程序中不存在此类事件则额外新增。
+             */
+            this.handlers[type]=[handler];
+        }else{
+            //否则仅仅只是添加事件处理函数。
+            this.handlers[type].push(handler);
+        }
+    };
+
+    /**
+     * 为事件对象移除事件监听的方法。
+     */
+    MyEventTarget.prototype.removeHandler=function(type,handler){
+        var handlers=this.handlers[type];
+        if(handlers){
+            var index=handlers.findIndex(function(value){
+                return value===handler;
+            });
+            handlers.splice(index,1);
+        }
+    };
+
+    /**
+     * 为事件对象触发事件的方法。
+     * @param event
+     */
+    MyEventTarget.prototype.fire=function(event){
+
+        /**
+         * 为自定义事件添加一些属性。
+         */
+        if(!event.target){
+            event.target=this;
+        }
+        event.currentTarget=this;
+
+        var handlers=this.handlers[event.type];
+        if(handlers){
+            /**
+             * 依次触发事件
+             */
+            for(var i=0,len=handlers.length;i<len;i++){
+                /**
+                 * 这里需要注意的是 函数是将event.currentTarget作为context调用的。
+                 */
+                handlers[i].call(event.currentTarget,event);
+            }
+        }
+    };
+
+    function throttle(method,intervalTime) {
+        var prev;
+        var timeId;
+        return function (event) {
+
+            clearTimeout(timeId);
+            var current=Date.now();
+            var that=this;
+            if(prev && current-prev >=intervalTime){
+                method.call(that,event);
+                prev=Date.now();
+            }else{
+                timeId=setTimeout(function () {
+                    method.call(that,event);
+                    prev=Date.now();
+                },prev+intervalTime-current);
+            }
+        }
+    }
+
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    button1.addEventListener("click",function () {
+        DragDrop.enable();
+        this.disabled=true;
+        button2.disabled=false;
+    });
+    button2.addEventListener("click",function () {
+        DragDrop.disable();
+        this.disabled=true;
+        button1.disabled=false;
+    });
+
+
+    var DragDrop=function () {
+        /**
+         * 创建一个自定义事件对象。
+         */
+        var dragging=new MyEventTarget();
+        var diffX=0;
+        var diffY=0;
+
+        function handlerEvent(event) {
+            var ele=event.target;
+            switch (event.type) {
+                case "mousedown":
+                    if(ele.classList.contains("draggable")){
+                        dragging.target=ele;
+                        var rect=dragging.target.getBoundingClientRect();
+                        diffY=rect.top-event.clientY;
+                        diffX=rect.left-event.clientX;
+                        /**
+                         * 触发自定义的mydragstart事件
+                         */
+                        dragging.fire({type:"mydragstart",x:rect.left,y:rect.top});
+                    }
+                    break;
+                case "mousemove":
+                    if(dragging.target){
+                        dragging.target.style.left=event.clientX+diffX+"px";
+                        dragging.target.style.top=event.clientY+diffY+"px";
+                        /**
+                         * 触发自定义的mydraging事件
+                         */
+                        dragging.fire({type:"mydraging",x:event.clientX+diffX,y:event.clientY+diffY});
+                    }
+                    break;
+                case "mouseup":
+                    if(dragging.target){
+                        dragging.target=null;
+                        /**
+                         * 触发自定义的mydragend事件
+                         */
+                        dragging.fire({type:"mydragend",x:event.clientX+diffX,y:event.clientY+diffY});
+                    }
+                    break;
+            }
+        }
+
+        var moveHandler=throttle(handlerEvent,50);
+
+        /**
+         * 这里返回的是这个自定义事件对象，便于我们为其添加事件监听。
+         */
+        dragging.enable=function () {
+                document.addEventListener("mouseup",handlerEvent);
+                document.addEventListener("mousedown",handlerEvent);
+                document.addEventListener("mousemove",moveHandler);
+        };
+        dragging.disable=function () {
+                document.removeEventListener("mouseup",handlerEvent);
+                document.removeEventListener("mousedown",handlerEvent);
+                document.removeEventListener("mousemove",moveHandler);
+        };
+        return dragging;
+    }();
+
+    /**
+     * 添加自定义的事件监听
+     */
+    DragDrop.addHandler("mydragstart",function (event) {
+        console.log("开始拖动，此时坐标为:",event.x,event.y);
+    });
+    DragDrop.addHandler("mydraging",function (event) {
+        console.log("拖动到了:",event.x,event.y);
+    });
+    DragDrop.addHandler("mydragend",function (event) {
+        console.log("结束拖动，此时坐标为:",event.x,event.y);
+    });
+
+</script>
+
+</html>

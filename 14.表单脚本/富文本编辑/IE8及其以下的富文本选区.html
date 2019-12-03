@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IE8及其以下的富文本选区</title>
+</head>
+<body>
+
+<div contenteditable="true">
+    富文本div
+</div>
+
+<input type="button" id="button1" value="修改选区的颜色">
+选中的内容是:<input type="text" id="text1" value="">
+
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var text1=document.getElementById("text1");
+
+    button1.attachEvent("onclick",function () {
+        /**
+         * 在IE中，获取文档选区的方式是直接访问文档的selection属性。
+         */
+        var selection=document.selection;
+        /**
+         * 而获取文档选区的IE文本范围的方式是 在选区对象上调用createRange()方法上创建IE文本范围对象。
+         */
+        var range=selection.createRange();
+        /**
+         * 通过访问该文本范围的text属性可以获取范围中的文本内容。
+         */
+        text1.value=range.text;
+
+        /**
+         * 这里想要修改背景色，不能使用text属性，因为text属性只是文本内容不是HTML内容。
+         */
+        // range.text="<span style='background-color: red'>"+range.htmlText+"</span>";
+        /**
+         * 因此使用 pasteHTML方法来替换HTML代码
+         */
+        range.pasteHTML("这是修改背景色的内容<span style='background-color: red'>"+range.htmlText+"</span>");
+    })
+</script>
+
+</html>

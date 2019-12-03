@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>XMLHttpRequest对象的5种状态</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     *  readyState属性分别对应了5种状态
+     */
+
+    var xhr=new XMLHttpRequest();
+    xhr.onreadystatechange=function(){
+        if(xhr.readyState===2){
+            console.log("发送状态")
+        } else if(xhr.readyState===3){
+            console.log("接受状态");
+        }else if(xhr.readyState===4){
+            console.log("完成状态")
+        }else{
+            //
+        }
+    };
+    console.log("未初始化状态",xhr.readyState===0);
+    xhr.open("GET","/rest/readyState",true);
+    console.log("启动状态",xhr.readyState===1);
+    xhr.send();
+</script>
+
+</html>

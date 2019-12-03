@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM0级事件处理程序</title>
+</head>
+<body>
+    <input type="button" id="input1" onclick="console.log(this.value,event)" value="DOM0级事件处理程序">
+</body>
+
+<script>
+    /**
+     * 可以看到 元素的事件处理程序属性是一个可读可写的访问器属性。
+     */
+    console.log(typeof Object.getOwnPropertyDescriptor(HTMLElement.prototype,"onclick").set ==="function");
+
+    var input1=document.getElementById("input1");
+    /**
+     * 而HTML内联的事件处理程序其实就是在对 元素的on+事件类型 属性进行赋值。
+     * 所以我们是可以在脚本代码中通过DOM0级事件处理程序来改写的。
+     */
+
+    //这就是DOM0级的事件处理程序，在脚本代码中直接对元素对象的属性进行修改。
+    input1.onclick=null; //取消了元素的HTML事件处理程序
+
+    input1.click(); //可以看到，元素的HTML事件处理程序被取消了， 虽然在HTML代码上并没有反应出来一一HTML中DOM元素的onclick特性没有发生改变。
+
+    input1.onclick=foo;  //DOM0级事件程序，修改处理程序为 foo函数。
+
+    //此时，元素的事件处理特性并没有改变
+    console.log(input1.getAttribute("onclick")==="console.log(this.value,event)");
+    //但是，元素的事件处理属性却发生了改变
+    console.log(input1.onclick===foo);
+
+    //并且实际执行时，采用的是元素的事件处理属性。
+    input1.click();
+
+    /**
+     * 在DOM0级事件处理程序中，还有一点和HTML事件处理程序不同。
+     * 在DOM0级事件处理程序中，函数体内部的this一定指向DOM元素本身，而不像不完全内联的HTML事件处理程序一样，是指向window。
+     * 并且，这个函数的第一个参数一定是 被触发的事件。
+     */
+    function foo(eventArg) { //DOM0级处理函数的第一个参数是 被触发的事件
+        //this指向自身。
+        console.log(this===input1);
+        console.log(arguments[0] instanceof Event);
+    }
+
+
+</script>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>自动切换焦点</title>
+</head>
+<body>
+
+<form style="border: 1px solid black" id="myForm">
+    <h3>自动切换焦点的表单</h3>
+    name:<input type="text" size="25" maxlength="10"><br>
+    age:<input type="text" size="25" maxlength="5"><br>
+    like:<input type="text" size="25" maxlength="5"><br>
+    sex:<input type="text" size="25" maxlength="5"><br>
+    height:<input type="text" size="25" maxlength="5"><br>
+    weight:<input type="text" size="25" maxlength="5"><br>
+</form>
+</body>
+
+<script>
+    var form=document.getElementById("myForm");
+
+    form.addEventListener("keyup",function(event){
+        /**
+         * 当输入长度达到文本框最大长度 或者 按下了回车键后。将焦点设置为当前元素的下一个元素。
+         */
+        if(event.target.value.length==event.target.getAttribute("maxlength") || event.keyCode===13){
+            forwardToNext(event.target);
+        }
+    });
+
+    /**
+     * 用于在表单中将焦点设置为当前ele控件的下一个控件。
+     */
+    function forwardToNext(ele){
+        var form=ele.form;
+        var eles=form.elements;
+        eles=Array.prototype.slice.call(eles);
+        /**
+         * 找到当前元素ele在表单的控件集合中的索引序号。
+         */
+        var index=eles.findIndex((value)=>{
+            return ele===value;
+        });
+        if(index===(eles.length-1)){
+            //说明这是最后一个字段了
+            setTimeout(function() {
+                if(confirm("准备提交表单吗")){
+                    form.submit();
+                }
+            }, 100);
+        }else{
+            //当ele元素不是最后一个元素时，将焦点设置为下一个序号的控件元素。
+            form.elements[index+1].focus();
+        }
+    }
+
+</script>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>贝塞尔曲线动画</title>
+</head>
+<body>
+
+<canvas id="canvas1" style="border: 1px solid black"></canvas>
+<input type="button" id="button1" value="开始选择起点，终点">
+弯曲程度:<input type="text" id="text1" value="设置弯曲值。最好在[-1,1]区间" size="25">
+<input type="button" id="button2" value="开始绘制贝塞尔曲线动画">
+<input type="button" id="button3" value="暂停绘制贝塞尔曲线动画">
+<input type="button" id="button4" value="继续绘制贝塞尔曲线动画">
+
+</body>
+
+<script>
+
+    var canvas1=document.getElementById("canvas1");
+    canvas1.height=window.innerHeight-100;
+    canvas1.width=window.innerWidth-100;
+    var context1=canvas1.getContext("2d");
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var text1=document.getElementById("text1");
+
+
+
+    (function () {
+        var startx,starty,endx,endy; //选择的起点和终点坐标
+        var selectStart=false; //是否选择了起点
+        var selectEnd=false;//是否选择了终点
+
+        var animation1=null;
+
+        button1.addEventListener("click",function(){
+            if(animation1){
+                animation1.pauseDraw();
+            }
+
+            context1.clearRect(0,0,canvas1.width,canvas1.height);
+            startx=0;starty=0;endx=0;endy=0;
+            context1.beginPath();
+            canvas1.addEventListener("click",selectFunc);
+
+            /**
+             * 点击选择起点终点坐标的click事件处理程序
+             */
+            function selectFunc(event) {
+                var boundingRect;
+                if(selectStart===false){
+                    //现在开始选择起点
+                    selectStart=true;
+                    //计算起点在画布上的坐标
+                    boundingRect=canvas1.getBoundingClientRect();
+                    startx=event.clientX-boundingRect.left;
+                    starty=event.clientY-boundingRect.top;
+                    context1.arc(startx,starty,3,0,Math.PI*2);
+                    context1.fill();
+                }else if(selectStart===true&&selectEnd===false){
+                    //现在开始选择终点
+                    selectEnd=true;
+                    //计算终点在画布上的坐标
+                    boundingRect=canvas1.getBoundingClientRect();
+                    endx=event.clientX-boundingRect.left;
+                    endy=event.clientY-boundingRect.top;
+                    context1.arc(endx,endy,3,0,Math.PI*2);
+                    context1.fill();
+                    //当终点选择完毕后，移除画布的监听处理程序
+                    canvas1.removeEventListener("click",selectFunc);
+                    selectStart=false;
+                    selectEnd=false;
+                }else{
+                    console.log('error');
+                }
+            }
+
+        });
+
+        button2.addEventListener("click",function () {
+
+            animation1=new Animation(canvas1,[startx,starty],[endx,endy],text1.value);
+            animation1.startDraw();
+        });
+
+        button3.addEventListener("click",function () {
+            animation1.pauseDraw();
+        });
+
+        button4.addEventListener("click",function () {
+            animation1.startDraw();
+        });
+
+    }());
+
+
+    /**
+     * 二次贝塞尔曲线动画类。
+     */
+    function Animation(canvas,start,end,curveness){
+        this.progress=0;
+        this.start=start;
+        this.end=end;
+        this.canvas=canvas;
+        this.context=canvas.getContext("2d");
+        this.curveness=curveness;
+        this.pauseDrawing=undefined;
+    }
+
+    /**
+     * 绘制动画方法
+     */
+    Animation.prototype.drawMethod=function () {
+        if(this.progress>100||this.pauseDrawing){
+            return ;
+        }
+        this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
+        draw2CurveFragment(this.context,this.start,this.end,this.curveness,this.progress);
+        this.progress++;
+        //这里使用requestAnimationFrame以便在浏览器下次重绘动画时调用。减少性能损耗
+        requestAnimationFrame(this.drawMethod.bind(this));
+    };
+
+    //开始绘制动画
+    Animation.prototype.startDraw=function () {
+        this.pauseDrawing=false;
+        this.drawMethod();
+    };
+    //暂停绘制动画
+    Animation.prototype.pauseDraw=function () {
+        this.pauseDrawing=true;
+    };
+
+
+    /**
+     * 按照进度绘制贝塞尔曲线片段
+     * @param context 2D上下文
+     * @param start   起点坐标
+     * @param end     终点坐标
+     * @param curveness 弯曲程度, 范围在 [-1,1]之间。绝对值越大弯曲程度越大。正负号表示弯曲方向
+     * @param percent  绘制进度  在[0,100]之间
+     */
+    function draw2CurveFragment(context,start,end,curveness,percent){
+        var x1=start[0],y1=start[1],x2=end[0],y2=end[1];
+        var v=[x2-x1,y2-y1]; //起点到终点的向量
+        var v2=[y2-y1,x1-x2]; //中垂线向量.
+        var midX=(x1+x2)/2,midY=(y1+y2)/2; //中点坐标
+        var controlX=midX+v2[0]*curveness;
+        var controlY=midY+v2[1]*curveness;
+        context.beginPath();
+        context.moveTo(x1,y1);
+        var position;
+
+        //计算曲线上点的坐标，不停连接线段达到近似曲线的目的。
+        for(var t=0;t<=percent/100;t+=0.01){
+            position=calCurvePosition([x1,y1],[controlX,controlY],[x2,y2],t);
+            context.lineTo(position[0],position[1])
+        }
+        context.stroke();
+    }
+
+    /**
+     * 根据进度计算贝塞尔曲线片段上的点的坐标.
+     * @param p0 起点
+     * @param p1 控制点
+     * @param p2 终点
+     * @param t 进度
+     * @returns {number[]}
+     */
+    function calCurvePosition(p0,p1,p2,t){
+        //这里运用到了贝塞尔曲线的方程
+        var resultX=(1-t)*(1-t)*p0[0]+2*t*(1-t)*p1[0]+t*t*p2[0];
+        var resultY=(1-t)*(1-t)*p0[1]+2*t*(1-t)*p1[1]+t*t*p2[1];
+        return [resultX,resultY];
+    }
+</script>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>newWindow</title>
+</head>
+<body>
+
+<h1>newWindow窗口</h1>
+
+<button id="button1">回退到之前的窗口内容(如果能回退的话)</button>
+</body>
+
+
+<script>
+    window.onload=window.onload||function () {
+        var node=this.document.createElement("h1");
+        this.document.body.insertBefore(node,this.document.body.children[0]);
+        node.innerText="打开该窗口的窗口引用的name属性为:"+(this.opener?this.opener.name:"不存在原始窗口或原始窗口已经被关闭");
+    };
+
+    document.getElementById("button1").addEventListener("click",function () {
+        history.back();
+    })
+
+</script>
+
+</html>

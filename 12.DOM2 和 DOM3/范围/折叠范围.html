@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>折叠范围</title>
+</head>
+<body>
+<p>hello <strong>world</strong></p>
+
+<div id="div1"></div>
+<div id="div2"></div>
+</body>
+
+<script>
+    /**
+     * 折叠范围相关的有以下属性和方法。
+     */
+    console.log(Range.prototype.hasOwnProperty("collapsed"));
+    console.log(Range.prototype.hasOwnProperty("collapse"));
+
+    var p =document.querySelector("p");
+    var hello=p.firstChild;
+    var world=p.lastChild.firstChild;
+
+    var range=document.createRange();
+    range.setStart(hello,2);
+    range.setEnd(world,3);
+
+    /**
+     * 当且仅当 endContainer===startContainer并且 endOffset===startOffset时， collapsed属性返回true，表示范围已经折叠。
+     */
+    console.log(range.collapsed===false);
+
+    /**
+     * collapse(toStart)方法用于折叠范围，如果参数为true，这么就调整终止节点的值为起始节点。反之亦然。
+     * 折叠后， collapsed属性为true
+     */
+    range.collapse(true);
+    console.log(range.endContainer===hello,range.startContainer===hello);
+    console.log(range.startOffset===range.endOffset);
+    console.log(range.collapsed===true);
+
+    range.setStart(hello,2);
+    range.setEnd(world,3);
+    console.log(range.collapsed===false);
+    range.collapse(false);
+    console.log(range.endContainer===world,range.startContainer===world);
+    console.log(range.startOffset===range.endOffset);
+    console.log(range.collapsed===true);
+
+
+    /**
+     * 利用collapsed属性可以判断元素之间是否紧密相邻。
+     */
+    var div1=document.getElementById("div1");
+    var div2=document.getElementById("div2");
+    //此时令范围位于 div之间。
+    range.setStartAfter(div1);
+    range.setEndBefore(div2);
+    //因为有空白节点，因此并不紧密相邻。
+    console.log(range.collapsed===false);
+    //删除范围内的节点后，必定紧密相邻了。
+    range.deleteContents();
+    console.log(range.collapsed===true)
+</script>
+</html>

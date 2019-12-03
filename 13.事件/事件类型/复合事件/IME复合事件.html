@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IME 复合事件</title>
+</head>
+<body>
+<h1>不同浏览器的IME复合事件实现有差异，这里以谷歌浏览器为准</h1>
+
+使用输入法输入:<input type="text" id="input1">
+<hr>
+<div>
+    keydown:<span id="p1"></span><hr>
+    keypress:<span id="p2"></span><hr>
+    keyup:<span id="p3"></span><hr>
+    textInput:<span id="p4"></span><hr>
+    compositionstart:<span id="p5"></span><hr>
+    compositionupdate:<span id="p6"></span><hr>
+    compositionend:<span id="p7"></span><hr>
+</div>
+
+</body>
+<script>
+
+    /**
+     * 复合事件依旧属于UI事件
+     */
+    console.log(CompositionEvent.prototype.__proto__===UIEvent.prototype);
+
+    var input1=document.getElementById("input1");
+    var keydown=document.getElementById("p1");
+    var keypress=document.getElementById("p2");
+    var keyup=document.getElementById("p3");
+    var textInput=document.getElementById("p4");
+    var compositionstart=document.getElementById("p5");
+    var compositionupdate=document.getElementById("p6");
+    var compositionend=document.getElementById("p7");
+
+    input1.addEventListener("compositionstart",function(event){
+        var info="待编辑的内容是:"+event.data;
+        compositionstart.innerText=info;
+    });
+    input1.addEventListener("compositionupdate",function(event){
+        var info="正在输入的内容是:"+event.data;
+        compositionupdate.innerText=info;
+    });
+    input1.addEventListener("compositionend",function(event){
+        var info="最终输入的内容是:"+event.data;
+        compositionend.innerText=info;
+        console.log("输入完成,compositionend后触发",info)
+    });
+
+    input1.addEventListener("keypress",function(event){
+        var info="按下的字符码是:"+event.charCode+",内容是:"+String.fromCharCode(event.charCode);
+        keypress.innerText=info;
+    });
+    input1.addEventListener("keydown",function(event){
+        var info="按下的键码是:"+event.keyCode+",内容是:"+event.key;
+        keydown.innerText=info;
+        if(event.keyCode===229){
+            keydown.innerText="正在进行IME输入,keydown的keyCode永远等于229";
+            keypress.innerText="正在进行IME输入,keypress事件不会被触发";
+        }
+    });
+    input1.addEventListener("keyup",function(event){
+        var info="松开的键码是:"+event.keyCode+",内容是:"+event.key;
+        keyup.innerText=info;
+    });
+    input1.addEventListener("textInput",function(event){
+        var info="输入的内容是:"+event.data;
+        textInput.innerText=info;
+        console.log("输入完成,textInput先触发")
+    });
+
+
+</script>
+</html>

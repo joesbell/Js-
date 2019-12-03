@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>选择框脚本</title>
+</head>
+<body>
+
+<h3>单选的选择框</h3>
+<select id="select1">
+    <option id="option1" value="red">单选1</option>
+    <option id="option2" value="">单选2</option>
+    <option id="option3">单选3</option>
+</select>
+
+<hr>
+
+<h3>复选的选择框</h3>
+<select id="select2" multiple>
+    <option>多选1</option>
+    <option>多选2</option>
+    <option>多选3</option>
+</select>
+
+<hr>
+<h3>多行显示的选择框</h3>
+<select id="select3">
+    <option>多行显示1</option>
+    <option>多行显示2</option>
+    <option>多行显示3</option>
+</select>
+
+<hr>
+
+<h3>select元素的add remove方法</h3>
+<select id="select4" size="2" multiple>
+    <option>原本的1</option>
+</select>
+
+
+</body>
+
+<script>
+
+    /**
+     * 选择框是由 select元素 HTMLSelectElement和 option元素 HTMLOptionElement组成。
+     */
+
+    /**
+     * HTMLSelectionElement拥有下列方法
+     */
+    console.log(HTMLSelectElement.prototype.hasOwnProperty("add"));
+    console.log(HTMLSelectElement.prototype.hasOwnProperty("remove"));
+
+    /**
+     * HTMLSelectionElement拥有下列属性
+     */
+    console.log(HTMLSelectElement.prototype.hasOwnProperty("multiple"));
+    console.log(HTMLSelectElement.prototype.hasOwnProperty("options"));
+    console.log(HTMLSelectElement.prototype.hasOwnProperty("selectedIndex"));
+    console.log(HTMLSelectElement.prototype.hasOwnProperty("size"));
+
+    /**
+     * multiple属性控制着选择框的多选还是单选。
+     * 当multiple 为true 时。 select元素的type属性为 select-multiple
+     * 当multiple 为false 时。 select元素的type属性为 select-one
+     */
+    var select1=document.getElementById("select1");
+    var select2=document.getElementById("select2");
+    var select3=document.getElementById("select3");
+    var select4=document.getElementById("select4");
+    console.log(select1.type==="select-one",select1.multiple===false);
+    console.log(select2.type==="select-multiple",select2.multiple===true);
+
+    /**
+     * size属性控制选择框可以显示的选择条数，默认只要不设置都是0(就算默认都是显示1行)。
+     * 通过设置size属性可以控制选择框的显示条数。
+     */
+    console.log(select1.size===0,select2.size===0,select3.size===0);
+    select3.size=2;//设置选择框3显示条数为2.
+
+
+    /**
+     * options属性表示的是下拉框的 选项 option元素的 动态集合。 这个集合是HTMLOptionsCollection类型的，继承于HTMLCollection
+     * 因此要获取下拉框可选项的数目就可以使用 select元素的 options.length 获取。
+     */
+    var options1=select1.options;
+    console.log(options1.__proto__===HTMLOptionsCollection.prototype);
+    console.log((HTMLOptionsCollection.prototype.__proto__===HTMLCollection.prototype));
+    console.log(options1.length===3);
+
+    /**
+     * selectedIndex属性表示选择框中第一个被选选项在选项集合中的索引。从0开始。
+     * select元素的value属性是由选择的选项决定的。
+     * 一句话：第一个被选项option的value如果有值，那么选择框select的值就是这个值，否则为这个被选项option的innerText值
+     */
+    document.addEventListener("change",function (event) {
+        var selectEle=event.target;
+        var selectedIndex=selectEle.selectedIndex;
+        var options=selectEle.options;
+        console.log(
+            "select元素的value等于第一个被选项option的value，如果没有那么为其innerText",
+            //这里的一定得用全等比较undefined.因为就算value为空字符串，也算是有值。
+            selectEle.value === (options[selectedIndex].value!==undefined?options[selectedIndex].value:options[selectedIndex].innerText),
+            selectEle.value === options[selectedIndex].value
+        );
+    });
+
+    /**
+     * HTMLOptionElement被选项元素拥有下列属性
+     */
+    console.log(HTMLOptionElement.prototype.hasOwnProperty("index"));
+    console.log(HTMLOptionElement.prototype.hasOwnProperty("label"));
+    console.log(HTMLOptionElement.prototype.hasOwnProperty("selected"));
+    console.log(HTMLOptionElement.prototype.hasOwnProperty("text"));
+    console.log(HTMLOptionElement.prototype.hasOwnProperty("value"));
+
+    /**
+     * index属性表示option在其选择框中options属性集合中的顺序。
+     */
+    console.log(select1.options[0].index===0);
+    console.log(select1.options[1].index===1);
+    console.log(select1.options[2].index===2);
+
+    /**
+     * text属性表示option的内部文本值innerText
+     */
+    console.log(select1.options[0].text===select1.options[0].innerText);
+    console.log(select1.options[1].text===select1.options[1].innerText);
+    console.log(select1.options[2].text===select1.options[2].innerText);
+
+    /**
+     * value属性表示option的值。
+     * 在value特性或属性被设置的情况下，value就是value。 此时value属性和value特性值是一样的。
+     */
+    console.log(select1.options[0].value===select1.options[0].getAttribute("value"));
+    console.log(select1.options[1].value===select1.options[1].getAttribute("value"));
+    /**
+     * 否则，value属性为option的text也就是innerText内部文本的值.
+     * 而此时，value特性为null
+     */
+    console.log(select1.options[2].value===select1.options[2].text,select1.options[2].getAttribute("value")===null);
+
+    /**
+     * selected属性表示option是否被选择了。
+     */
+    document.addEventListener("change",function (event) {
+        var selectEle=event.target;
+        var selectedIndex=selectEle.selectedIndex;
+        var options=selectEle.options;
+        options=Array.prototype.slice.call(options);
+        var result=options.map(function (value) {
+            //只有option的顺序和select元素的selectedIndex的序号相同，才是被选中了。option的selected属性才回返回true。
+            return value.selected === (value.index===selectedIndex);
+        });
+        result.unshift("option元素的selected属性表示该选项是否被选中");
+        console.log.apply(null,result);
+    });
+
+    var refOption=select4.options[0];
+    var newOption=document.createElement("option");
+    newOption.innerText="被add的option";
+    /**
+     * add(new,ref)方法可以将new这个option插入到ref这个option之前。
+     */
+    setTimeout(()=>{
+        select4.add(newOption,refOption)
+    },1000);
+
+    /**
+     * remove(index)方法可以将选择框中的索引为index的option给删除。
+     */
+    setTimeout(()=>{
+        select4.remove(1);
+    },2000);
+
+
+
+</script>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>简单请求的CORS</title>
+</head>
+<body>
+<h3>当服务器的 Access-Control-Allow-Origin 响应头值允许跨域访问时:</h3>
+<hr>
+<h4>简单请求的3种请求方式:GET POST HEAD</h4>
+<input type="button" id="button1" value="发起跨域GET请求">
+<input type="button" id="button2" value="发起跨域POST请求">
+<input type="button" id="button3" value="发起跨域HEAD请求">
+<hr>
+<h4>简单请求的请求头设置</h4>
+<input type="button" id="button4" value="携带规定内的请求头(成功)">
+<input type="button" id="button5" value="手动设置规定外的请求头(失败)">
+<input type="button" id="button6" value="手动设置规定外的Content-Type值(失败)">
+<hr>
+<h4>请求时XMLHttpRequestUpload对象不能监听任何事件。</h4>
+<input type="button" id="button7" value="请求时xhr.upload对象有监听事件会使简单请求变成需预检请求">
+<input type="button" id="button8" value="但是xhr对象本身可以监听事件">
+<hr>
+<h4>请求时不会发送cookie，响应时无法获取全部响应头信息。</h4>
+<input type="button" id="button9" value="请求时不会发送cookie">
+<input type="button" id="button10" value="响应时无法获取全部响应头">
+<br><br>
+<hr>
+<hr>
+<hr>
+<h3>当服务器的 Access-Control-Allow-Origin 响应头值不允许跨域访问时:</h3>
+<input type="button" id="button11" value="永远都会请求失败">
+</body>
+
+<script>
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+    var button6=document.getElementById("button6");
+    var button7=document.getElementById("button7");
+    var button8=document.getElementById("button8");
+    var button9=document.getElementById("button9");
+    var button10=document.getElementById("button10");
+    var button11=document.getElementById("button11");
+
+    /**
+     * 简单请求中的 GET请求的跨域
+     */
+    button1.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("GET","http://localhost:8081/rest/a");
+        xhr.send()
+    });
+
+    /**
+     * 简单请求中的POST请求的跨域
+     */
+    button2.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/a");
+        xhr.send(null)
+    });
+
+    /**
+     * 简单请求中的 HEAD请求的跨域
+     * 需要注意的是，HEAD请求方式的响应是没有响应实体 只有响应头的。
+     */
+    button3.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+
+        xhr.onload=function () {
+            /**
+             * 因此这里的响应内容为空的。
+             */
+            console.log("HEAD请求服务器只会返回响应头",xhr.response==="");
+        };
+        xhr.open("HEAD","http://localhost:8081/rest/a");
+        xhr.send(null)
+    });
+
+    /**
+     * 简单请求的跨域 只能手动设置4种规定的请求头
+     */
+    button4.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/a");
+
+        /**
+         * 手动设置规定内的请求头也是可以的。
+         */
+        xhr.setRequestHeader("Accept","text/plain");
+        xhr.setRequestHeader("Accept-Language","zh-CN,zh");
+        xhr.setRequestHeader("Content-Language","zh-CN,zh");
+        xhr.setRequestHeader("Content-Type","multipart/form-data");
+
+        xhr.send(null)
+    });
+
+    /**
+     * 如果设置规定的4种请求头以外的请求头，跨域会直接失败
+     */
+    button5.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/a");
+
+        /**
+         * 手动设置规定外的请求头,响应会失败。但是需要注意的是，服务器是返回了响应的，
+         * 只是响应信息被浏览器拦截了，使得我们的脚本无法访问响应信息。
+         * 但是通过开发者工具可以看到响应信息。
+         */
+        xhr.setRequestHeader("MY-DEFINED-HEADER","REVEUR");
+        xhr.send(null)
+    });
+
+    /**
+     * 如果设置规定的3种Content-Type以外的值，跨域也会直接失败
+     */
+    button6.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("POST","http://localhost:8081/rest/a");
+
+        /**
+         * 这里设置了一个自定义的类型，不在规定的3种Content-Type中，所以跨域直接失败
+         */
+        xhr.setRequestHeader("Content-Type","application/my-data-type");
+        xhr.send(null)
+    });
+
+
+    /**
+     * 简单请求的跨域中，不能为 xhr.upload对象设置任何事件监听，
+     * 否则简单请求会变成 需要预检的请求。
+     */
+    button7.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log("所以变成了需预检的请求了,不再是简单请求");
+            console.log("如果服务器允许的话，还是可以获取响应信息的:",xhr.response);
+        };
+
+        /**
+         * 这里设置xhr.upload的监听事件
+         */
+        xhr.upload.onload=function(event){
+            console.log("因为xhr.upload对象监听了事件(任何事件),这里监听的是",event.type);
+        };
+        //xhr.upload对象属于XMLHttpRequestUpload类型
+        console.log(xhr.upload.__proto__===XMLHttpRequestUpload.prototype);
+
+        xhr.open("POST","http://localhost:8081/rest/upload");
+        xhr.send("一些内容");
+    });
+
+    /**
+     * 但是简单请求的跨域中，可以为 xhr对象设置事件监听。
+     */
+    button8.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log("请求依旧是个简单请求:",xhr.response);
+        };
+        xhr.onprogress=function(){
+            console.log("但是xhr对象可以监听事件");
+        };
+        xhr.open("POST","http://localhost:8081/rest/download");
+        xhr.send();
+    });
+
+    /**
+     * 简单请求的跨域中，请求中是不会携带 cookie信息的。
+     */
+    button9.addEventListener("click",function(){
+        document.cookie="cookie is reveur";
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("GET","http://localhost:8081/rest/cookie");
+        xhr.send()
+    });
+
+    /**
+     * 简单请求的跨域中，是无法访问响应信息里的所有响应头的。
+     * 只能访问规定的6种响应头的内容。
+     */
+    button10.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log("只能获取个别响应头信息:\n"+xhr.getAllResponseHeaders());
+            //这里的自定义的响应头是无法获取到
+            console.log("无法获取到所有的响应头信息",xhr.getResponseHeader("REVEUR-DEFINED-HEAD")===null);
+        };
+        xhr.open("GET","http://localhost:8081/rest/responseheader");
+        xhr.send()
+    });
+
+    /**
+     * 如果服务器没有设置Access-Control-Allow-Origin响应头，那么跨域会直接失败。
+     */
+    button11.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onerror=function (event) {
+            console.log("跨域请求错误!",event.type,"事件触发");
+        };
+        xhr.onload=function () {
+            console.log(xhr.response);
+        };
+        xhr.open("GET","http://localhost:8081/rest/notallowed");
+        xhr.send()
+    });
+
+</script>
+
+</html>

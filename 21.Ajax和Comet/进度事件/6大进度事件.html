@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>6大进度事件</title>
+</head>
+<body>
+<h4>只要服务器响应回来了，不管HTTP状态码是多少，那么load事件均会触发</h4>
+<input type="button" id="button1" value="发送请求,响应200状态码">
+<input type="button" id="button2" value="发送请求,响应400错误码">
+
+<hr>
+<h4>abort事件只有在abort()方法调用后才会触发</h4>
+<input type="button" id="button3" value="发送请求,手动取消">
+
+<hr>
+<h4>超时请求并不会触发error或者abort事件， 只会触发timeout事件</h4>
+<input type="button" id="button4" value="发送请求,自动超时">
+
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+
+    /**
+     * 测试正常响应200的请求的事件触发过程：
+     * loadstart->progress->load->loadend
+     */
+    button1.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+
+        xhr.onloadstart=function(event){
+            console.log("---------起始均为",event.type,"触发---------")
+        };
+        xhr.onprogress=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onerror=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onabort=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onload=function(event){
+            console.log(event.type,"触发");
+            if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                console.log(xhr.response,"状态码:",xhr.status);
+            }else{
+                console.log("响应错误")
+            }
+        };
+        xhr.onloadend=function(event){
+            console.log("---------终止均为",event.type,"触发---------")
+        };
+
+        xhr.open("POST","/rest/progressevent1");
+        xhr.send();
+
+    });
+
+    /**
+     * 测试正常响应400的请求的事件触发过程：
+     * loadstart->load->loadend
+     */
+    button2.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+
+        xhr.onloadstart=function(event){
+            console.log("---------起始均为",event.type,"触发---------");
+        };
+        xhr.onprogress=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onerror=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onabort=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onload=function(event){
+            console.log(event.type,"触发");
+            if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                console.log(xhr.response);
+            }else{
+                console.log("响应错误,状态码:",xhr.status);
+            }
+        };
+        xhr.onloadend=function(event){
+            console.log("---------终止均为",event.type,"触发---------");
+        };
+
+        xhr.open("POST","/rest/progressevent2");
+        xhr.send();
+
+    });
+
+    /**
+     * 测试 主动abort终止请求时的事件触发过程：
+     * loadstart->progress->abort->loadend
+     */
+    button3.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+
+        /**
+         * 需要注意的是，此时(延时5秒返回数据)服务器并没有返回任何数据一一包括响应头。
+         * 因此xhr对象的readyState并不能经历=2这个状态。但是更奇怪的是，尽管load事件并不会触发，
+         * 但是readyState依旧会变成4一一完成状态。
+         * 这里也说明了 使用readystatechang事件检测完成状态 和 使用load 事件检测响应完成状态 的效果并不是完全等同的。
+         * 至少在 超时请求和终止请求中，这两个事件，readystatechange更加敏感，就算请求终止以及超时请求后，也会转为完成状态。
+         */
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===2){
+                console.log("由于服务器延时返回数据，因此并不能收到响应头");
+            }else if(xhr.readyState===4){
+                console.log("但是奇怪的是，尽管没有触发load事件，但是XHR的readyState却可以变成4一一完成状态,此时readystatechange(检测完成状态)和load事件并不完全一样")
+            }else{
+
+            }
+        };
+        xhr.onloadstart=function(event){
+            console.log("---------起始均为",event.type,"触发---------");
+        };
+        xhr.onprogress=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onerror=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onabort=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onload=function(event){
+            console.log(event.type,"触发");
+            if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                console.log(xhr.response);
+            }else{
+                console.log("响应错误");
+            }
+        };
+        xhr.onloadend=function(event){
+            console.log("---------终止均为",event.type,"触发---------");
+        };
+
+        xhr.open("POST","/rest/progressevent3");
+        xhr.send();
+
+
+        /**
+         * 这里主动终止请求，但是需要注意的是，abort终止请求并不会触发error事件
+         * @type {number}
+         */
+        var i=3;
+        var id=setInterval(()=>{
+            if(i===0){
+                clearInterval(id);
+                xhr.abort();
+                console.log("请求已经取消");
+                return;
+            }
+            console.log(i+"秒后取消请求");
+            i--;
+        },1000);
+    });
+
+    /**
+     * 测试 请求超时 时 事件的触发顺序：
+     * loadstart->progress->timeout->loadend
+     */
+    button4.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+
+        xhr.timeout=3000;
+        xhr.ontimeout=function(event){
+            console.log(event.type+"触发,请求已经超时");
+        };
+        xhr.onloadstart=function(event){
+            console.log("---------起始均为",event.type,"触发---------");
+        };
+        xhr.onprogress=function(event){
+            console.log(event.type,"触发");
+        };
+
+        xhr.onerror=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onabort=function(event){
+            console.log(event.type,"触发");
+        };
+        xhr.onload=function(event){
+            console.log(event.type,"触发");
+            if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                console.log(xhr.response);
+            }else{
+                console.log("响应错误");
+            }
+        };
+        xhr.onloadend=function(event){
+            console.log("---------终止均为",event.type,"触发---------");
+        };
+
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===2){
+                console.log("由于服务器延时返回数据，因此并不能收到响应头");
+            }else if(xhr.readyState===4){
+                console.log("但是奇怪的是，尽管没有触发load事件，但是XHR的readyState却可以变成4一一完成状态,此时readystatechange(检测完成状态)和load事件并不完全一样")
+            }else{
+
+            }
+        };
+
+        xhr.open("POST","/rest/progressevent4");
+        xhr.send();
+    });
+</script>
+
+</html>

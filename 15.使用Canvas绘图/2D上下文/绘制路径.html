@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制路径</title>
+</head>
+<body>
+
+<h3>绘制一个圆脸</h3>
+<canvas id="canvas1" height="200" width="200"></canvas>
+<hr>
+
+<h3>绘制一个loading图标</h3>
+<canvas id="canvas2" height="300" width="300"></canvas>
+<input type="button" id="button1" value="开始转圈">
+<input type="button" id="button2" value="停止转圈">
+<hr>
+
+<h3>绘制三角形</h3>
+<canvas id="canvas3" height="200" width="200"></canvas>
+<hr>
+
+<h3>绘制二次贝塞尔曲线</h3>
+<canvas id="canvas4" height="200" width="200"></canvas>
+<input type="button" id="button3" value="开始绘制随机二次贝塞尔曲线">
+<hr>
+
+<h3>绘制三次贝塞尔曲线</h3>
+<canvas id="canvas5" height="200" width="200"></canvas>
+<input type="button" id="button4" value="开始绘制随机三次贝塞尔曲线">
+<hr>
+
+<h3>绘制矩形路径</h3>
+<canvas id="canvas6" height="200" width="200"></canvas>
+<hr>
+
+</body>
+
+<script>
+
+    /**
+     * 绘制圆脸
+     */
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+    ctx1.beginPath();
+    ctx1.arc(100,100,100,0,Math.PI*2,false);
+    ctx1.closePath();
+    ctx1.stroke();
+
+    ctx1.beginPath();
+    ctx1.arc(50,70,20,0,Math.PI*2,false)
+    ctx1.closePath();
+    ctx1.fill();
+
+    ctx1.beginPath();
+    ctx1.arc(150,70,20,0,Math.PI*2,false)
+    ctx1.closePath();
+    ctx1.fill();
+
+    ctx1.beginPath();
+    ctx1.arc(100,120,50,0,Math.PI,false)
+    ctx1.stroke();
+
+    ctx1.beginPath();
+    ctx1.moveTo(100,80);
+    ctx1.lineTo(80,120);
+    ctx1.lineTo(100,120);
+    ctx1.stroke();
+
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+
+    var canvas2=document.getElementById("canvas2");
+    var ctx2=canvas2.getContext("2d");
+    var x=0;
+    var interId;
+    ctx2.lineCap="round";
+    button1.addEventListener("click",function () {
+        if(interId){
+            alert("已经开始转圈了");
+            return ;
+        }
+        /**
+         * 绘制loading转圈效果
+         */
+        interId=setInterval(()=>{
+            ctx2.clearRect(0,0,300,300);
+            ctx2.beginPath();
+            ctx2.strokeStyle="black";
+            ctx2.lineWidth=1;
+            ctx2.arc(110,110,100,0,Math.PI*2,false);
+            ctx2.stroke();
+            ctx2.beginPath();
+            ctx2.arc(110,110,100,x,Math.PI*1.5+x,false);
+            ctx2.strokeStyle="blue";
+            ctx2.lineWidth=10;
+            ctx2.stroke();
+            x+=0.1;
+        },10);
+    });
+
+    button2.addEventListener("click",function () {
+        if(interId){
+            clearInterval(interId);
+            interId=null;
+        }else{
+            alert("还未开始转圈");
+        }
+    });
+
+    /**
+     * 绘制填充三角形和描边三角形
+     */
+    var canvas3=document.getElementById("canvas3");
+    var ctx3=canvas3.getContext("2d");
+    ctx3.beginPath();
+    ctx3.moveTo(175,25);
+    ctx3.lineTo(25,25);
+    ctx3.lineTo(25,175);
+    ctx3.fill();
+
+    ctx3.beginPath();
+    ctx3.moveTo(35,185);
+    ctx3.lineTo(185,185);
+    ctx3.lineTo(185,35);
+    ctx3.closePath();
+    ctx3.stroke();
+
+    /**
+     * 绘制二次贝塞尔曲线
+     */
+    var canvas4=document.getElementById("canvas4");
+    var ctx4=canvas4.getContext("2d");
+    var button3=document.getElementById("button3");
+
+    button3.addEventListener("click",function () {
+        ctx4.clearRect(0,0,200,200);
+        ctx4.beginPath();
+        ctx4.moveTo(Math.ceil(Math.random()*200),Math.ceil(Math.random()*200));//起点
+        ctx4.quadraticCurveTo(
+            Math.ceil(Math.random()*200),Math.ceil(Math.random()*200),//控制点坐标
+            Math.ceil(Math.random()*200),Math.ceil(Math.random()*200) //终点坐标
+        );
+        ctx4.stroke();
+    });
+
+    /**
+     * 绘制三次贝塞尔曲线
+     */
+    var canvas5=document.getElementById("canvas5");
+    var ctx5=canvas5.getContext("2d");
+    var button4=document.getElementById("button4");
+
+    button4.addEventListener("click",function () {
+        ctx5.clearRect(0,0,200,200);
+        ctx5.beginPath();
+        ctx5.moveTo(Math.ceil(Math.random()*200),Math.ceil(Math.random()*200));//起点
+        ctx5.bezierCurveTo(
+            Math.ceil(Math.random()*200),Math.ceil(Math.random()*200),//控制点1坐标
+            Math.ceil(Math.random()*200),Math.ceil(Math.random()*200),//控制点2坐标
+            Math.ceil(Math.random()*200),Math.ceil(Math.random()*200)//终点坐标
+        );
+        ctx5.stroke();
+    });
+
+    /**
+     * 绘制矩形路径
+     */
+    var canvas6=document.getElementById("canvas6");
+    var ctx6=canvas6.getContext("2d");
+    ctx6.beginPath();
+    ctx6.rect(50,50,100,100);
+    ctx6.stroke();
+    ctx6.beginPath();
+    ctx6.rect(1,1,198,198);
+    ctx6.stroke();
+    /**
+     * isPointInPath(x,y)用于判断 坐标x y 的点是否在路径上
+     */
+    console.log("是否在路径上:",ctx6.isPointInPath(50,50));
+</script>
+</html>

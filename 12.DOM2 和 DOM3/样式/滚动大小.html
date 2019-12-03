@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>滚动大小scrollXXX相关</title>
+</head>
+<body>
+
+
+<div style="height: 130px;width:130px;position: absolute;top:2000px;left: 600px;overflow: scroll;">
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <p id="p1">
+        p1元素p1元素p1元素p1元素p1元素p1元素p1元素
+    </p>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</div>
+
+</body>
+
+<script>
+
+    /**
+     * 滚动相关的属性定义在Element类型上
+     */
+    console.log(Element.prototype.hasOwnProperty("scrollTop"));
+    console.log(Element.prototype.hasOwnProperty("scrollLeft"));
+    console.log(Element.prototype.hasOwnProperty("scrollHeight"));
+    console.log(Element.prototype.hasOwnProperty("scrollWidth"));
+
+    document.documentElement.style.height="3000px";
+    document.documentElement.style.width="2000px";
+    var p1=document.getElementById("p1");
+    p1.scrollIntoView();
+    console.log(
+        "html滚动元素高度：",document.documentElement.scrollHeight,
+        "html滚动元素宽度:",document.documentElement.scrollWidth);
+    console.log(
+        "html滚动元素上部隐藏的内容区高度",document.documentElement.scrollTop,
+        "html滚动元素左边隐藏的内容区宽度",document.documentElement.scrollLeft);
+
+    console.log(
+        "div元素滚动元素高度：",p1.parentNode.scrollHeight,
+        "div元素滚动元素宽度:",p1.parentNode.scrollWidth);
+    console.log(
+        "div元素滚动元素上部隐藏的内容区高度",p1.parentNode.scrollTop,
+        "div元素滚动元素左边隐藏的内容区宽度",p1.parentNode.scrollLeft);
+
+    /**
+     * 浏览器默认滚动条宽度为 滚动元素的offsetWidth(这个宽度是包含滚动条的)-scrollWidth(这个仅仅是滚动区域的大小不包含滚动条)
+     */
+    console.log("计算浏览器默认的滚动条宽度:");
+    var offsetWidth=p1.parentNode.offsetWidth;
+    var scrollWidth=p1.parentNode.scrollWidth;
+    console.log(offsetWidth-scrollWidth+"px");
+
+    /**
+     * 但是计算默认滚动条时不能使用html元素，这个html元素比较特殊。 offsetWidth和scrollWidth是相等的。(一般而言)
+     */
+    console.log(document.documentElement.scrollWidth===document.documentElement.offsetWidth);
+    console.log(document.documentElement.scrollHeight===document.documentElement.offsetHeight);
+</script>
+</html>

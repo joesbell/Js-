@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Storage事件</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="必须在不同页面操作同源的localStorage对象才能触发storage事件">
+<input type="button" id="button2" value="随机修改localStorage">
+
+</body>
+
+<script>
+    /**
+     * storage事件是在window对象上触发，其事件对象具有一系列关于存储相关的属性
+     */
+    window.addEventListener("storage",function (event) {
+        console.log(event.type,"触发");
+        console.log("操作localStorage的页面的URL",event.url);
+        console.log("更新的键名",event.key);
+        console.log("旧的值",event.oldValue);
+        console.log("新的值",event.newValue);
+    });
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    /**
+     * 打开一个新的页面，地址和当前页面一致，这两个页面用于同源，因此共享同一个localStorage对象。
+     */
+    button1.addEventListener("click",function () {
+        window.open(location.href,"_blank");
+    });
+
+    button2.addEventListener("click",function () {
+        //存储随机数据
+        localStorage.setItem(Math.random(),Math.random())
+    })
+</script>
+
+</html>

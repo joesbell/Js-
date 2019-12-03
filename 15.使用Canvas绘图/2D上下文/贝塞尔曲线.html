@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>贝塞尔曲线</title>
+</head>
+<body>
+
+<canvas id="canvas1" style="border: 1px solid black"></canvas>
+<input type="button" id="button1" value="开始选择起点，终点">
+弯曲程度:<input type="text" id="text1" value="设置弯曲值。最好在[-1,1]区间" size="25">
+<input type="button" id="button2" value="开始绘制">
+
+</body>
+
+<script>
+    var canvas1=document.getElementById("canvas1");
+    canvas1.height=window.innerHeight-100;
+    canvas1.width=window.innerWidth-100;
+    var context1=canvas1.getContext("2d");
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var text1=document.getElementById("text1");
+
+
+
+    (function () {
+        var startx,starty,endx,endy; //选择的起点和终点坐标
+        var selectStart=false; //是否选择了起点
+        var selectEnd=false;//是否选择了终点
+        button1.addEventListener("click",function(){
+            context1.clearRect(0,0,canvas1.width,canvas1.height);
+            startx=0;starty=0;endx=0;endy=0;
+            context1.beginPath();
+            canvas1.addEventListener("click",selectFunc);
+
+            /**
+             * 点击选择起点终点坐标的click事件处理程序
+             */
+            function selectFunc(event) {
+                var boundingRect;
+                if(selectStart===false){
+                    //现在开始选择起点
+                    selectStart=true;
+                    //计算起点在画布上的坐标
+                    boundingRect=canvas1.getBoundingClientRect();
+                    startx=event.clientX-boundingRect.left;
+                    starty=event.clientY-boundingRect.top;
+                    context1.arc(startx,starty,3,0,Math.PI*2);
+                    context1.fill();
+                }else if(selectStart===true&&selectEnd===false){
+                    //现在开始选择终点
+                    selectEnd=true;
+                    //计算终点在画布上的坐标
+                    boundingRect=canvas1.getBoundingClientRect();
+                    endx=event.clientX-boundingRect.left;
+                    endy=event.clientY-boundingRect.top;
+                    context1.arc(endx,endy,3,0,Math.PI*2);
+                    context1.fill();
+                    //当终点选择完毕后，移除画布的监听处理程序
+                    canvas1.removeEventListener("click",selectFunc);
+                    selectStart=false;
+                    selectEnd=false;
+                }else{
+                    console.log('error');
+                }
+            }
+
+        });
+
+        button2.addEventListener("click",function () {
+            draw2Curve(context1,[startx,starty],[endx,endy],text1.value);
+        });
+
+    }());
+
+
+
+    /**
+     * 简单绘制二次贝赛尔曲线的方法
+     * @param context 2D上下文
+     * @param start   起点坐标
+     * @param end     终点坐标
+     * @param curveness 弯曲程度, 范围最好在 [-1,1]之间。绝对值越大弯曲程度越大。正负号表示弯曲方向
+     * 这里的弯曲程度是通过控制连接起点和终点的线段中垂线上的控制点的位置来设定的。
+     */
+    function draw2Curve(context,start,end,curveness){
+        var x1=start[0],y1=start[1],x2=end[0],y2=end[1];
+        var v=[x2-x1,y2-y1]; //起点到终点的向量
+        var v2=[y2-y1,x1-x2]; //中垂线向量.
+        var midX=(x1+x2)/2,midY=(y1+y2)/2; //中点坐标
+        var controlX=midX+v2[0]*curveness;
+        var controlY=midY+v2[1]*curveness;
+        context.beginPath();
+        context.moveTo(x1,y1);
+        context.quadraticCurveTo(controlX,controlY,x2,y2);
+        context.stroke();
+    }
+
+
+</script>
+
+</html>

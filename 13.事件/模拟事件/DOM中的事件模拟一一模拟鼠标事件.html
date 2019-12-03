@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM中的事件模拟一一鼠标事件</title>
+</head>
+<body>
+
+<h3>鼠标事件的模拟</h3>
+<hr>
+<input type="button" id="button1" value="initEvent初始化事件对象">
+<hr>
+<input type="button" id="button2" value="initMouseEvent初始化事件对象">
+<hr>
+<input type="button" id="button3" value="MouseEvent构造器初始化事件对象">
+
+</body>
+
+<script>
+    console.log(Document.prototype.hasOwnProperty("createEvent"));
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var event=document.createEvent("MouseEvents");
+
+
+    /**
+     * 需要注意的是，在模拟事件的时候，事件的监听必须在 事件分发之前，不然是接受不到的。
+     */
+    document.addEventListener("click",function (event) {
+        console.log(event.target.id+"元素的模拟点击事件被触发了",event.isTrusted===false); // 模拟事件的 isTrusted属性是false
+    });
+
+    /**
+     * 第一种方法:已废弃的initEvent
+     */
+    event.initEvent(
+        "click",  //事件类型
+        true,     //是否冒泡
+        true      //能否取消默认行为
+    );
+
+    button1.dispatchEvent(event);
+
+
+    event=document.createEvent("MouseEvents");
+    /**
+     * 第二种方法:已废弃的initMouseEvent
+     */
+    event.initMouseEvent(
+        "click",             //表明鼠标事件类型名称
+        true,                //是否冒泡
+        true,                //是否可以取消默认行为
+        document.defaultView,//表示事件所在的视图
+        0,                   //鼠标事件的点击次数
+        0,                   //点击相对于屏幕的横坐标
+        0,                   //点击相对于屏幕的纵坐标
+        0,                   //点击相对于文档视口的横坐标
+        0,                   //点击相对于文档视口的纵坐标
+        false,               //是否按下了ctrl键
+        false,               //是否按下了alt键
+        false,               //是否按下了shift键
+        false,               //是否按下了meta键
+        0,                   //鼠标按下的键位的数字值
+        null                 //鼠标事件的这个属性就是null
+    );
+
+    button2.dispatchEvent(event);
+
+    /**
+     * 第三种方法:目前推荐的标准的 MouseEvent构造器方法
+     */
+    event=new MouseEvent(
+        "click",        //事件类型
+
+        //鼠标事件的属性名字典对象。对想要设置的具体属性名赋值，如果不赋值就是默认的值。
+        {
+            bubbles:true,
+            cancelable:true,
+            screenX:0,
+            screenY:0,
+            clientX:0,
+            clientY:0,
+            metaKey:false,
+            detail:0,
+            button:0
+        }
+    );
+
+    button3.dispatchEvent(event);
+
+    document.addEventListener("click",function (event) {
+        console.log("监听在分发模拟事件之后，这里的事件处理程序在模拟事件时永远不会触发!")
+    });
+
+</script>
+
+</html>

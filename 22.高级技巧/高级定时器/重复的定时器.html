@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>重复的定时器</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="setInterval的缺点">
+<input type="button" id="button2" value="重复使用setTimeout">
+
+</body>
+
+<script>
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    var MAX=50000000;
+    /**
+     * 异步地用于计算1加到MAX所用的时间，之所以异步是因为如果不异步计算的话，获取到的时间花费是不准确的，因此网页初次加载是很费时的。
+     */
+    setTimeout(()=>{
+        var start=Date.now();
+        var sum=0;
+        for(var i=0;i<MAX;i++){
+            sum+=i;
+        }
+        cost=Date.now()-start;
+        console.log("代码所执行的时间",cost)
+    },0)
+
+    /**
+     * 普通的使用setInterval来进行重复的定时器，实际定时器代码执行的间隔时间是小于预期时间的，并且甚至有些间隔会被跳过。
+     * 这一切都源于setInterval的推入定时器代码的机制。
+     * setInterval这两个缺点的原因是因为定时器代码的执行时间可能过长。
+     */
+    button1.addEventListener("click",function(){
+        var start=Date.now();
+        setInterval(()=>{
+            var end=Date.now();
+            console.log(end-start-cost); //这里可以看到，间隔时间是远小于100ms的
+            var sum=0;
+            for(var i=0;i<MAX;i++){
+                sum+=i;
+            }
+            start=end;
+        },100)
+
+    });
+
+
+    button2.addEventListener("click",function () {
+        var start=Date.now();
+        repeatSetTimeout(()=>{
+            var end=Date.now();
+            console.log(end-start-cost); //而这里看到的是，间隔时间最低都是90ms，之所以不是100ms是因为 循环计算的耗时cost是有误差的。
+            var sum=0;
+            for(var i=0;i<MAX;i++){
+                sum+=i;
+            }
+            start=end;
+        },100)
+
+    });
+
+    /**
+     * 而重复使用 setTimeout来模拟setInterval则没有这个问题，这种方式能保证定时器代码的执行时间至少都是预期时间
+     */
+    function repeatSetTimeout(method,delay) {
+        var args=Array.prototype.slice.call(arguments,2);
+        setTimeout(function repeat(){
+           method.apply(null,args);
+            /**
+             * 因为是在上一个定时器代码执行完毕之后，才开始准备推入新的定时器代码到代码队列中。
+             */
+           setTimeout(repeat,delay);
+        },delay);
+    }
+
+
+</script>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>客户端</title>
+</head>
+<body>
+<span>用户名:</span><span id="username"></span>
+<input type="text" value="请输入聊天内容" id="text1">
+<input type="button" value="发送信息" id="button1">
+
+</body>
+
+<script>
+
+    window.onload=function () {
+        var server=this.opener;
+        var text1=document.getElementById("text1");
+        var button1=document.getElementById("button1");
+        var username=location.search.split("=")[1]; //获取用户名
+        var span=document.getElementById("username");
+        span.innerText=username;
+
+        server.postMessage("connected",location.origin);
+
+        button1.addEventListener("click",function () {
+            server.postMessage(text1.value,location.origin);
+        });
+    };
+
+    //确认服务端心跳包
+    window.addEventListener("message",function (event) {
+        // console.log(event.source===this.opener);
+        if(event.origin!==location.origin){
+            return ;
+        }
+        var message=event.data;
+        var srcWindow=event.source;
+        if(message==="alive?"){
+            srcWindow.postMessage("alive",location.origin);
+        }
+    })
+</script>
+</html>

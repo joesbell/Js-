@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制贝塞尔曲线动画2</title>
+</head>
+<body>
+
+<canvas id="canvas1" style="border: 1px solid black"></canvas>
+
+</body>
+
+<script>
+
+    /**
+     * 二次贝塞尔曲线动画类。
+     */
+    function Animation(canvas,start,end,curveness,color){
+        this.progress=0;
+        this.start=start;
+        this.end=end;
+        this.canvas=canvas;
+        this.context=canvas.getContext("2d");
+        this.curveness=curveness;
+        this.pauseDrawing=undefined;
+        this.color=color;
+    }
+
+    /**
+     * 绘制动画方法
+     */
+    Animation.prototype.drawMethod=function () {
+        if(this.progress>100||this.pauseDrawing){
+            return ;
+        }
+        draw2CurveFragmentFaster(this.context,this.start,this.end,this.curveness,this.progress,this.color);
+        this.progress++;
+        //这里使用requestAnimationFrame以便在浏览器下次重绘动画时调用。减少性能损耗
+        requestAnimationFrame(this.drawMethod.bind(this));
+    };
+
+    //开始绘制动画
+    Animation.prototype.startDraw=function () {
+        this.pauseDrawing=false;
+        this.drawMethod();
+    };
+    //暂停绘制动画
+    Animation.prototype.pauseDraw=function () {
+        this.pauseDrawing=true;
+    };
+
+    /**
+     * 更高性能地按照进度绘制贝塞尔曲线片段
+     * @param context 2D上下文
+     * @param start   起点坐标
+     * @param end     终点坐标
+     * @param curveness 弯曲程度, 范围在 [-1,1]之间。绝对值越大弯曲程度越大。正负号表示弯曲方向
+     * @param percent  绘制进度  在[0,100]之间
+     * @param color 颜色
+     * 这种方法比上面的方法好的一点在于，减少了绘制运算。 这里依旧使用 quadraticCurveTo方法绘制曲线而不是使用连线模拟曲线.
+     */
+    function draw2CurveFragmentFaster(context,start,end,curveness,percent,color){
+        var x1=start[0],y1=start[1],x2=end[0],y2=end[1];
+        var v=[x2-x1,y2-y1]; //起点到终点的向量
+        var v2=[y2-y1,x1-x2]; //中垂线向量.
+        var midX=(x1+x2)/2,midY=(y1+y2)/2; //中点坐标
+        var controlX=midX+v2[0]*curveness;
+        var controlY=midY+v2[1]*curveness;
+        var t=percent/100;
+        var position=calCurvePosition([x1,y1],[controlX,controlY],[x2,y2],t);
+
+        /**
+         * 这里将计算出来的曲线上的点当做结束点，将 原本起点到控制点上的对应进度的点当做控制点来绘制贝塞尔曲线。
+         */
+        var newV=[controlX-x1,controlY-y1];
+        var newControlX=x1+newV[0]*t;
+        var newControlY=y1+newV[1]*t;
+
+        context.beginPath();
+        context.strokeStyle=color;
+        context.moveTo(x1,y1);
+        context.quadraticCurveTo(newControlX,newControlY,position[0],position[1]); //只用绘制一次
+        context.stroke();
+    }
+
+    /**
+     * 根据进度计算贝塞尔曲线片段上的点的坐标.
+     * @param p0 起点
+     * @param p1 控制点
+     * @param p2 终点
+     * @param t 进度
+     * @returns {number[]}
+     */
+    function calCurvePosition(p0,p1,p2,t){
+        //这里运用到了贝塞尔曲线的方程
+        var resultX=(1-t)*(1-t)*p0[0]+2*t*(1-t)*p1[0]+t*t*p2[0];
+        var resultY=(1-t)*(1-t)*p0[1]+2*t*(1-t)*p1[1]+t*t*p2[1];
+        return [resultX,resultY];
+    }
+
+
+
+    var canvas1=document.getElementById("canvas1");
+    canvas1.height=window.innerHeight-100;
+    canvas1.width=window.innerWidth-100;
+    var context1=canvas1.getContext("2d");
+
+    var centerX=canvas1.width/2;
+    var centerY=canvas1.height/2;
+
+    drawBueatifulAnimation([centerX,centerY],150,60,0.618);
+
+    /**
+     * 绘制发散的圆环状贝赛尔曲线
+     * @param center 圆心坐标
+     * @param r      半径
+     * @param count  贝塞尔曲线个数
+     * @param curveness 贝塞尔曲线的弯曲程度
+     */
+    function drawBueatifulAnimation(center,r,count,curveness) {
+        var centerX=center[0],centerY=center[1];
+        var endPoints=[];
+        var angle=Math.PI*2/count;
+        //计算结束点坐标
+        for(var i=0;i<count;i++){
+            var endPoint=[];
+            endPoint.push(centerX+r*Math.cos(angle*i));
+            endPoint.push(centerY+r*Math.sin(angle*i));
+            endPoints.push(endPoint);
+        }
+
+        //动画集合
+        var animations=[];
+        endPoints.forEach((endPoint)=>{
+            // 这里使用 >> 0运算符去除浮点数的小数。 等价于使用Math.floor函数的效果。 不过性能更高
+            var color="rgb("+(Math.random()*255>>0)+","+(Math.random()*255>>0)+","+(Math.random()*255>>0)+")";
+            //创建动画对象。
+            animations.push(new Animation(canvas1,[centerX,centerY],endPoint,curveness,color));
+        });
+
+        animations.forEach((animation)=>{
+            animation.startDraw();
+        })
+    }
+</script>
+</html>

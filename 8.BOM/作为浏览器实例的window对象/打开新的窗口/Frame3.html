@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frame3</title>
+</head>
+<body>
+
+
+
+<button id="button1">点击会将top窗口也就是当前浏览器顶层窗口跳转到新窗口: _top</button>
+</body>
+
+<script>
+
+    window.onload=function () {
+        var node=document.createElement("h1");
+        document.body.insertBefore(node,document.body.children[0]);
+        node.innerText=window.name;
+    }
+
+    /**
+     * _top会将当前窗口的顶层窗口作为新窗口的载体，因此同_self一样，新打开的窗口的opener属性为null
+     */
+    document.getElementById("button1").addEventListener("click",function () {
+        var newWindow=window.open("newWindow.html","_top");
+    });
+</script>
+
+</html>

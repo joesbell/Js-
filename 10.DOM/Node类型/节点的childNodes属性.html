@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>节点的childNodes属性的动态直接子节点数组</title>
+</head>
+<body>
+
+<div id="parent">
+    <p>P1</p>
+    <p>P2</p>
+    <div>
+        <p>P3</p>
+    </div>
+</div>
+
+<input type="button" id="button1" value="点击移除父节点的一个子节点">
+<input type="button" id="button2" value="复原">
+<p id="p1"></p>
+<p id="p2"></p>
+<p>可以看到,通过childNodes获取的NodeList类数组对象会随着DOM结构的改变而动态变化。这种实时根据DOM结构查询的子节点类数组是非常消耗性能的。</p>
+<p>因此我们往往将其转化为数组对象进行操作，此时，子节点数组就是静态的了，不会随着DOM结构改变而变化</p>
+</body>
+
+<script>
+
+    /**
+     * 将动态改变的NodeList类数组对象转化为静态的数组对象。
+     */
+    function convertChildNodesToArray(nodeList) {
+        var result;
+        try{
+            result=Array.prototype.slice.call(nodeList,0);
+        }catch (e){
+            //为了兼容IE。在IE8及以前DOM对象是通过COM对象实现的，是不能当做JS的对象进行操作的。
+            result=[];
+            for(var i=0,len=nodeList.length;i<len;i++){ //必须手动枚举。
+                result.push(nodeList[i]);
+            }
+        }
+        return result;
+    }
+
+    var parent=document.getElementById("parent");
+
+    /**
+     * 这里我们需要注意的是 childNodes返回的是父元素的直接子节点类数组对象。
+     * 直接子节点 并不是 所有子节点。
+     */
+    var dynChilds=parent.childNodes; //保存着动态的子节点数组
+    var staChilds=convertChildNodesToArray(dynChilds); //保存着静态的子节点数组
+
+    var p1=document.getElementById("p1");
+    var p2=document.getElementById("p2");
+    p1.innerText="通过childNodes获取的子节点数组的长度为:"+dynChilds.length;
+    p2.innerText="通过转换NodeList为数组后获取的子节点数组的长度为:"+staChilds.length;
+
+    document.getElementById("button1").addEventListener("click",function () {
+        var parent=document.getElementById("parent");
+        if(parent.childNodes.length>0){
+            //每次移除第一个元素
+            parent.removeChild(parent.childNodes[0]);
+        }else {
+            alert("已经没有元素了，无法进行移除操作");
+        }
+        p1.innerText="通过childNodes获取的子节点数组的长度为:"+dynChilds.length;
+        p2.innerText="通过转换NodeList为数组后获取的子节点数组的长度为:"+staChilds.length;
+    });
+
+    document.getElementById("button2").addEventListener("click",function () {
+        var parent=document.getElementById("parent");
+        if(parent.childNodes.length>0){
+            parent.innerHTML=""; //移除所有原本的子节点。
+        }else {
+        }
+        /**
+         * 通过保存的静态子节点数组进行还原。
+         * 从这里我们也可以看到，当节点被移除时并不代表节点对象本身不存在了，节点对象只是从文档结构中被删除了而已。
+         */
+        staChilds.forEach(function (node) {
+            parent.appendChild(node);
+        });
+        p1.innerText="通过childNodes获取的子节点数组的长度为:"+dynChilds.length;
+        p2.innerText="通过转换NodeList为数组后获取的子节点数组的长度为:"+staChilds.length;
+    })
+
+</script>
+
+</html>

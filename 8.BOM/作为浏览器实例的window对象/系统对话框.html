@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>系统对话框</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="点击展示alert">
+<p></p>
+<input type="button" id="button2" value="点击展示confirm">
+<p></p>
+<input type="button" id="button3" value="点击展示prompt" onclick="foo(this)">
+<p></p>
+</body>
+
+<script>
+
+    var button1=document.getElementById("button1");
+
+    button1.addEventListener("click",function () {
+        var result=alert("这里展示的是alert方法。在使用addEventListener为DOM元素添加事件监听时，arguments[0]为该事件本身,而回调函数内部的this指向DOM元素："+(this===button1));
+        alert("alert方法的返回值为undefined:"+(undefined===result));
+    });
+
+    var button2=document.getElementById("button2");
+
+    button2.addEventListener("click",function () {
+        var result=confirm("这里展示的是confirm方法。根据点击结果返回的是布尔值结果");
+        if(result){
+            alert("你点击的是: 确定");
+        }else {
+            alert("你点击的是: 取消");
+        }
+        if(confirm("是否重新点击?")){
+            button2.click();
+        }
+    });
+
+
+    var button3=document.getElementById("button3");
+
+    function foo() {
+        var result;
+
+        while(true){
+            result=prompt("这里展示的是prompt方法。 在HTML中的内联事件函数，函数的调用传参时this取值为该DOM对象，"+'\n'+"而函数内部this取值在严格模式下为undefined，非严格模式下为window","true or false");
+            if(result===null){
+                alert("你取消了输入,返回值为null :"+(result===null));
+            }else{
+                if(arguments[0]===button3&&this===window&& result==="true"){
+                    alert("回答正确");
+                    break;
+                }else {
+                    alert("回答错误,请重新回答");
+                }
+            }
+        }
+    }
+</script>
+
+</html>

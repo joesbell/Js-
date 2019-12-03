@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>移除事件处理程序</title>
+</head>
+<body>
+
+<input id="button1" type="button" value="点击一次就会消失">
+</body>
+<script>
+    var button1=document.getElementById("button1");
+
+    function clickHandler() {
+        /**
+         * 在事件处理程序中直接移除事件处理程序。这要就保证了被移除的元素的事件处理程序被移除。
+         */
+        this.removeEventListener("click",clickHandler);
+        this.parentNode.removeChild(this);
+    }
+
+    button1.addEventListener("click",clickHandler);
+</script>
+</html>

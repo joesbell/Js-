@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>更新数据</title>
+</head>
+<body>
+<input type="button" id="button1" value="通过默认递增主键更新数据">
+<input type="button" id="button2" value="通过自定义主键更新数据">
+</body>
+
+<script>
+
+    var IDBName="test"+Math.random(); //保证每次打开页面连接数据库都是新建操作。
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    /**
+     * 新建一个数据库以及对象仓库
+     */
+    var req=indexedDB.open(IDBName);
+    var db;
+    req.onupgradeneeded=function (event) {
+        db=event.target.result;
+
+        //创建自动递增主键的对象仓库users1
+        var store1=db.createObjectStore("users1",{ autoIncrement:true});
+        //创建自定义主键的对象仓库users2
+        var store2=db.createObjectStore("users2",{ keyPath:"userId"});
+
+        var versionChangeTransaction=event.target.transaction;
+        versionChangeTransaction.oncomplete=function () {
+            console.log("数据库创建Schema完毕");
+        };
+        versionChangeTransaction.onerror=function () {
+            console.log("数据库创建Schema失败");
+        }
+    };
+    req.onsuccess=function (event) {
+        console.log("连接到新创建的数据库成功");
+        var transaction1=db.transaction("users1","readwrite");
+        var store1=transaction1.objectStore("users1");
+        var transaction2=db.transaction("users2","readwrite");
+        var store2=transaction2.objectStore("users2");
+
+        //写入10个随机数据
+        var total=10;
+        var datas=[];
+        for(var i=0;i<total;i++){
+            datas.push({
+                name:generateWord(6),
+                age:(Math.random()*30>>0),
+                userId:"user"+i
+            })
+        };
+        /**
+         * 如果不指明主键，指定了暂时不存在的主键，那么put方法和add方法的作用一致，均是插入数据
+         */
+        datas.forEach((data)=>{
+            store1.put(data);
+            store2.put(data);
+        });
+
+        //当两个事物都执行完毕时，表明数据初始化成功
+        Promise.all(
+            [
+                new Promise((resolve,reject)=>{
+
+                transaction1.oncomplete=function(){
+                    console.log("users1初始化完毕");
+                    resolve();
+                };
+
+                transaction1.onerror=function(){
+                    console.log("数据初始化失败");
+                    reject();
+                };
+            }),
+                new Promise((resolve,reject)=>{
+                 transaction2.oncomplete=function(){
+                    console.log("users2初始化完毕");
+                    resolve();
+                };
+
+                transaction2.onerror=function(){
+                    console.log("数据初始化失败");
+                    reject();
+                };
+            })
+            ]
+        ).then(()=>{
+            console.log("数据初始化成功");
+        }).catch(()=>{
+            console.log("数据初始化失败");
+        });
+
+
+        //关闭页面时，删除数据库
+        window.onunload=function () {
+            indexedDB.deleteDatabase(IDBName);
+        }
+    };
+
+    /**
+     * 根据递增主键更新数据
+     */
+    button1.addEventListener("click",function () {
+        var transaction=db.transaction("users1","readwrite");
+        var store=transaction.objectStore("users1");
+
+        /**
+         * 对于默认的递增主键来说，使用IDBObjectStore的put方法的第二个参数来说明更新的数据的主键值。
+         */
+        var req=store.put({name:"更新的数据"},1); //这里更新的是自增主键为 1的数据
+
+        req.onsuccess=function (event) {
+            var req2=store.get(1);
+            req2.onsuccess=function (event) {
+                console.log("数据更新成功:",event.target.result)
+            }
+        }
+    });
+
+    /**
+     * 根据自定义主键更新数据
+     */
+    button2.addEventListener("click",function () {
+        var transaction=db.transaction("users2","readwrite");
+        var store=transaction.objectStore("users2");
+
+        /**
+         * 对于自定义的主键来说，只需要在IDBObjectStore的put方法的第一个参数中，写明带有自定义主键属性的对象即可。
+         */
+        var req=store.put({userId:"user0",name:"更新的的数据"}); //这里 userId是主键，此时会更新 userId为user0的数据
+
+        req.onsuccess=function (event) {
+            var req2=store.get("user0");
+            req2.onsuccess=function (event) {
+                console.log("数据更新成功:",event.target.result)
+            }
+        }
+
+    });
+
+    /**
+     * 生成 length长度的字符串 ，这些字符串的每个字符均是 A-Z
+     * @param length
+     * @returns {string}
+     */
+    function generateWord(length) {
+        var result="";
+        for(var i=0;i<length;i++){
+            result+=String.fromCharCode(((Math.random()*26)>>0)+65);
+        }
+        return result;
+    }
+
+</script>
+
+</html>

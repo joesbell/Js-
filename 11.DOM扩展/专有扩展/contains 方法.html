@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>contains 方法</title>
+</head>
+<body>
+<span></span>
+<div>
+    <p>1</p>
+    <p>2</p>
+</div>
+<p>3</p>
+
+</body>
+
+<script>
+
+    /**
+     * 跨浏览器的contains方法。
+     * @param refNode
+     * @param otherNode
+     * @returns {boolean}
+     */
+    function contains(refNode,otherNode) {
+        if(typeof refNode.contains==="function"){
+            //对于支持contains方法浏览器
+            return refNode.contains(otherNode);
+        }else if( typeof refNode.compareDocumentPosition ==="function"){
+            //对于支持DOM3级的compareDocumentPosition的浏览器
+            return !!(refNode.compareDocumentPosition(otherNode)&16);
+        }else{
+            //暴力迭代
+            var parentNode=otherNode.parentNode;
+            while(otherNode!=null){
+                if(parentNode===refNode){
+                    return true;
+                }else{
+                    parentNode=parentNode.parentNode;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * contains方法是在Node类型上实现的。
+     */
+    console.log(Node.prototype.hasOwnProperty("contains"));
+
+    var div=document.querySelector("div");
+    var ps=document.querySelectorAll("p");
+    var p1=ps[0],p2=ps[1],p3=ps[2];
+
+    /**
+     * compareDocumentPosition方法是DOM3级规定的 描述节点关系的方法。
+     *
+     * 对于 refNode.compareDocumentPosition(node)来说，掩码位 00000
+     * 如果有 1 那么表示 node相对refNode是无关的(不在同一个文档内);
+     * 如果有 2 那么表示 node相对refNode在文档树前面
+     * 如果有 4 那么表示 node相对refNode在文档树后面
+     * 如果有 8 那么表示 node是refNode的祖先节点
+     * 如果有 16 那么表示 node是refNode的后代节点
+     */
+    console.log(Node.prototype.hasOwnProperty("compareDocumentPosition"));
+
+    console.log(div.compareDocumentPosition(document.querySelector("span"))&2); //div的前面
+    console.log(div.compareDocumentPosition(p3)&4); // div的后面
+    console.log(div.compareDocumentPosition(document.body)&8); //div的祖先】
+    console.log(div.compareDocumentPosition(p1)&16); //div的后代
+    console.log(div.compareDocumentPosition(p2)&16); //div的后代
+
+    console.log(contains(div,p1)===true);
+    console.log(contains(document.body,div)===true);
+    console.log(contains(div,document.documentElement)===false);
+</script>
+
+</html>

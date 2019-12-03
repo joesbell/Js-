@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web存储机制</title>
+</head>
+<body>
+key:<input type="text" id="text1">
+value:<input type="text" id="text2">
+要删除的项:<input type="text" id="text3">
+<hr>
+<input type="button" id="button1" value="为sessionStorage添加键值对">
+<input type="button" id="button3" value="显示sessionStorage中的数据">
+<input type="button" id="button5" value="清空sessionStorage中的数据">
+<input type="button" id="button7" value="删除sessionStorage中的数据">
+<hr>
+<input type="button" id="button2" value="为localStorage添加键值对">
+<input type="button" id="button4" value="显示localStorage中的数据">
+<input type="button" id="button6" value="清空localStorage中的数据">
+<input type="button" id="button8" value="删除localStorage中的数据">
+
+</body>
+
+<script>
+    /**
+     * sessionStorage和localStorage都是Storage类型的实例。挂载在window全局对象上。
+     */
+    console.log(localStorage.__proto__===Storage.prototype);
+    console.log(sessionStorage.__proto__===Storage.prototype);
+    /**
+     * sessionStorage和localStorage都继承了Storage类型的属性和方法。
+     */
+    console.log(Storage.prototype.hasOwnProperty("setItem"));
+    console.log(Storage.prototype.hasOwnProperty("getItem"));
+    console.log(Storage.prototype.hasOwnProperty("removeItem"));
+    console.log(Storage.prototype.hasOwnProperty("clear"));
+    console.log(Storage.prototype.hasOwnProperty("key"));
+    console.log(Storage.prototype.hasOwnProperty("length"));
+
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+    var button6=document.getElementById("button6");
+    var button7=document.getElementById("button7");
+    var button8=document.getElementById("button8");
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+    var text3=document.getElementById("text3");
+
+    /**
+     * 存储值，可以使用 setItem Storage API， 也可以直接操作属性值
+     */
+    button1.addEventListener("click",function () {
+       sessionStorage.setItem(text1.value,text2.value);
+    });
+    button2.addEventListener("click",function () {
+        //直接操作属性值是不推荐的。
+        localStorage[text1.value]=text2.value;
+    });
+
+    /**
+     * 获取值，可以使用 getItem Storage API， 也可以直接操作属性值
+     */
+    button3.addEventListener("click",function () {
+        console.log("sessionStorage里的数据如下:");
+       for(var i=0,len=sessionStorage.length;i<len;i++){
+            var key=sessionStorage.key(i);
+            var value=sessionStorage.getItem(key);
+            console.log("key:"+key,",value:"+value);
+        }
+    });
+    button4.addEventListener("click",function () {
+        console.log("localStorage里的数据如下:");
+        for(var i=0,len=localStorage.length;i<len;i++){
+            var key=localStorage.key(i);
+            //不推荐这种写法
+            var value=localStorage[key];
+            console.log("key:"+key,",value:"+value);
+        }
+    });
+
+    /**
+     * 清空存储，可以使用 clear Storage API， 也可以遍历所有属性并delete删除属性值
+     */
+    button5.addEventListener("click",function () {
+        sessionStorage.clear();
+    });
+    button6.addEventListener("click",function () {
+        /**
+         * 遍历所有属性并删除是非常不推荐的。
+         */
+        for(var i=0,len=localStorage.length;i<len;i++){
+            var key=localStorage.key(i);
+            delete localStorage[key];
+        }
+    });
+
+    /**
+     * 删除值，可以使用 removeItem Storage API， 也可以直接delete 删除属性值
+     */
+    button7.addEventListener("click",function () {
+        sessionStorage.removeItem(text3.value);
+    });
+    button8.addEventListener("click",function () {
+        delete localStorage[text3.value];
+    });
+
+
+</script>
+
+</html>

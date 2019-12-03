@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>框架窗口的变化</title>
+</head>
+
+
+<body>
+
+<iframe id="frame1" name="frame1" src="frame1.html"></iframe>
+
+</body>
+
+<script>
+    /**
+     * 在HTMLIFrameElement和HTMLFrameElement类型上添加了contentDocument属性，这个属性直接指向框架窗口自身的document对象。
+     * 对于IE8以下，可以使用contentWindoow属性先获取窗口框架自身的window对象，最后再获取document对象。
+     */
+    console.log(HTMLIFrameElement.prototype.hasOwnProperty("contentDocument"));
+    console.log(HTMLFrameElement.prototype.hasOwnProperty("contentDocument"));
+    console.log(HTMLIFrameElement.prototype.hasOwnProperty("contentWindow"));
+    console.log(HTMLFrameElement.prototype.hasOwnProperty("contentWindow"));
+
+    window.onload=function(){
+        var frame1=document.getElementById("frame1");
+        //直接获取窗口框架自身的document对象。
+        console.log(frame1.contentDocument===top.frames["frame1"].document);
+        //先获取窗口框架自身的window对象再获取document对象。
+        console.log(frame1.contentWindow.document===top.frames["frame1"].document);
+    };
+
+
+    /**
+     * 为了最好的兼容，获取框架窗口的document对象，我们可以采取下面的方法。
+     */
+    function getDocumentOfFrame(frame) {
+        return frame.contentDocument||frame.window.document;
+    }
+</script>
+
+</html>

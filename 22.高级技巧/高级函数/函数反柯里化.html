@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>函数反柯里化</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    /**
+     * 最简单的反柯里化写法。 核心是利用了 apply或者call函数改变了函数调用中的this指向。
+     */
+    function uncurrying(method) {
+        return function (obj) {
+            var args=Array.prototype.slice.call(arguments,1);
+            return method.apply(obj,args)
+        }
+    }
+
+    /**
+     * 同上。
+     */
+    function uncurrying2(method) {
+        return function () {
+            /**
+             * 等价于  method.call(参数列表)
+             */
+            return Function.prototype.call.apply(method,arguments);
+        }
+    }
+
+    /**
+     * 而这个写法就非常奇妙了，充分运用到了bind call apply三者的调用。
+     * 要理解这种写法，必须要先明白一点：
+     * method.bind(obj) 以及 obj.method 是等价的。
+     */
+    var uncurrying3=Function.prototype.bind.bind(Function.prototype.call);
+
+    /**
+     * 因此上述代码就等同于  Function.prototype.call.bind
+     * 但是需要注意的是， 这段转换后的代码是没有考虑过参数问题的。
+     * 因此我们还要改造一下变成这种形式。
+     */
+    var uncurrying4=function (method) { //这样 参数问题就被考虑进来了。
+        return Function.prototype.call.bind(method);
+    };
+
+    /**
+     * Function.prototype.call.bind(method) 和 method.call也是等价的。
+     */
+    var uncurrying5=function (method) {
+        /**
+         * 但是需要注意到，这是ES6的写法。在ES5里面想要只用call做到这一点，只能手动拼接参数列表的字符串再eval执行。
+         */
+        return function (obj,...args) {
+            return method.call(obj,...args);
+        }
+    }
+
+    /**
+     * 因此我们转换一下调用方式， 从 method.call 转化为 method.apply
+     */
+    var uncurrying6=function (method) {
+        return function () {
+            var args=Array.prototype.slice.call(arguments,1);
+            return method.apply(arguments[0],args);
+        }
+    }
+
+    /**
+     * 而使用反柯里化的好处是显而易见的。 可以节约我们很多的代码量，而且可以很方便的复用原生对象中写好的方法。
+     */
+    var slice=uncurrying5(Array.prototype.slice);
+    var result=slice({0:"reveur",1:"reveur1",2:"reveur2",length:3},0);
+    var uppercase=uncurrying6(String.prototype.toUpperCase);
+    console.log(result.map(uppercase));
+</script>
+
+</html>

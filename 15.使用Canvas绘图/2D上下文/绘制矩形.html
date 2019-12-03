@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制矩形</title>
+</head>
+<body>
+
+<h3>绘制填充矩形</h3>
+<canvas id="canvas1" style="background: gray"></canvas>
+<hr>
+
+<h3>绘制描边矩形</h3>
+<canvas id="canvas2" style="background: gray"></canvas>
+<hr>
+
+<h3>设置lineWidth控制线宽</h3>
+<canvas id="canvas3" style="background: gray"></canvas>
+<hr>
+
+<h3>设置lineJoin控制线段相交的方式</h3>
+miter(默认)
+<canvas id="canvas4" style="background: gray"></canvas>
+bevel
+<canvas id="canvas5" style="background: gray"></canvas>
+round
+<canvas id="canvas6" style="background: gray"></canvas>
+<hr>
+
+</body>
+<script>
+
+    /**
+     * 2D上下文具有以下方法用于绘制矩形
+     */
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("fillRect"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("strokeRect"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("clearRect"));
+
+    /**
+     * 这里绘制2个相交的填充矩形。同时清除相交部分的部分内容
+     */
+    var canvas1=document.getElementById("canvas1");
+    canvas1.height=200;
+    canvas1.width=200;
+    var context1=canvas1.getContext("2d");
+    context1.fillStyle="red";
+    context1.fillRect(0,0,150,150);
+    context1.fillStyle="black";
+    context1.fillRect(50,50,150,150);
+
+    /**
+     * 清除矩形区域的效果类似于绘制一个背景色样式的填充矩形的效果。
+     */
+    context1.clearRect(75,75,50,50);
+    // 在这里效果是相似的
+    // context1.fillStyle="gray";
+    // context1.fillRect(75,75,50,50);
+
+    /**
+     * 这里绘制2个相交的描边矩形。
+     */
+    var canvas2=document.getElementById("canvas2");
+    canvas2.height=200;
+    canvas2.width=200;
+    var context2=canvas2.getContext("2d");
+    context2.strokeStyle="red";
+    context2.strokeRect(0,0,150,150);
+    context2.strokeStyle="black";
+    context2.strokeRect(50,50,150,150);
+
+    var canvas3=document.getElementById("canvas3");
+    canvas3.height=200;
+    canvas3.width=200;
+    var context3=canvas3.getContext("2d");
+
+    /**
+     * lineWidth属性可以控制绘图的线宽。同样是个纯数字。
+     * 实际上我们绘制的矩形的所占据的空间宽度是 设置的宽度加上线宽。
+     */
+    console.log("默认lineWidth为1,是个纯数字:",context3.lineWidth===1,typeof context3.lineWidth === "number" );
+    context3.lineWidth=10;
+    context3.strokeStyle="black";
+    context3.strokeRect(50,50,100,100);
+    context3.strokeStyle="red";
+    context3.lineWidth=1;
+    context3.strokeRect(50,50,100,100);
+
+
+    /**
+     * lineJoin属性用于控制线段相交的方式。
+     */
+    var canvas4=document.getElementById("canvas4");
+    canvas4.height=200;
+    canvas4.width=200;
+    var context4=canvas4.getContext("2d");
+    context4.strokeStyle="black";
+    context4.lineWidth=20;
+    console.log("默认的lineJoin线段相交方式是miter",context4.lineJoin==="miter");
+    context4.strokeRect(50,50,100,100);
+
+    var canvas5=document.getElementById("canvas5");
+    canvas5.height=200;
+    canvas5.width=200;
+    var context5=canvas5.getContext("2d");
+    context5.strokeStyle="black";
+    context5.lineWidth=20;
+
+    context5.lineJoin="bevel";
+
+    context5.strokeRect(50,50,100,100);
+
+    var canvas6=document.getElementById("canvas6");
+    canvas6.height=200;
+    canvas6.width=200;
+    var context6=canvas6.getContext("2d");
+    context6.strokeStyle="black";
+    context6.lineWidth=20;
+
+    context6.lineJoin="round";
+
+    context6.strokeRect(50,50,100,100);
+
+
+</script>
+</html>

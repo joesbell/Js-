@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>媒体元素</title>
+</head>
+<body>
+
+<h3>视频播放器</h3>
+<!--poster指定的地址是视频加载期间显示的自定义图像的地址-->
+<video id="video1" poster="载入图像.png" src="测试视频.ogg" width="400" height="400" style="border:1px solid black;"></video>
+<input type="button" id="button1" value="播放" >
+<input type="button" id="button2" value="暂停" >
+<input type="button" id="button3" value="减速" >
+<input type="button" id="button4" value="加速" >
+<input type="button" id="button5" value="降低音量" >
+<input type="button" id="button6" value="加大音量" >
+<input type="button" id="button7" value="循环播放" >
+
+
+<h3>音频播放器</h3>
+<audio src="测试音频.mp3" id="audio1"></audio>
+<input type="button" id="button9" value="点击播放" style="visibility: hidden" >
+<input type="button" id="button8" value="切歌" >
+
+</body>
+
+<script>
+    /**
+     * 视频和音频播放器均继承于 HTMLMediaElement类型
+     */
+    console.log(HTMLVideoElement.prototype.__proto__===HTMLMediaElement.prototype);
+    console.log(HTMLAudioElement.prototype.__proto__===HTMLMediaElement.prototype);
+
+    var video1=document.getElementById("video1");
+    console.log(video1.__proto__===HTMLVideoElement.prototype);
+    console.log(video1.canPlayType("video/ogg"))
+    video1.controls=true;
+    video1.addEventListener("mouseenter",function () {
+        video1.controls=true;
+    });
+    video1.addEventListener("mouseleave",function () {
+        video1.controls=false;
+    });
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+    var button6=document.getElementById("button6");
+    var button7=document.getElementById("button7");
+    //在视频可以播放的情况下
+    video1.addEventListener("canplay",function (event) {
+        button1.addEventListener("click",function () {
+            video1.play();
+        });
+        button2.addEventListener("click",function () {
+            video1.pause();
+        });
+
+
+        button3.addEventListener("click",function () {
+            //如果播放速度到0.1，再减速就暂停
+            if((video1.playbackRate*10)>>0===1){
+                video1.pause();
+                video1.controls=true;
+            }else{
+                video1.playbackRate=video1.playbackRate-0.1;
+            }
+        });
+        button4.addEventListener("click",function () {
+            video1.playbackRate=video1.playbackRate+0.1;
+        });
+
+        button5.addEventListener("click",function () {
+            //如果音量减到0.1，再减少就静音
+            if((video1.volume*10)>>0===1){
+                video1.muted=true;
+            }else{
+                video1.volume=video1.volume-0.1;
+            }
+        });
+        button6.addEventListener("click",function () {
+            video1.muted=false;
+            //音量如果已经为1了，那么就不增加了
+            if((video1.volume*10)>>0===10){
+
+            }else{
+                video1.volume=video1.volume+0.1;
+            }
+        });
+        //循环播放
+        button7.addEventListener("click",function () {
+            video1.loop=true;
+        });
+    });
+
+
+    var audio1=document.getElementById("audio1");
+    console.log(audio1.__proto__===HTMLAudioElement.prototype);
+    console.log(audio1.canPlayType("audio/mp3"));
+    var button9=document.getElementById("button9");
+
+    /**
+     * 这里需要注意的是，由于浏览器策略，媒体的自动播放是不一定成功的。
+     * 因此我们需要在自动播放失败的情况下，提供点击播放的功能
+     */
+    audio1.addEventListener("canplaythrough",function () {
+        var result=audio1.play();
+        if(result){
+            result.then(()=>{
+
+            }).catch((e)=>{
+                console.error("自动播放失败,请手动播放音频",e);
+                button9.style.visibility="visible";
+                button9.addEventListener("click",function () {
+                    audio1.play();
+                })
+            })
+        }
+    });
+
+    //在播放结束后，切下一首继续播放
+    audio1.addEventListener("ended",function () {
+        var uri=audio1.src;
+        uri=uri.substring(uri.lastIndexOf("/")+1,uri.length)
+        if(uri===encodeURIComponent("测试音频.mp3")){
+            audio1.src="测试音频2.mp3";
+        }else{
+            audio1.src="测试音频.mp3"
+        }
+        audio1.play();
+    });
+
+    var button8=document.getElementById("button8");
+    button8.addEventListener("click",function () {
+        console.log(audio1.src)
+        var uri=audio1.src;
+        uri=uri.substring(uri.lastIndexOf("/")+1,uri.length)
+        if(uri===encodeURIComponent("测试音频.mp3")){
+            audio1.src="测试音频2.mp3";
+        }else{
+            audio1.src="测试音频.mp3"
+        }
+    });
+
+
+</script>
+
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代码测试页</title>
+
+    <script>
+        function test(JSPath){
+            var temp=JSPath.substring(0,JSPath.indexOf(".js"));
+            document.write( "<script> console.log('开始进行 "+temp+" 的测试');"+"<\/script>" );
+            document.write("<script src='"+JSPath+"'><\/script>");
+            document.write( "<script> console.log('结束对  "+temp+" 的测试');"+"<\/script>" );
+            temp=null;
+        }
+    </script>
+</head>
+<body>
+
+
+<!-- 在测试时最好逐个测试，以防不同JS文件的变量互相干扰-->
+
+
+<!--<script>-->
+    <!--test("Object类型.js");-->
+<!--</script>-->
+
+
+<!--<script>-->
+    <!--test("Array类型.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("Date类型.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("RegExp类型.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("Function类型.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("myBind.js");-->
+<!--</script>-->
+
+
+<!--<script>-->
+    <!--test("myCall.js");-->
+<!--</script>-->
+
+
+<!--<script>-->
+    <!--test("myApply.js");-->
+<!--</script>-->
+
+
+<!--<script>-->
+    <!--test("基本包装类型.js");-->
+<!--</script>-->
+
+<script>
+    test("单体内置对象.js");
+</script>
+
+</body>
+</html>

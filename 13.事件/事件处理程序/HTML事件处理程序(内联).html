@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML事件处理程序(内联)</title>
+</head>
+<body>
+
+<div>
+    <!--我们可以看到，在HTML内联代码中，this指向DOM元素，并且，由于一种类似于作用域的机制，在DOM元素中就跟在with语句中一样，可以直接访问自身的属性-->
+    <input type="button" id="input1" onclick="console.log('this.value:',this.value);console.log('value:',value)" value="完全内联的HTML事件处理程序">
+    <!--在不完全内联的HTML代码中也是如此，传入的参数列表中，this指向依旧是DOM元素，并且默认的 event属性为触发的Event事件 -->
+    <input type="button" id="input2" onclick="foo(this.value,event)" value="不完全内联的HTML事件处理程序">
+</div>
+
+<div>
+
+    <form>
+        <input type="text" id="input3" value="表单中文本框的值" name="message">
+        <!--这里的message其实是form下的message属性，指向name属性等于message的input元素，再访问的value值。 可以说是嵌套的作用域。-->
+        <input type="button" id="input4" onclick="console.log(message.value)" value="获取表单中其他元素的值">
+    </form>
+
+</div>
+
+
+</body>
+
+<script>
+    /**
+     * 事件处理程序是作为属性 分别定义在Document类型，HTMLElement类型，甚至是window对象上的。
+     */
+    console.log(Document.prototype.hasOwnProperty("onclick"));
+    console.log(HTMLElement.prototype.hasOwnProperty("onclick"));
+    console.log(window.hasOwnProperty("onclick"));
+
+    //表单元素是可以直接通过name属性访问其内部的input元素的。
+    console.log(document.forms[0].message===document.getElementById("input3"));
+
+    /**
+     * 在不完全内联的HTML事件处理程序中，虽然DOM元素中的代码的this取值为DOM元素。
+     * 但是由于直接调用的是其他方法，因此在方法内部，this依旧是指向全局对象的,在严格模式下是undefined。
+     * 此时HTML事件处理程序的影响仅仅作用在参数列表中是受原本DOM元素的影响的。
+     */
+    function foo() {
+        console.log(this===window);
+        console.log(arguments[0]==="不完全内联的HTML事件处理程序");
+        console.log(arguments[1] instanceof Event);
+    }
+
+</script>
+</html>

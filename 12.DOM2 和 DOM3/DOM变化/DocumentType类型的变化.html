@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DocumentType类型的变化</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /*
+    * 在DocumentType类型上新增了systemId和publicId这两个属性。
+    */
+    console.log(DocumentType.prototype.hasOwnProperty("publicId"));
+    console.log(DocumentType.prototype.hasOwnProperty("systemId"));
+
+    /**
+     * 这两个属性都是有关文档类型声明的。 也就是<!DOCTYPE>节点里的内容
+     */
+    console.log(document.doctype.publicId==="-//W3C//DTD HTML 4.01//EN");
+    console.log(document.doctype.systemId==="http://www.w3.org/TR/html4/strict.dtd");
+
+</script>
+</html>

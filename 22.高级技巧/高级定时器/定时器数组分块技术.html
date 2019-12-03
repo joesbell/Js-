@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>定时器数组分块技术</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="单段代码执行过长">
+<input type="button" id="button2" value="数组分块技术">
+
+</body>
+
+<script>
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var MAX=500000000;
+
+    /**
+     * 普通处理方式，页面会假死。
+     */
+    button1.addEventListener("click",function () {
+        var sum=0;
+        for(var i=0;i<MAX;i++){
+            sum+=i;
+        }
+        console.log(sum);
+    });
+
+    button2.addEventListener("click",function () {
+        /**
+         * 先将数据分好组，利用数组分块技术，每次只处理部分数据，使得页面不至于卡死。
+         */
+        var array=[];
+        for(var i=1;i<=10;i++){
+            array.push(MAX/10*i);
+        }
+        sum=0;
+
+        chunkExec(array,(function () {
+            var index=0;
+            return function (item) {
+                for(var i=item-MAX/10;i<item;i++){
+                    sum+=i;
+                }
+                console.log("已经执行到了第",index++,"步骤");
+                if(item===MAX){
+                    console.log(sum)
+                }
+            }
+        }()));
+    });
+
+    /**
+     * 数组分块技术的核心就是将要处理的数据化为更小的数据，降低每次执行时间，使得页面不至于由于脚本代码执行时间过长而卡死。
+     * @param array 数据数组
+     * @param process 处理数据的函数
+     * @param context
+     */
+    function chunkExec(array,process,context) {
+        /**
+         * 将本来需要同步长时间执行的代码转化为 分次的异步执行代码。
+         * 需要注意的是，执行时间会变得更长，优点只是不会使浏览器卡死而已。
+         */
+        setTimeout(function exec () {
+            var item=array.shift();
+            process.call(context,item);
+            if(array.length>0){
+                setTimeout(exec,100);
+            }
+        },100)
+    }
+
+
+</script>
+
+</html>

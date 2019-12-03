@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>表单的基础知识</title>
+</head>
+<body>
+
+<form id="form1" name="myForm1" >
+    <p>表单1</p>
+    <input type="text" id="text1">
+    <input type="button" id="button1" value="提交表单" onclick="submit()">
+</form>
+
+<hr>
+
+<form id="form2" name="myForm2" action="reveurURL" method="post" enctype="multipart/form-data" accept-charset="GB2312">
+    <p>表单2</p>
+    <input type="text">
+    <input type="button" value="提交表单" onclick="submit()">
+</form>
+
+<hr>
+
+<form id="form3" name="myForm3" action="/reveurURL" enctype="text/plain" accept-charset="GBK" method="post">
+    <p>表单3</p>
+    <input type="text">
+    <input type="button" value="提交表单" onclick="submit()">
+</form>
+
+</body>
+
+<script>
+    var form1=document.getElementById("form1");
+    var form2=document.getElementById("form2");
+    var form3=document.getElementById("form3");
+    var text1=document.getElementById("text1");
+    var button1=document.getElementById("button1");
+    /**
+     * 表单元素其实是 HTMLFormElement元素
+     */
+    console.log(form1.__proto__===HTMLFormElement.prototype);
+
+    /**
+     * HTMLFormElement继承自HTMLElement。因此拥有HTMLElement的所有属性。
+     */
+    console.log(HTMLFormElement.prototype.__proto__===HTMLElement.prototype);
+
+    /**
+     * 除此之外，还具有自身的一些特殊属性
+     */
+    console.log(HTMLFormElement.prototype.hasOwnProperty("acceptCharset"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("action"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("elements"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("enctype"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("length"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("method"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("name"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("target"));
+    /**
+     * 表单元素自身的特殊方法。
+     */
+    console.log(HTMLFormElement.prototype.hasOwnProperty("reset"));
+    console.log(HTMLFormElement.prototype.hasOwnProperty("submit"));
+
+    /**
+     * elements属性表示的是表单的里的控件动态集合。
+     * 该对象是 HTMLFormControlsCollection类型的，而HTMLFormControlsCollection类型又继承于 HTMLCollection。
+     */
+    console.log(form1.elements.__proto__===HTMLFormControlsCollection.prototype);
+    console.log(HTMLFormControlsCollection.prototype.__proto__===HTMLCollection.prototype);
+    /**
+     * 这个控件动态集合的每一项都对应着form表单下的每一个控件。
+     */
+    console.log(form1.elements[0]===text1);
+    console.log(form1.elements[1]===button1);
+
+    /**
+     * length属性就是表单控件集合的大小
+     */
+    console.log(form1.length===form1.elements.length);
+    console.log(form1.length===2);//在这里等于2.
+
+    /**
+     * 表单的action表示的是表单请求发送地址。
+     * 在没设置的情况下就是该页面本身的地址。
+     * 设置了的情况下:
+     * 1.如果使用相对路径，那么基址是当前页面的上级地址
+     * 2.如果使用绝对路径，那么请求地址就是设置的绝对路径。
+     */
+    console.log(form1.action===location.href);
+    console.log(form2.action===location.protocol+"//"+location.host+location.pathname.slice(0,location.pathname.lastIndexOf("/")+1)+"reveurURL");
+    console.log(form3.action===location.protocol+"//"+location.host+"/reveurURL");
+
+    /**
+     * name属性就是我们设置的值
+     */
+    console.log(form1.name==="myForm1");
+
+    /**
+     *  method属性表示的是表单HTTP请求的方式。 为post或者get。
+     *  默认是get，就算不设置也是。
+     */
+
+    console.log(form1.method==="get");
+    console.log(form2.method==="post");
+
+    /**
+     * enctype表示的是表单数据发送时进行不同编码的内容类型。
+     * 默认是 application/x-www-form-urlencoded，就算不设置也是这个。
+     */
+    console.log(form1.enctype==="application/x-www-form-urlencoded");
+    console.log(form2.enctype==="multipart/form-data"); //上传文件
+    console.log(form3.enctype==="text/plain");//文本
+
+    /**
+     * target为发送请求和响应请求的窗口的名称。
+     * 不设置的情况下为空字符串
+     */
+    console.log(form1.target==="");
+
+    /**
+     * acceptCharset属性为服务器能够处理的字符集。
+     * 不设置的情况下为空字符串
+     */
+    console.log(form1.acceptCharset==="");
+    console.log(form2.acceptCharset==="GB2312");
+    console.log(form3.acceptCharset==="GBK");
+
+    /**
+     * 索引表单的方式不仅仅是通过id索引，
+     * Document类型提供了forms属性指向 表单所有表单的动态集合
+     */
+    console.log(Document.prototype.hasOwnProperty("forms"));
+    /**
+     * 这个表单是HTMLCollection类型。
+     */
+    console.log(document.forms.__proto__===HTMLCollection.prototype);
+    console.log(document.forms[0]===form1);
+    console.log(document.forms[1]===form2);
+    console.log(document.forms[2]===form3);
+    /**
+     *  同样的，这个HTMLCollection集合可以不用数字索引， 可以使用表单的name属性也就是表单名称来索引。
+     */
+    console.log(document.forms["myForm1"]===form1);
+    console.log(document.forms["myForm2"]===form2);
+    console.log(document.forms["myForm3"]===form3);
+
+</script>
+</html>

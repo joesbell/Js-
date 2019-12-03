@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>复杂的范围选择</title>
+</head>
+
+<body>
+
+<p id="p1">1</p>
+<p id="p2"> <b>hello</b>world!<strong>this is range</strong></p>
+<p id="p3">3</p>
+
+</body>
+
+<script>
+
+    /**
+     * Range类型中用于复杂选择范围的方法
+     */
+    console.log(Range.prototype.hasOwnProperty("setStart"));
+    console.log(Range.prototype.hasOwnProperty("setEnd"));
+
+    var p1=document.getElementById("p1");
+    var p2=document.getElementById("p2");
+    var p3=document.getElementById("p3");
+
+    /**
+     * 复杂指定范围模拟简单的范围指定
+     */
+
+    /**
+     * 比较范围是否相等
+     */
+
+    function compareRangeObject(range1,range2){
+        for(var prop in range1){
+            if(range1[prop]!==range2[prop]){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 模拟selectNode
+     */
+
+    function selectNode(range,node){
+        var parentNode=node.parentNode;
+        var childs=parentNode.childNodes;
+        childs=Array.prototype.slice.call(childs,0);
+        var index=childs.findIndex(function(value){
+            if(value===node){
+                return true;
+            }
+        });
+        range.setStart(parentNode,index);
+        range.setEnd(parentNode,index+1);
+    }
+
+    var range1=document.createRange();
+    var range2=document.createRange();
+    selectNode(range1,p2);
+    range2.selectNode(p2);
+    console.log("模拟selectNode",compareRangeObject(range1,range2))
+
+    /**
+     * 模拟selectNodeContents
+     */
+
+    function selectNodeContents(range,node){
+        var childs=node.childNodes;
+        var length=childs.length;
+        range.setStart(node,0);
+        range.setEnd(node,length);
+    }
+
+    var range3=document.createRange();
+    var range4=document.createRange();
+    selectNodeContents(range3,p2);
+    range4.selectNodeContents(p2);
+    console.log("模拟selectNodeContents",compareRangeObject(range3,range4));
+
+    /**
+     * 模拟setStartBefore
+     */
+
+    function setStartBefore(range,node){
+        var parentNode=node.parentNode;
+        var childs=parentNode.childNodes;
+        childs=Array.prototype.slice.call(childs,0);
+        var index=childs.findIndex(function(value){
+            if(value===node){
+                return true;
+            }
+        });
+        range.setStart(parentNode,index);
+    }
+
+    /**
+     * 模拟setEndBefore
+     */
+    function setEndBefore(range,node){
+        var previousSibling=node.previousSibling;
+        var parentNode;
+        if(previousSibling){
+            parentNode=previousSibling.parentNode;
+        }else{
+            parentNode=node.parentNode;
+        }
+        var childs=parentNode.childNodes;
+        childs=Array.prototype.slice.call(childs,0);
+        var index;
+        if(previousSibling){
+            index=childs.findIndex(function(value){
+                if(value===node){
+                    return true;
+                }
+            });
+            range.setEnd(parentNode,index);
+        }else{
+            index=childs.findIndex(function(value){
+                if(value===node){
+                    return true;
+                }
+            });
+            range.setEnd(parentNode,index);
+        }
+    }
+
+    var range5=document.createRange();
+    var range6=document.createRange();
+    setStartBefore(range5,p1);
+    setEndBefore(range5,p3);
+    range6.setStartBefore(p1);
+    range6.setEndBefore(p3);
+    console.log("模拟setStartBefore和setEndBefore",compareRangeObject(range5,range6));
+
+    /**
+     * 模拟setStartAfter
+     */
+    function setStartAfter(range,node){
+        var nextSibling=node.nextSibling;
+        var parentNode;
+        if(nextSibling){
+            parentNode=nextSibling.parentNode;
+        }else{
+            parentNode=node.parentNode;
+        }
+        var childs=parentNode.childNodes;
+        childs=Array.prototype.slice.call(childs,0);
+        var index;
+        if(nextSibling){
+            index=childs.findIndex(function(value){
+                if(value===node){
+                    return true;
+                }
+            });
+            range.setStart(parentNode,index+1);
+        }else{
+            index=childs.findIndex(function(value){
+                if(value===node){
+                    return true;
+                }
+            });
+            range.setStart(parentNode,index);
+        }
+    }
+
+    /**
+     * 模拟setEndAfter
+     */
+    function setEndAfter(range,node){
+        var parentNode=node.parentNode;
+        var childs=parentNode.childNodes;
+        childs=Array.prototype.slice.call(childs,0);
+        var index=childs.findIndex(function(value){
+            if(value===node){
+                return true;
+            }
+        });
+        range.setEnd(parentNode,index+1);
+    }
+
+    var range7=document.createRange();
+    var range8=document.createRange();
+
+    setStartAfter(range7,p1);
+    setEndAfter(range7,p3);
+    range8.setStartAfter(p1);
+    range8.setEndAfter(p3);
+
+    console.log("模拟setStartAfter和setEndAfter",compareRangeObject(range7,range8));
+
+
+    /**
+     * 复杂范围选择的更重要的用途是用于将节点的一部分纳入范围，这点是普通的简单范围选择无法做到的。
+     */
+    var hello=p2.firstElementChild.firstChild;
+    var world=p2.firstElementChild.nextSibling;
+    var range=document.createRange();
+    range.setStart(hello,2); //选择了"llo" 以后的部分
+    range.setEnd(world,3); //选择了"ld" 以前的部分
+    console.log(range.endContainer.nodeName==="#text");
+    console.log(range.startContainer.nodeName==="#text");
+    console.log(range.commonAncestorContainer===p2);
+</script>
+
+</html>

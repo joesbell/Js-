@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>浏览器窗口框架测试</title>
+
+    <script>
+
+        window.onload=function () {
+            window.addEventListener("message",getMessage,false);
+            setTimeout(()=>{
+                frames[0].postMessage("topFrame应该收到的信息","*");
+            },1000);
+
+            try{
+                console.log(a);
+            }catch (e){
+                console.log("窗口框架中，父窗口也无法直接访问子窗口中window上的属性，必须通过子窗口的window属性才可以访问");
+            }
+        };
+
+
+        function getMessage(msg) {
+            msg.stopPropagation();
+            console.log("当前窗口名:"+window.name); // 普通的窗口的默认name是空字符串
+            console.log("top窗口收到信息:",msg);
+            console.log("证明我是top:",this===top);
+            console.log(self===top);
+        }
+
+
+        /**
+         * 在this窗口中添加一行信息
+         * @param info
+         */
+        function printLineInfo(info) {
+            var node=this.document.createElement("p");
+            node.innerText=info;
+            this.document.body.appendChild(node);
+        }
+
+
+    </script>
+</head>
+
+<!--这就是框架，不能同body标签同时使用-->
+<frameset rows="40%,*">
+    <frame src="Frame1.html" name="topFrame">
+    <!--frameset标签并不是框架，而是用于框架布局的-->
+    <frameset  cols="50%,*">
+        <frame src="Frame2.html" name="leftFrame">
+        <frameset cols="50%,*">
+            <frame src="Frame3.html" name="centerFrame">
+            <frame src="Frame4.html" name="rightFrame">
+        </frameset>
+    </frameset>
+</frameset>
+
+<!--top.frames属性应当只包含4个框架窗口，也就是说 只认frame标签个数,因为frameset标签并不是框架，仅仅用于布局-->
+
+
+</html>

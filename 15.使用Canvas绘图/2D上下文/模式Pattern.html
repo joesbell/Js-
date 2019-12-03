@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>模式Pattern</title>
+</head>
+
+<body>
+
+<h3>原图</h3>
+<canvas id="canvas1" height="100" width="100" style="border: 1px solid black"></canvas>
+
+<h3>repeat-x</h3>
+<canvas id="canvas2" height="200" width="200" style="border: 1px solid black"></canvas>
+
+<h3>repeat-y</h3>
+<canvas id="canvas3" height="200" width="200" style="border: 1px solid black"></canvas>
+
+<h3>repeat</h3>
+<canvas id="canvas4" height="200" width="200" style="border: 1px solid black"></canvas>
+
+</body>
+
+<script>
+
+    /**
+     * 模式和css的background属性是很相似的。 都有 "repeat" "repeat-x" repeat-y" "no-repeat" 的值。
+     * 并且行为模式也是一样的。
+     * 但是需要注意的是，canvas里的模式必须在图像完全加载完毕后才能使用，也就是说必须利用load事件。
+     * 当然如果将canvas作为图片源时，可以不等待完全加载，不过此时，可能canvas并没有绘制，所以获取到的是画布中的空白图。
+     */
+
+    //createPattern方法是在 2D上下文对象上的用于创建模式的方法
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("createPattern"));
+
+    /**
+     * 绘制原图
+     */
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+    var rainbowStyle=ctx1.createLinearGradient(0,0,100,0);
+    rainbowStyle.addColorStop(0,"red");
+    rainbowStyle.addColorStop(1/6,"orange");
+    rainbowStyle.addColorStop(2/6,"yellow");
+    rainbowStyle.addColorStop(3/6,"green");
+    rainbowStyle.addColorStop(4/6,"cyan");
+    rainbowStyle.addColorStop(5/6,"blue");
+    rainbowStyle.addColorStop(6/6,"purple");
+    ctx1.moveTo(0,0);
+    ctx1.lineTo(100,100);
+    ctx1.moveTo(100,0);
+    ctx1.lineTo(0,100);
+    ctx1.strokeStyle=rainbowStyle;
+    ctx1.lineWidth=5;
+    ctx1.stroke();
+
+
+    var canvas2=document.getElementById("canvas2");
+    var ctx2=canvas2.getContext("2d");
+    //当使用 repeat-x 模式的时候，模式只在x轴重复
+    drawRectUsePattern(ctx2,canvas1,"repeat-x");
+
+    var canvas3=document.getElementById("canvas3");
+    var ctx3=canvas3.getContext("2d");
+    //当使用 repeat-y 模式的时候，模式只在y轴重复
+    drawRectUsePattern(ctx3,canvas1,"repeat-y");
+
+    var canvas4=document.getElementById("canvas4");
+    var ctx4=canvas4.getContext("2d");
+    //当使用 repeat 模式的时候，模式在x轴和y轴均重复
+    drawRectUsePattern(ctx4,canvas1,"repeat");
+
+    /**
+     * 按照repeat参数模式以src为图片源，在2D上下文ctx上绘制一个 200*200的矩形。
+     */
+    function drawRectUsePattern(ctx,src,repeat) {
+        var pattern=ctx.createPattern(src,repeat);
+        /**
+         * 模式是 CanvasPattern类型的
+         */
+        console.log(pattern.__proto__===CanvasPattern.prototype);
+        ctx.fillStyle=pattern;
+        ctx.fillRect(0,0,200,200);
+        ctx.fill();
+    }
+
+
+
+</script>
+
+</html>

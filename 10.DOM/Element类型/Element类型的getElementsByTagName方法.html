@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<div>
+    <p>p1</p>
+    <div>
+        <p>p2</p>
+        <p>p3</p>
+    </div>
+</div>
+
+</body>
+
+<script>
+    /**
+     * 首先我们需要明白的是 Element元素的getElementsByTagName方法和Document文档类型的getElementsByTagName不是同一个方法。
+     * 尽管他们大体作用上相似。都是获取所有后代节点中标签名为指定名称的元素的HTMLCollection集合对象。
+     */
+    console.log(Document.prototype.hasOwnProperty("getElementsByTagName")===true);
+    console.log(Element.prototype.hasOwnProperty("getElementsByTagName")===true);
+    console.log(Document.prototype.getElementsByName!==Element.prototype.getElementsByName);
+
+    var parent=document.getElementsByTagName("div")[0];
+    var ps=parent.getElementsByTagName("p");
+    console.log(ps.length===3);
+    var ps2=document.getElementsByTagName("p");
+    console.log(ps2.length===3);
+    //尽管在这里他们HTMLCollection集合中的元素都是相同的，但是他们并不是同一个对象。
+    console.log(ps!==ps2);
+    //因为他们是后代范围不一样。
+    document.body.appendChild(document.createElement("p"));
+    console.log(ps.length===3);
+    console.log(ps2.length===4);
+</script>
+</html>

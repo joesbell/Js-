@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>富文本选区</title>
+</head>
+<body>
+
+<div contenteditable="true">
+    富文本div
+</div>
+
+<input type="button" id="button1" value="修改选区的颜色">
+选中的内容是:<input type="text" id="text1" value="">
+
+</body>
+<script>
+
+    /**
+     * window或者document对象会提供getSelection方法用于获取Selection选区对象
+     */
+    console.log(window.hasOwnProperty("getSelection"));
+    console.log(Document.prototype.hasOwnProperty("getSelection"));
+
+    /**
+     * 选区Selection类型包含下列属性
+     */
+    console.log(Selection.prototype.hasOwnProperty("anchorNode"));
+    console.log(Selection.prototype.hasOwnProperty("anchorOffset"));
+    console.log(Selection.prototype.hasOwnProperty("focusNode"));
+    console.log(Selection.prototype.hasOwnProperty("focusOffset"));
+    console.log(Selection.prototype.hasOwnProperty("isCollapsed"));
+    console.log(Selection.prototype.hasOwnProperty("rangeCount"));
+
+    /**
+     * 选区Selection类型包含下列方法
+     */
+    console.log(Selection.prototype.hasOwnProperty("addRange"));
+    console.log(Selection.prototype.hasOwnProperty("collapse"));
+    console.log(Selection.prototype.hasOwnProperty("collapseToStart"));
+    console.log(Selection.prototype.hasOwnProperty("collapseToEnd"));
+    console.log(Selection.prototype.hasOwnProperty("containsNode"));
+    console.log(Selection.prototype.hasOwnProperty("deleteFromDocument"));
+    console.log(Selection.prototype.hasOwnProperty("extend"));
+    console.log(Selection.prototype.hasOwnProperty("getRangeAt"));
+    console.log(Selection.prototype.hasOwnProperty("removeAllRanges"));
+    console.log(Selection.prototype.hasOwnProperty("removeRange"));
+    console.log(Selection.prototype.hasOwnProperty("selectAllChildren"));
+    console.log(Selection.prototype.hasOwnProperty("toString"));
+
+    /**
+     * 这里面的大多数方法在这里都是没太大作用的。
+     * 真正需要用到的是 getRangeAt 方法获取DOM范围。 toString获取选区的文字。 selectAllChildren重置选区到某个节点下。
+     */
+
+    var button1=document.getElementById("button1");
+    var text1=document.getElementById("text1");
+    button1.addEventListener("click",function (event) {
+        var selection=document.getSelection();
+        text1.value=selection.toString();
+        /**
+         * 获取选区的第0个范围默认就是获取整个选区的范围。
+         */
+        var range=selection.getRangeAt(0);
+
+        //创建背景色节点
+        var colorNode=document.createElement("span");
+        colorNode.style.backgroundColor="red";
+        //以这个背景色节点包围整个DOM范围的内容
+        range.surroundContents(colorNode);
+        range.insertNode(document.createTextNode("这是修改背景色后的内容:"));
+        //修改选区为背景色节点下的所有元素
+        selection.selectAllChildren(colorNode);
+    });
+
+</script>
+</html>

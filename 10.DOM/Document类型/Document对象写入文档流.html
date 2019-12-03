@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>document对象写入文档流</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    document.write("这是在载入过程中写入的数据");
+    setTimeout(()=>{
+        if(confirm("是否在文档流关闭后再写入数据?")){
+            //这里我们可以注意一下title的变化
+            document.write("这是在载入完毕后写入的数据，会覆盖以前的文档");
+        }
+    },1000)
+</script>
+</html>

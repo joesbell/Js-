@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>移除选项</title>
+</head>
+<body>
+<h3>待移除的选项列表</h3>
+<select id="select1" size="6">
+    <option>0</option>
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+</select>目前的选择框选项个数:<span id="count"></span>
+
+<br>
+要移除的索引位置:
+<select size="1" id="select2">
+</select>
+<br>
+<input type="button" id="button1" value="利用removeChild方法移除选项节点">
+<br>
+<input type="button" id="button2" value="利用select的remove方法移除选项">
+
+</body>
+
+<script>
+    var select1=document.getElementById("select1");
+    var select2=document.getElementById("select2");
+    var options1=select1.options;
+    var options2=select2.options;
+    var count=document.getElementById("count");
+    var lastOption=options1[5];
+
+    initRemoveIndexSelect();
+    updateRemoveIndex();
+
+    var mutationObs=new MutationObserver(updateRemoveIndex);
+
+    var config={
+        childList:true,
+        subtree:true
+    };
+
+    mutationObs.observe(select1,config);
+
+    /**
+     * 初始化待移除索引的select列表
+     */
+    function initRemoveIndexSelect() {
+        var length=options1.length;
+        for(var i=0;i<length;i++){
+            select2.add(new Option(i,i));
+        }
+    }
+    /**
+     * 每当移除一个选项，则更新可移除的索引序号列表。
+     */
+    function updateRemoveIndex() {
+        var length=options1.length;
+        var currentLength=options2.length;
+
+        for(var i=currentLength;i>=length;i--){
+            select2.remove(i);
+        }
+        select2.selectedIndex=0;
+        count.innerText=options1.length;
+    }
+
+    /**
+     * 移除option元素的操作分为两种：
+     * 1.removeChild(node)移除选项节点
+     * 2.select元素的remove(index)方法移除选项
+     */
+    document.addEventListener("click",function (event) {
+        var removeIndex=select2.value;
+        switch (event.target.id) {
+            case "button1":
+                select1.removeChild(options1[removeIndex]);
+                break;
+            case "button2":
+                /**
+                 * 这里需要注意的是如果参数为undefined，那么该函数会移除序号为0的选项。
+                 */
+                select1.remove(removeIndex);
+                break;
+        }
+        console.log("原本的最后一个选项的index改变为:",lastOption.index);
+    })</script>
+
+</html>

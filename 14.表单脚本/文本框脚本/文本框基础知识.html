@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文本框基础知识</title>
+</head>
+<body>
+
+
+<form style="border: 1px solid black;">
+    <h3>表单</h3>
+    <input type="text" id="input1" value="input" size="25" maxlength="30"><span id="lengthTip1"></span>
+    <br>
+    <input type="button" id="button1" value="修改input的value特性">
+    <hr>
+
+    <textarea  id="textarea1" cols="25" rows="5">textarea</textarea><span id="lengthTip2"></span>
+    <br>
+    <input type="button" id="button2"  value="修改textarea的innerHTML属性">
+    <br>
+    <input type="reset" value="重置表单查看默认文本">
+</form>
+
+
+</body>
+
+<script>
+
+    /**
+     * textarea 和 input type="text" 均是文本框。 用法有些许不同。
+     * textarea cols特性表示可见区域的每行的字符个数,rows特性表示可视区域的行数.但是不能指定最大字符数
+     * input 的size特性表示设置的可以显示的字符的个数，决定了文本框的宽度。 maxlength特性设置输入的最大字符数。
+     * 需要注意的是，这里的size和cols等和字符相关的属性不一定能确保每行真的能装下那么多字符，因为这个还与不同字符的宽度有关。
+     */
+
+    /**
+     * input的value特性表示的是 文本框的默认文本。
+     * textarea的innerHTML属性表示的是 文本区域的默认文本。
+     * 但是相同点都是value属性表示的是实际文本内容。
+     * 因此在修改文本框或者文本区域的值时，最好都统一使用对象的value属性而不是利用DOM获取特性的方法。
+     */
+
+    var input=document.getElementById("input1");
+    var textarea=document.getElementById("textarea1");
+    var lengthTip1=document.getElementById("lengthTip1");
+    var lengthTip2=document.getElementById("lengthTip2");
+
+    document.addEventListener("keyup",function (event) {
+        switch (event.target){
+            case input:
+                lengthTip1.innerText="文本框内容长度"+input.value.length+",此时文本框的默认输入是:"+input.getAttribute("value");
+                console.log("input元素的value特性和value属性不一定相等.",input.value!==input.getAttribute("value"));
+                break;
+            case textarea:
+                lengthTip2.innerText="文本区域内容长度"+textarea.value.length+",此时文本框的默认输入是:"+textarea.innerHTML;
+                console.log("textarea元素的innerText为空字符串,innerHTML为文本框的默认值",textarea.innerText==="");
+                break;
+        }
+    });
+
+    document.addEventListener("click",function (event) {
+        switch (event.target.id){
+            case "button1":
+                input.setAttribute("value","修改后的value特性");
+                break;
+            case "button2":
+                textarea.innerHTML="修改后的innerHTML属性";
+                break;
+        }
+    })
+</script>
+</html>

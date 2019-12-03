@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>跨浏览器的事件对象</title>
+</head>
+<body>
+    <div id="div1">
+        <input type="button" id="input1" value="阻止冒泡">
+        <a href="anyURL" id="a1">被阻止默认行为的链接</a>
+    </div>
+</body>
+
+<script>
+    /**
+     * 传入可能的事件对象参数，跨浏览器获取当前的事件对象。
+     */
+    function getEvent(event){
+        return event?event:window.event;
+    }
+
+    /**
+     * 传入事件对象，跨浏览器获取目标元素。
+     */
+    function getTarget(event){
+        return event.target?event.target:event.srcElement;
+    }
+
+    /**
+     * 传入事件对象，跨浏览器的停止事件冒泡。
+     */
+    function stopPropagation(event){
+        if(event.stopPropagation){
+            event.stopPropagation();
+        }else{
+            event.cancelBubble=true;
+        }
+    }
+
+    /**
+     * 传入事件对象，跨浏览器的阻止事件默认行为.
+     */
+    function preventDefault(event){
+        if(event.preventDefault){
+            event.preventDefault();
+        }else{
+            event.returnValue=false;
+        }
+    }
+
+    function addEventHandler(ele,type,handler,isCatch) {
+        if(ele.addEventListener){  //优先DOM2级
+            ele.addEventListener(type,handler,isCatch);
+        }else if(ele.attachEvent){ //其次是IE独有的类DOM2级
+            ele.attachEvent("on"+type,handler);
+        }else{//最后才使用DOM0级
+            ele["on"+type]=handler;
+        }
+    }
+    function removeEventHandler(ele,type,handler,isCatch) {
+        if(ele.removeEventListener){
+            ele.removeEventListener(type,handler,isCatch);
+        }else if(ele.detachEvent){
+            ele.detachEvent("on"+type,handler);
+        }else{
+            ele["on"+type]=null;
+        }
+    }
+
+
+    var input1=document.getElementById("input1");
+    var div1=document.getElementById("div1");
+    var a1=document.getElementById("a1");
+    addEventHandler(input1,"click",function(event){
+        event=getEvent(event);
+        console.log("input的click事件触发并阻止冒泡：",getTarget(event)===input1);
+        stopPropagation(event);
+    },false);
+
+    addEventHandler(a1,"click",function(event){
+        event=getEvent(event);
+        console.log("链接的click事件触发并阻止其默认行为:",getTarget(event)===a1);
+        preventDefault(event);
+    },false);
+
+    addEventHandler(div1,"click",function(event){
+        event=getEvent(event);
+        console.log("div1的click冒泡事件触发");
+        if(getTarget(event)===input1){
+            console.log("点击的是input");
+        }else if(getTarget(event)===a1){
+            console.log("点击的是a");
+        }else if(getTarget(event)===div1){
+            console.log("点击的是div");
+        }else{
+            console.log("未知target");
+        }
+    },false);
+
+    addEventHandler(div1,"click",function(event){
+        event=getEvent(event);
+        console.log("div1的click捕获事件触发");
+        if(getTarget(event)===input1){
+            console.log("点击的是input");
+        }else if(getTarget(event)===a1){
+            console.log("点击的是a");
+        }else if(getTarget(event)===div1){
+            console.log("点击的是div");
+        }else{
+            console.log("未知target");
+        }
+    },true);
+</script>
+</html>

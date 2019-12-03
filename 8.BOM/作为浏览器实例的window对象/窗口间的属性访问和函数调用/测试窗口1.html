@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试窗口1</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 只要符合跨域策略，那么就可以通过持有其他的窗口的window对象访问其他窗口中的属性。
+     */
+    var a="a";
+
+
+    //在窗口1中打开窗口2.
+    var son=window.open("测试窗口2.html");
+
+
+    //而这里通过窗口2的window对象访问到了窗口2中声明的全局属性
+    setTimeout(()=>{
+        console.log("1秒后,访问窗口2的属性b:",son.b);
+    },1000);
+
+
+
+    function foo(info) {
+        /**
+         * 这里必须加上this，不然默认都是在当前窗口1中调用console.log方法。
+         */
+        this.console.log(info,this.a==="a");//如果执行环境是测试窗口1，那么返回true，否则返回false。
+    }
+</script>
+
+</html>

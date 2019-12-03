@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>表单字段(控件)</title>
+</head>
+<body>
+
+<form id="form1" name="myForm1" >
+    <h3>表单1</h3>
+    <ul>
+        <li><input type="radio" name="color" value="red"></li>
+        <li><input type="radio" name="color" value="blue"></li>
+        <li><input type="radio" name="color" value="green"></li>
+    </ul>
+
+    <input type="button" value="按钮可以使用" name="button1" autofocus>
+    <br>
+    <input type="text" value="文本" name="text1">
+    <br>
+    <input type="button" value="设置焦点为第一个单选框" onclick="focusOnRadio()">
+    <br>
+</form>
+
+<hr>
+<form id="form2" name="myForm2" >
+    <h3>表单2</h3>
+    <input type="text" value="文本输入框" name="textinput">
+    <br>
+    <textarea name="textarea">
+        文本输入区域
+    </textarea>
+    <br>
+    <select name="select">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+    </select>
+</form>
+</body>
+
+<script>
+    var form1=document.getElementById("form1");
+
+    /**
+     * 表单的elements属性如果根据name来索引控件有可能会索引到由相同name单选框组成的动态列表RadioNodeList对象。
+     * 当然，如果按照序号索引，依旧是正常的单个控件。
+     * 需要注意的是，这种RadioNodeList只有其列表元素均为单选框元素时才有意义。
+     */
+    var nodeList=form1.elements["color"];
+    console.log(nodeList.__proto__===RadioNodeList.prototype);
+    console.log(nodeList[0]===form1.elements[0]);
+    console.log(nodeList[1]===form1.elements[1]);
+    console.log(nodeList[2]===form1.elements[2]);
+    /**
+     * 这个RadioNodeList对象的value表示的是被勾选的单选框的value。
+     * length属性表示的是这个动态列表目前的长度。
+     */
+    console.log(nodeList.value===""); //可以看到默认没勾选的时候value是空字符串
+    console.log(nodeList.length===3);
+    var newRadio=document.createElement("input");
+    var newLi=document.createElement("li");
+    newRadio.setAttribute("type","radio");
+    newRadio.setAttribute("name","color");
+    newRadio.setAttribute("value","black");
+    newLi.appendChild(newRadio);
+    form1.firstElementChild.nextElementSibling.appendChild(newLi);
+    console.log(nodeList.length===4); //这里说明是动态列表。
+    nodeList[3].click();
+    console.log(nodeList.value==="black");
+
+    /**
+     * 尽管 直接使用 表单元素自身也可以直接通过序号或者name来索引表单下的控件，如同使用其elements属性一样。
+     * 但是，这种方式是不推荐的，只是为了兼容以前的浏览器。
+     */
+    console.log(form1[0]===form1.elements[0]);
+    console.log(form1["color"]===form1.elements["color"]);
+    console.log(Object.getOwnPropertyDescriptor(form1,"color").enumerable===false);//这种表单元素直接索引控件的方式是不推荐的。因此默认是不可遍历的属性。
+    console.log(Object.getOwnPropertyDescriptor(form1.elements,"color").writable===false); //这种使用elements属性索引到的元素是只读不可写的。
+
+
+    /**
+     * 这些是所有的表单input元素都共有的公共属性
+     */
+    console.log(HTMLInputElement.prototype.hasOwnProperty("disabled"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("form"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("name"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("readOnly"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("type"));
+    console.log(HTMLInputElement.prototype.hasOwnProperty("value"));
+
+    var button1=form1.elements.button1;
+    /**
+     * form属性指向该input元素所在的表单元素。
+     * 需要注意的是，所有的公共属性里，只有这个form属性是只读不可写的。其他公共属性都是在Input元素上都是可读可写的。
+     */
+    console.log(button1.form===form1);
+    console.log(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"form").set===undefined);
+
+    /**
+     * disabled属性表示input元素是否被禁用，被禁用的input元素无法被点击和输入
+     */
+    console.log(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"disabled").set!==null);
+    button1.addEventListener("click",function () {
+        button1.disabled=true;
+        button1.value="按钮被禁用";
+        setTimeout(()=>{
+            button1.disabled=false;
+            button1.value="按钮被恢复使用";
+        },3000)
+    });
+
+    /**
+     * readOnly属性表示input元素内容是否是只读的。
+     * 依旧可读可写
+     */
+    console.log(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"readOnly").set!==null);
+    var text1=form1.elements.text1;
+    text1.readOnly=true;
+    text1.value="文本被禁用，3秒后恢复";
+    setTimeout(()=>{
+        text1.readOnly=false;
+        text1.value="现在可以输入文本";
+    },3000);
+
+    /**
+     * input元素的type属性和元素type特性的内容一致。可读可写。而select元素则只读的。
+     */
+    console.log(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"type").set!==null);
+    console.log(Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,"type").set===undefined);
+    console.log(button1.type==="button");
+    console.log(text1.type==="text");
+
+    /**
+     * name属性和元素name特性的内容一致。可读可写
+     */
+    console.log(Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"name").set!==null);
+    console.log(button1.name==="button1");
+    console.log(text1.name==="text1");
+
+    /**
+     * HTML5还为input元素添加了一个autofocus属性用于自动设置焦点
+     */
+    console.log(HTMLInputElement.prototype.hasOwnProperty("autofocus"));
+    console.log(button1.autofocus===true);
+
+    /**
+     * 所有的表单字段都支持 focus() blur()方法。
+     */
+    function focusOnRadio() {
+        form1.elements[0].focus();
+        console.log(document.activeElement===form1.elements[0]);
+        console.log("1秒后失去焦点");
+        setTimeout(()=>{
+            form1.elements[0].blur();
+            console.log(document.activeElement===document.body);
+        },1000)
+    }
+
+    var form2=document.getElementById("form2");
+
+    /**
+     * 表单元素都支持 focus blur change 事件。
+     * 需要注意的是不同的元素的change事件触发也不同。
+     * input和textarea只有在值被改变并且失去焦点后才会触发change。
+     * 而select元素则是改变了选项就会触发change，不需要失去焦点这个条件。
+     */
+    form2.addEventListener("change",function (event) {
+        switch (event.target.nodeName.toLowerCase()){
+            case "input":
+                console.log("input文本输入框值被改变了，并且失去了焦点，change事件触发了");
+                break;
+            case "textarea":
+                console.log("textarea文本区域被改变了，并且失去了焦点，change事件触发了");
+                break;
+            case "select":
+                console.log("select选项改变了，change事件触发了");
+                break;
+        }
+    })
+
+</script>
+</html>

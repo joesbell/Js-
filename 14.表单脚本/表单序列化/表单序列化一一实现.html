@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>实现表单序列化</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    /**
+     * 实现表单提交的序列化
+     */
+    function serialize(form) {
+        var controllers=form.elements; //表单的控件集合。
+        var key;
+        var value;
+        var params=[];
+        controllers=Array.prototype.slice.call(controllers);
+        controllers.forEach((controller)=>{
+            if(!controller.name){  //只有具有name和value的字段才会被提交
+                return ;
+            }
+            if(controller.disabled){//只有没被禁用的字段才回被提交
+                return ;
+            }
+
+            key=encodeURIComponent(controller.name);
+            switch (controller.type) {
+                case "select-one":
+                case "select-multiple":
+                    /**
+                     * 对于选择框，单选和多选的都只有被选择的选项才会被提交
+                     */
+                    var options=controller.options;
+                    options=Array.prototype.slice.call(options);
+                    options.forEach((option)=>{
+                        if(option.selected){
+                            value=encodeURIComponent(option.value);
+                            params.push(key+"="+value);
+                        }
+                    });
+                    break;
+                case "radio":
+                case "checkbox":
+                    /**
+                     * 对于勾选框，单选和多选的都只有被勾选的选项才会被提交
+                     */
+                    if(controller.checked){
+                        value=encodeURIComponent(controller.value);
+                        params.push(key+"="+value);
+                    }
+                    break;
+                /**
+                 * 文件一般都不会在这里序列化处理，而按钮这些是不会被提交的。
+                 */
+                case undefined:
+                case "file":
+                case "submit":
+                case "button":
+                case "reset":
+                    break;
+                /**
+                 * 默认的具有name和value的字段直接 URI编码后提交
+                 */
+                default:
+                    value=encodeURIComponent(controller.value);
+                    params.push(key+"="+value);
+            }
+        });
+        return params.join("&");
+    }
+</script>
+</html>

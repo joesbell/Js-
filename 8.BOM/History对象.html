@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>history对象</title>
+</head>
+<body>
+<input type="button" id="button1" value="跳转到新的URL">
+
+<input type="button" id="button2" value="前进">
+
+<input type="button" id="button3" value="回退">
+</body>
+
+<script>
+
+    //检测当前页面是否为新窗口打开的
+    window.onload=function () {
+        if(history.length===1){
+            alert("当前窗口为新打开的窗口")
+        }
+
+        print("这是页面:"+location.search.substr(1));
+        print("目前的历史记录条数:"+history.length);
+    };
+
+    document.getElementById("button1").addEventListener("click",function () {
+        location.search="newURL"+Math.random();
+    });
+
+    document.getElementById("button2").addEventListener("click",function () {
+        history.forward();
+    });
+
+    document.getElementById("button3").addEventListener("click",function () {
+        history.back();
+    });
+
+
+    function print(msg) {
+        var node=document.createElement("p");
+        node.innerText=msg;
+        document.body.appendChild(node);
+    }
+</script>
+</html>

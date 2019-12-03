@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>插入文本</title>
+</head>
+<body>
+
+<div id="content">
+    <p>before</p>
+    <div>
+        <p>this is <strong>reveur</strong>'s todo list</p>
+        <ul>
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+        </ul>
+        <p>todo list end</p>
+    </div>
+    <p>after</p>
+</div>
+
+<div id="content2">
+    <p>原本存在的元素</p>
+</div>
+
+<p style="display: none;">隐藏元素</p>
+
+</body>
+
+<script>
+    /**
+     * innerText和outerText是定义在HTMLElement原型上的访问器属性
+     */
+    console.log(HTMLElement.prototype.hasOwnProperty("innerText"));
+    console.log(HTMLElement.prototype.hasOwnProperty("outerText"));
+
+    var content=document.getElementById("content");
+    /**
+     * 元素的innerText的值总是 该元素下按照从上到下，从左往右的顺序，对所有文本节点的内容进行拼接的结果。
+     */
+    console.log(content.innerText);
+    //innerText和outerText总是相等的
+    console.log(content.innerText===content.outerText);
+
+    /**
+     * 当我们设置一个节点的innerText时，等同于将该节点的所有后代节点树替换为一个文本节点。被替换的节点树并没有被删除，只是在文档中没有位置罢了，依旧可以访问。
+     */
+    var content2=document.getElementById("content2");
+    content2.innerText="替换为一个文本节点";
+    console.log(content2.childNodes.length===1);
+
+    content2.outerText="outerText";
+    /**
+     * 被替换的节点和节点树并没有被删除，只是在文档中没有位置罢了，依旧可以访问。
+     */
+    console.log(content2.ownerDocument===document);
+    console.log(content2.isConnected===false);
+
+    /**
+     * 各个浏览器对innerText中空白符的处理方式不一定一致。
+     * DOM3级中对于Node规定了一个textContent属性,同样返回所有后代的文本节点内容。
+     * 但是还是和innerText有所区别
+     */
+
+    console.log(Node.prototype.hasOwnProperty("textContent"));
+
+    console.log(content.textContent);
+    //textContent和innerText返回的字符串往往是不相等的。因为处理空白符的方式不同。
+    console.log(content.textContent!==content.innerText);
+
+    //不能拥有文本节点的节点的textContent属性返回null。
+    console.log(document.textContent===null);
+
+    /**
+     * 在textContent属性返回的字符串中，可以包含script style标签内的文本内容，而innerText属性是不能包含script style标签内的文本内容的。
+     * 同时textContent属性包含隐藏元素的文本内容，而innerText不会包含隐藏元素的文本内容。
+     */
+    console.log("document.documentElement.innerText不能包含style script内的文本节点内容！",document.documentElement.innerText);
+    console.log("document.documentElement.textContent可以包含style script内的文本节点内容！",document.documentElement.textContent);
+
+
+</script>
+
+</html>

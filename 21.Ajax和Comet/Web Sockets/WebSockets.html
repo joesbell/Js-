@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Sockets</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat-container{
+            width: 100%;
+            height:700px;
+            border: 1px solid black;
+            overflow: auto;
+        }
+        .send-button{
+            display: inline-block;
+            text-align: center;
+            height: 80px;
+            width: calc(100% - 1738px);
+            line-height: 80px;
+            color: aquamarine;
+            font-size: 20px;
+            float: right;
+            background: gray;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .notice{
+            text-align: center;
+            font-size: 13px;
+            margin: 10px;
+        }
+        .chat-message{
+            padding: 5px;
+            text-indent: 20px;
+            border: 1px solid gray;
+            border-radius: 5px;
+        }
+
+        .chat-title{
+            font-weight: bolder;
+            font-size: 13px;
+            padding: 10px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+<h2>利用Web Sockets 实现的聊天室</h2><br>
+<input type="text" id="text1" placeholder="用户名">
+<input type="button" id="button1" value="登录">
+<input type="button" id="button2" value="退出">
+<br><br>
+<hr>
+<div class="chat-container">
+</div>
+<div>
+    <textarea cols="245" rows="5" id="text2" placeholder="要发送的消息" style="resize: none"></textarea>
+    <div class="send-button" id="button3">发送</div>
+    <input type="button" id="button4" style="display: none">
+</div>
+
+</body>
+
+<script>
+    var blank="&nbsp;";
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+
+    var container=document.getElementsByClassName("chat-container")[0];
+    var socket;
+    button1.addEventListener("click",function() {
+        socket=new WebSocket("ws://localhost:8081");
+
+        /**
+         * 当连接成功时，向服务器发送 type=login 类型的消息。
+         */
+        socket.onopen=function(){
+            console.log("连接成功");
+            var data={
+                type:"login",
+                username:text1.value
+            };
+            socket.send(JSON.stringify(data));
+        };
+
+        /**
+         * 当收到信息时，根据信息类型选择如何处理信息。
+         * @param event
+         */
+        socket.onmessage=function (event) {
+            var data=JSON.parse(event.data);
+            switch (data.type) {
+                case "notice": //公告信息
+                    showNotice(data.time,data.message);
+                    break;
+                default://默认的聊天信息
+                    showMessage(data.username,data.time,data.content);
+            }
+        };
+
+        socket.onerror=function(){
+            console.log("连接失败");
+        };
+        socket.onclose=function(){
+            console.log("连接关闭");
+        };
+    });
+
+    /**
+     * 像服务器发送 type=logout 的登出消息后就关闭连接
+     */
+    button2.addEventListener("click",function () {
+        var data={
+            type:"logout"
+        };
+        socket.send(JSON.stringify(data));
+        socket.close();
+    });
+
+    button3.addEventListener("click",function () {
+        button4.click();
+    });
+
+    /**
+     * 向服务器发送 type="message"的聊天信息。
+     */
+    button4.addEventListener("click",function () {
+        var message=text2.value;
+        text2.value="";
+        var obj={
+            type:"message",
+            content:message
+        };
+        socket.send(JSON.stringify(obj));
+    });
+
+    /**
+     * 显示聊天信息
+     * @param username
+     * @param time
+     * @param message
+     */
+    function showMessage(username,time,message) {
+        var p1=document.createElement("p");
+        var p2=document.createElement("p");
+        p1.innerText=time+"\t"+username+":";
+        p2.innerText=message;
+        p1.classList.add("chat-title");
+        p2.classList.add("chat-message");
+        container.appendChild(p1);
+        container.appendChild(p2);
+    }
+
+    /**
+     * 显示公告信息
+     * @param time
+     * @param content
+     */
+    function showNotice(time,content) {
+        var p=document.createElement("p");
+        p.innerHTML=time+blank+blank+blank+blank+blank+content;
+        p.classList.add("notice");
+        container.appendChild(p);
+    }
+</script>
+
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>控制窗口移动和窗口大小的方法</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    var aWindow=window.open("","_blank","height=10,width=10,left=400,top=400");
+    setTimeout(()=>{
+        aWindow.resizeTo(200,200);
+        aWindow.document.body.innerHTML="大小变为 200,200 ";
+    },1000);
+
+    setTimeout(()=>{
+        aWindow.moveTo(500,500);
+        aWindow.document.body.innerHTML="移动到 坐标点 500，500 ";
+    },2000);
+
+    setTimeout(()=>{
+        aWindow.resizeBy(100,100);
+        aWindow.document.body.innerHTML="变大 100，100 ";
+    },3000);
+    setTimeout(()=>{
+        aWindow.moveBy(-100,-100);
+        aWindow.document.body.innerHTML="移动  -100，-100 ";
+    },4000);
+
+    setTimeout(()=>{
+        aWindow.close();
+    },5000)
+
+</script>
+
+</html>

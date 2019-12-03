@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代码测试页</title>
+
+    <script>
+        function test(JSPath){
+            var temp=JSPath.substring(0,JSPath.indexOf(".js"));
+            document.write( "<script> console.log('开始进行 "+temp+" 的测试');"+"<\/script>" );
+            document.write("<script src='"+JSPath+"'><\/script>");
+            document.write( "<script> console.log('结束对  "+temp+" 的测试');"+"<\/script>" );
+            temp=null;
+        }
+    </script>
+</head>
+<body>
+
+<!-- 在测试时最好逐个测试，以防不同JS文件的变量互相干扰-->
+
+<!--<script>-->
+    <!--test("一切引用类型都是对象.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("函数和对象的关系.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("prototype原型.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("隐式原型__proto__.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("instanceof.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("继承.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("原型的灵活性.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("执行上下文.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("this.js");-->
+<!--</script>-->
+
+
+<!--<script>-->
+    <!--test("作用域.js");-->
+<!--</script>-->
+
+
+<!--<script>-->
+    <!--test("自由变量以及作用域链.js");-->
+<!--</script>-->
+
+<!--<script>-->
+    <!--test("执行上下文栈.js");-->
+<!--</script>-->
+<script>
+    test("闭包.js");
+</script>
+
+</body>
+</html>

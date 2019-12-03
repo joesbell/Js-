@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>表单序列化的基础知识</title>
+</head>
+<body>
+
+<iframe  name="targetFrame"></iframe>
+
+<form  style="border: 1px solid black;padding: 10px">
+    <p>1.对表单提交的具有 name属性和value属性的字段 <strong>URL编码后以 = 连接，不同字段以 & 分割</strong>    </p>
+    name:<input type="text" name="name"><br>
+    sex:<input type="text" name="sex">
+    <input type="button" value="提交表单" onclick="submit()">
+</form>
+<hr>
+
+<form style="border: 1px solid black;padding: 10px" >
+    <p>2.被禁用的字段不会发送</p>
+    name:<input type="text" name="name"><br>
+    disabled sex:<input type="text" name="sex" disabled>
+    <input type="button" value="提交表单" onclick="submit()">
+</form>
+<hr>
+
+<form style="border: 1px solid black;padding: 10px" >
+    <p>3.单选框和复选框只发送勾选了的字段</p>
+    sex:
+    <input type="radio" name="sex" value="man">
+    <input type="radio" name="sex" value="woman">
+    <br>
+    like:
+    <input type="checkbox" name="game" value="DOTA">
+    <input type="checkbox" name="game" value="BladeSoul">
+    <input type="checkbox" name="game" value="finalfantasty">
+    <br>
+    country:
+    <select name="country" multiple>
+        <option value="CN">中国</option>
+        <option value="US">美国</option>
+    </select>
+    <br>
+    <input type="button" value="提交表单" onclick="submit()">
+</form>
+<hr>
+
+<form style="border: 1px solid black;padding: 10px" >
+    <p>4.type="reset"或者"button"的按钮是不会被发送的</p>
+    name:<input type="text" name="name"><br>
+    <input type="reset" name="resetButton" value="重置表单">
+    <input type="button" name="submitButton" value="提交表单" onclick="submit()">
+</form>
+<hr>
+
+<form style="border: 1px solid black;padding: 10px" >
+    <p>5.多选框的每个选中的值都单独是一个name=value键值对</p>
+    like:
+    <input type="checkbox" name="game" value="DOTA">
+    <input type="checkbox" name="game" value="BladeSoul">
+    <input type="checkbox" name="game" value="finalfantasty">
+    <br>
+    country:
+    <select name="country" multiple>
+        <option value="CN">中国</option>
+        <option value="US">美国</option>
+    </select>
+    <br>
+    <input type="button"  value="提交表单" onclick="submit()">
+</form>
+<hr>
+
+</body>
+
+<script>
+    /**
+     * 用于将所有表单的action指向我们自己的响应页面。同时将target指向当前页面中的子框架页面方便我们观察。
+     */
+    Array.prototype.slice.call(document.forms).forEach((form)=>{
+        form.target="targetFrame";
+        form.action="http://localhost:8080/demo";
+    });
+</script>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>变换</title>
+</head>
+<body>
+
+<h3>save() restore()保存和加载绘画选项状态</h3>
+<canvas id="canvas1" height="300" width="500" style="border: 1px solid black"></canvas>
+
+<h3>translate()移动原点坐标,便于坐标的计算</h3>
+<canvas id="canvas2" height="300" width="300" style="border: 1px solid black"></canvas>
+
+<h3>rotate() 圆形</h3>
+<canvas id="canvas3" height="300" width="300" style="border: 1px solid black"></canvas>
+
+<h3>rotate() 时钟</h3>
+<canvas id="canvas4" height="400" width="600" style="border: 1px solid black"></canvas>
+
+<h3>scale() 缩放</h3>
+<canvas id="canvas5" height="400" width="800" style="border: 1px solid black"></canvas>
+
+<h3>transform() 和 setTransform() 修改变化矩阵</h3>
+<canvas id="canvas6" height="400" width="800" style="border: 1px solid black"></canvas>
+
+</body>
+<script>
+
+    /**
+     * 2D上下文具有以下变换的方法。
+     */
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("translate"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("scale"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("rotate"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("transform"));
+
+    /**
+     * 2D上下文类型上具有以下方便变换的方法。 主要用于保存和导入变换前后2D上下文的绘画配置状态。
+     */
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("save"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("restore"));
+
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+    //这里将原点设置为 (100,100)
+    ctx1.translate(100,100);
+    ctx1.font="10px serial";
+    ctx1.fillStyle="red";
+    ctx1.fillText("hello1",0,0);
+
+    ctx1.save();
+
+    //这里在(100,100)的基础上将原点设置为 (200,200)
+    ctx1.translate(100,100);
+    ctx1.font="20px serial";
+    ctx1.fillStyle="blue";
+    ctx1.fillText("hello2",0,0);
+
+    ctx1.save();
+
+    //这里在(200,200)的基础上将原点设置为 (300,300)
+    ctx1.translate(100,100);
+    ctx1.font="30px serial";
+    ctx1.fillStyle="green";
+    ctx1.fillText("hello3",0,0);
+
+    //将绘画配置还原到之前设置的原点(200,200)及其字体配置。
+    ctx1.restore();
+    ctx1.translate(ctx1.measureText("hello2").width,0);
+    ctx1.fillText("restore后的hello4",0,0);
+
+    //将绘画配置还原到之前设置的原点(100,100)及其字体配置。
+    ctx1.restore();
+    ctx1.translate(ctx1.measureText("hello1").width,0);
+    ctx1.fillText("restore后的hello5",0,0);
+
+
+    /**
+     * 使用translate方法有个很好的优点，就是便于计算坐标。
+     */
+    var canvas2=document.getElementById("canvas2");
+    var ctx2=canvas2.getContext("2d");
+
+    /**
+     * 假设我们要在一个300*300九宫格里绘制数字1-9
+     */
+
+    ctx2.save();  //首先保存当前的原点坐标(0,0);
+
+    for(var i=0;i<3;i++){
+        ctx2.restore(); //加载原点坐标0,0
+        ctx2.save(); //再次保存原点坐标0,0
+
+        ctx2.translate(0,i*100);//这是控制换行的,每次原点坐标下移100像素
+        for(var j=0;j<3;j++){
+            ctx2.save(); //保存当前行的原点坐标.
+            ctx2.translate(j*100,0); //控制换列，移动原点坐标到对应列上，每次坐标右移100。
+            ctx2.font="50px serif";
+            /**
+             * 可以看到 通过translate移动原点坐标，我们不需要改变绘制文字的坐标。
+             */
+            ctx2.fillText(i*3+j+1,35,75);
+            ctx2.restore();//还原当前行的原点坐标.
+        }
+    }
+
+    /**
+     * 利用rotate旋转可以很方便的绘制某些图形。
+     * rotate(angle) 的angle是一个弧度，并且是以顺时针为方向的。
+     * 这里利用rotate绘制一个圆形构成的圆形图案
+     */
+    var canvas3=document.getElementById("canvas3");
+    var ctx3=canvas3.getContext("2d");
+    ctx3.translate(150,150); //将原点设置为圆心位置。
+    var intervalAngle; //间隔旋转的角度
+    for(i=1;i<6;i+=1){ //控制每一层的距离
+        intervalAngle=Math.PI*2/(6*i);
+        ctx3.save();//在旋转之前保存当前的2D上下文绘制信息。
+        for(j=0;j<(i*6);j++){
+            ctx3.beginPath();
+            //通过旋转，就无需计算小圆的位置信息了。
+            ctx3.rotate(intervalAngle);
+            ctx3.arc(25*i,0,10,0,Math.PI*2,false);
+            ctx3.fill();
+        }
+        ctx3.restore();//一圈小圆绘制完毕后，还原为之前保存的2D上下文信息。
+    }
+
+
+    /**
+     * 这里利用rotate旋转来绘制一个钟表
+     */
+    var canvas4=document.getElementById("canvas4");
+    var ctx4=canvas4.getContext("2d");
+    ctx4.translate(200,200); //将原点设置为圆心位置。
+
+    //绘制钟表的外表盘
+    ctx4.arc(0,0,199,0,Math.PI*2,false);
+    ctx4.arc(0,0,195,0,Math.PI*2,false);
+    ctx4.stroke();
+
+    //绘制钟表的中心
+    ctx4.beginPath();//这里需要注意的是， beginPath创建的新路径是继承之前的2D上下文绘制选项信息的。
+    ctx4.arc(0,0,5,0,Math.PI*2,false);//因此这里是 0，0为坐标中心。
+    ctx4.fill();
+
+    //绘制小时的刻度
+    ctx4.save();
+    ctx4.lineWidth=5;
+    for(i=0;i<12;i++){
+        ctx4.rotate(Math.PI*2/12);
+        ctx4.beginPath();
+        ctx4.moveTo(180,0);
+        ctx4.lineTo(195,0);
+        ctx4.stroke();
+    }
+    ctx4.restore();
+
+    //绘制分钟的刻度
+    ctx4.save();
+    ctx4.lineWidth=2;
+    for(i=0;i<60;i++){
+        ctx4.rotate(Math.PI*2/60);
+        if((i+1)%5===0){
+            continue;
+        }
+        ctx4.beginPath();
+        ctx4.moveTo(190,0);
+        ctx4.lineTo(195,0);
+        ctx4.stroke();
+    }
+    ctx4.restore();
+
+    /**
+     * 钟表类
+     * @param ctx  绘制的2D上下文
+     * @param time 时间从何算起 这个是个 Date类型对象
+     * @constructor
+     */
+    function Clock(ctx,time) {
+        this.second=time.getSeconds();
+        this.minute=time.getMinutes();
+        this.hour=time.getHours();
+        this.ctx=ctx;
+        ctx.rotate(Math.PI*2*3/4); //转到0点。
+        this.init();
+        setInterval(()=>{
+            this.secondGo();
+        },1000)
+    }
+
+    /**
+     * 初始化时间并绘制时分秒针。
+     */
+    Clock.prototype.init=function () {
+
+        //清除右侧的时间显示
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.rotate(Math.PI/2);
+        this.ctx.fillStyle="white";
+        this.ctx.fillRect(250,-15,120,30);
+        this.ctx.fill();
+        this.ctx.restore();
+
+        //清除原本的钟表的时分秒针
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.fillStyle="white";
+        this.ctx.arc(0,0,160,0,Math.PI*2);
+        this.ctx.fill();
+        this.ctx.restore();
+
+        //重新绘制钟表中心。
+        ctx4.beginPath();
+        ctx4.arc(0,0,5,0,Math.PI*2,false);
+        ctx4.fill();
+
+        //重新绘制右侧的时间显示
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.rotate(Math.PI/2);
+        this.ctx.font="30px serial";
+        this.ctx.textBaseline="middle";
+        this.ctx.fillText(this.hour+":"+this.minute+":"+this.second,250,0);
+        this.ctx.fill();
+        this.ctx.restore();
+
+
+        //绘制秒针
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.rotate(this.second/60*Math.PI*2);
+        this.ctx.lineWidth=2;
+        this.ctx.moveTo(0,0);
+        this.ctx.lineTo(160,0);
+        this.ctx.stroke();
+        this.ctx.restore();
+
+        //绘制分针
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.rotate(this.minute/60*Math.PI*2+this.second/60*Math.PI*2/60);
+        this.ctx.lineWidth=4;
+        this.ctx.moveTo(0,0);
+        this.ctx.lineTo(120,0);
+        this.ctx.stroke();
+        this.ctx.restore();
+
+        //绘制时针
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.rotate(this.hour/12*Math.PI*2+this.minute/60*Math.PI*2/12);
+        this.ctx.lineWidth=6;
+        this.ctx.moveTo(0,0);
+        this.ctx.lineTo(80,0);
+        this.ctx.stroke();
+        this.ctx.restore();
+    };
+
+    /**
+     * 时钟走过一秒
+     */
+    Clock.prototype.secondGo=function () {
+        //计算出新的时间
+        this.second++;
+        if(this.second===60){
+            this.second=0;
+            this.minute++;
+            if(this.minute===60){
+                this.minute=0;
+                this.hour++;
+                if(this.hour===24){
+                    this.hour=0;
+                }
+            }
+        }
+        this.init();
+    };
+
+    new Clock(ctx4,new Date());
+
+    /**
+     * scale(x,y)缩放的本质其实是改变 坐标系的单位长度和 像素的单位长度的 比例。
+     */
+    var canvas5=document.getElementById("canvas5");
+    var ctx5=canvas5.getContext("2d");
+
+    ctx5.translate(50,200);
+    ctx5.beginPath();
+    ctx5.arc(0,0,50,0,Math.PI*2,false);
+    ctx5.fill();
+
+    ctx5.save(); //保存未缩放状态。
+
+    ctx5.translate(200,0);
+    ctx5.scale(2,1);  //这里对X轴进行缩放。
+    ctx5.beginPath();
+    ctx5.arc(0,0,50,0,Math.PI*2,false);//因此现在绘制X轴的图像就变大了，反之，之前绘制的图像在坐标系中，实际上坐标系中的宽度是缩小了。
+    ctx5.fill();
+
+    //由于已经对x轴进行了缩放。 因此这里移动原点100单位长度，实际上效果在屏幕上就等于是 移动了 100*缩放倍数的 像素长度。
+    ctx5.translate(100,0);
+    ctx5.scale(1,2); //这里又缩放了Y轴
+    ctx5.beginPath();
+    ctx5.arc(0,0,50,0,Math.PI*2,false); //现在绘制的图像，在X轴和Y轴方向均放大了2倍。
+    ctx5.fill();
+
+    ctx5.restore(); //回到没缩放的状态。
+
+    ctx5.translate(600,0); //此时想要移动600像素距离就必须实实在在的移动600坐标系的单位长度了
+    ctx5.scale(1,2); //这里又缩放了Y轴
+    ctx5.beginPath();
+    ctx5.arc(0,0,50,0,Math.PI*2,false); //绘制出的图像仅仅只是Y轴放大了。
+    ctx5.fill();
+
+    var canvas6=document.getElementById("canvas6");
+    var ctx6=canvas6.getContext("2d");
+
+    //等同于 translate(200,200) 后 scale(1,1)
+    ctx6.transform(1,0,0,1,200,200);
+
+    //计算旋转角度
+    var sin=Math.sin(Math.PI/6);
+    var cos=Math.cos(Math.PI/6);
+    for (i=0;i<12;i++){
+        ctx6.fillRect(0,0,200,10);
+        //这里是通过矩阵旋计算转得到的值。
+        ctx6.transform(cos,sin,-sin,cos,0,0);
+    }
+
+    /**
+     * setTransform和transform的区别在于，setTransform是重置矩阵后进行变换。而transform是以当前画布的变换矩阵为基础进行的变换。
+     */
+    ctx6.beginPath();
+    for (i=0;i<12;i++){
+        sin=Math.sin(Math.PI/6*i);
+        cos=Math.cos(Math.PI/6*i);
+        ctx6.setTransform(cos,sin,-sin,cos,600,200);
+        ctx6.fillRect(0,0,200,10);
+    }
+
+
+</script>
+
+</html>

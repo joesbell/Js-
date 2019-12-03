@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>新建数据库</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="新建数据库">
+
+</body>
+
+<script>
+
+    var  IDBName="test"+Math.random(); //保证每次打开页面连接数据库都是新建操作。
+    var button1=document.getElementById("button1");
+    button1.addEventListener("click",function () {
+        var  req=indexedDB.open(IDBName);
+
+        /**
+         * 对数据库的schema进行修改时，只能在 upgradeneeded事件中进行。
+         */
+        req.onupgradeneeded=function (event) {
+            var db=event.target.result;
+
+            /**
+             * 在创建新的对象仓库之前可以通过 IDBDatabase对象的objectStoreNames属性获取到当前数据库所有的对象仓库名称。
+             * 据此判断是否还需要继续进行创建对象仓库的操作。
+             */
+            if(db.objectStoreNames.contains("tests")){
+                console.log("表结构已存在，无需再次创建");
+                return ;
+            }
+
+            //创建一个对象仓库
+            var store=db.createObjectStore("tests",{ autoIncrement:true});
+            console.log(store instanceof IDBObjectStore);
+            //创建索引
+            store.createIndex("testsid","id",{unique:true});
+            store.createIndex("testsname","name",{unique:false});
+
+            /**
+             * 这里可以获取到整个versionChange过程中的事务对象。
+             */
+            var versionChangeTransaction=event.target.transaction;
+            //创建对象仓库以及索引也是在事务中进行的，事务完毕代表创建成功
+            versionChangeTransaction.oncomplete=function () {
+                console.log("数据库创建Schema完毕");
+            };
+            versionChangeTransaction.onerror=function () {
+                console.log("数据库创建Schema失败");
+            }
+        };
+
+        req.onsuccess=function () {
+            console.log("连接到新创建的数据库成功");
+
+            //关闭页面时，删除数据库
+            window.onunload=function () {
+                indexedDB.deleteDatabase(IDBName);
+            }
+        }
+    });
+
+
+
+</script>
+
+</html>

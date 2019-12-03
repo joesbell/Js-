@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>dataTransfer的其他属性</title>
+
+    <style>
+        .box{
+            height: 100px;
+            width: 100px;
+            border: 1px solid black;
+            text-align: center;
+            line-height: 100px;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+<h3>dataTransfer.setDragImage可以设置元素拖拽时的鼠标下方的图像</h3>
+<canvas id="canvas1" style="border: 1px solid black" height="50" width="50"></canvas>
+
+<br>
+
+<div class="box" id="box1" draggable="true">
+    可拖动元素1
+</div>
+
+<br>
+
+<span style="background: lightskyblue;color: orangered">鼠标下方的图像</span>
+
+<br>
+
+<div class="box" id="box2" draggable="true">
+    可拖动元素2
+</div>
+
+<h3>dataTransfer.addElement(ele) 用于将node 设置为当前拖拽元素</h3>
+
+<p>被代替作为拖动元素</p>
+<div class="box" id="box3" draggable="true">
+    可拖动元素3
+</div>
+
+
+</body>
+
+<script>
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+    ctx1.arc(25,25,25,0,Math.PI*2);
+    var lineGradient=ctx1.createLinearGradient(0,0,50,50);
+    lineGradient.addColorStop(0,"red");
+    lineGradient.addColorStop(0.5,"snow");
+    lineGradient.addColorStop(1,"blue");
+    ctx1.fillStyle=lineGradient;
+    ctx1.fill();
+
+    var img=new Image();
+    img.src=canvas1.toDataURL();
+
+    var box1=document.getElementById("box1");
+    /**
+     * 在dragstart事件中，可以调用事件对象的dataTransfer.setDragImage方法来设置拖动时元素的图像。
+     * 这个图像可以是 图像元素。
+     */
+    box1.addEventListener("dragstart",function (event) {
+        event.dataTransfer.setDragImage(img,0,0);
+    });
+
+    var box2=document.getElementById("box2");
+    /**
+     * 也可以是任何元素，实际显示效果是该元素经过渲染后的图像。
+     */
+    box2.addEventListener("dragstart",function (event) {
+        event.dataTransfer.setDragImage(document.querySelector("span"),0,0);
+    });
+
+    var box3=document.getElementById("box3");
+    var replacedEle=document.querySelector("p");
+    /**
+     * 仅在火狐浏览器中能使用。在火狐浏览器中的dragstart事件中， 调用事件对象的dataTransfer.addElement方法，会将当前拖动的元素替换为设置的元素。
+     */
+    box3.addEventListener("dragstart",function (event) {
+        event.dataTransfer.addElement(replacedEle);
+        event.dataTransfer.setData("text/plain","火狐浏览器下必须存储数据才能进行拖动")
+    });
+    //此后该元素触发的拖拽事件中，事件对象的target都为我们设置的替换元素。
+    document.addEventListener("dragend",function (ev) {
+        console.log(ev.target===replacedEle)
+    });
+
+    document.addEventListener("drag",function (ev) {
+        console.log(ev.target===replacedEle)
+    });
+</script>
+
+</html>

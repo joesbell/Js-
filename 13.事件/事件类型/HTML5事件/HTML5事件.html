@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML5事件</title>
+    <style>
+
+        .hidden{
+            display: none;
+        }
+        .content-menu{
+            margin: 0px;
+            background: gray;
+            border: 1px solid black;
+        }
+
+        .content-menu > li{
+            background: snow;
+            border: 1px solid black;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<h3>右键查看自定义的菜单</h3>
+<ul class="hidden content-menu" id="ul1">
+    <li>选项1</li>
+    <li>选项2</li>
+</ul>
+<a href="https://github.com/Reveur000/">离开本页面</a>
+<h3>DOMContentLoaded</h3>
+<img src="DOMContentLoaded.png">
+<br>
+<input type="button" id="button1" value="修改页面hash值">
+<p id="p1"></p>
+
+</body>
+
+<script>
+
+    var ul1=document.getElementById("ul1");
+
+    /**
+     * 使用 contentmenu事件自定义 右键菜单
+     */
+    window.addEventListener("contextmenu",function(event){
+        console.log("contentmenu事件是一个鼠标事件",event.__proto__===MouseEvent.prototype);
+        console.log("contentmenu事件是一个冒泡事件，不可取消冒泡但是可以取消默认行为",event.bubbles===true,event.cancelBubble===false,event.cancelable===true);
+        console.log("取消默认行为之前",event.defaultPrevented===false);
+        event.preventDefault();
+        console.log("取消默认行为之后",event.defaultPrevented===true);
+
+        ul1.classList.remove("hidden");
+        ul1.style.position="absolute";
+        ul1.style.left=event.clientX+"px";
+        ul1.style.top=event.clientY+"px";
+    });
+    window.addEventListener("click",function(event){
+        ul1.classList.add("hidden");
+    });
+
+    /**
+     * beforeunload事件在离开或者卸载页面时触发。可以弹出提示框让用户选择是否取消离开页面。
+     */
+    window.addEventListener("beforeunload",function(event){
+        event.returnValue="beforeunload事件必须使用returnValue而不能使用prevenntDefault(),而且这个事件是由浏览器自身行为决定的。";
+        return event.returnValue;
+    });
+
+
+    /**
+     * DOMContentLoaded事件在DOM文档解析完毕后就会触发。此时已经可以操作了。
+     * DOMContentLoad事件和 document.readyState==="inerteractive" 有相似之处。
+     */
+    document.addEventListener("readystatechange",function(event){
+        console.log("readystatechange事件状态:",document.readyState);
+    });
+
+    document.addEventListener("DOMContentLoaded",function(event){
+        console.log("DOMContentLoaded触发,DOM树已经解析完毕");
+    });
+
+    window.addEventListener("load",function (event) {
+        console.log("load事件触发，整个文档的DOM都解析完毕并且资源也已经下载完毕");
+    });
+
+    /**
+     * pageshow事件触发晚于load事件。 其事件对象的persisted属性返回 当前页面是否是缓存页面。
+     */
+    window.addEventListener("pageshow",function (event) {
+        console.log("pageshow事件触发，页面是否是缓存",event.persisted)
+    });
+
+    var p1=document.getElementById("p1");
+    /**
+     * hashchange事件在hash改变时触发
+     */
+    window.addEventListener("hashchange",function () {
+        p1.innerText="当前hash值是:"+location.hash;
+    });
+
+    var button1=document.getElementById("button1");
+    button1.addEventListener("click",function () {
+        location.hash=Math.ceil(Math.random()*1000);
+    });
+
+</script>
+
+</html>

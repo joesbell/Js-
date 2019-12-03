@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>自定义事件</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    /**
+     * CustomEvent本身继承于Event，只是比Event多一个属性detail用于存放自定义信息。
+     */
+    console.log(CustomEvent.prototype.hasOwnProperty("detail"));
+    console.log(CustomEvent.prototype.__proto__===Event.prototype);
+
+    document.addEventListener("myCus1",function (event) {
+        console.log("initCustomEvent方式的自定义事件,detail:"+event.detail);
+    });
+
+    document.addEventListener("myCus2",function (event) {
+        console.log("initEvent方式的自定义事件,detail:"+event.detail);
+    });
+
+    document.addEventListener("myCus3",function (event) {
+        console.log("CustomEvent构造器的自定义事件,detail:"+event.detail);
+    });
+    document.addEventListener("myCus4",function (event) {
+        console.log("Event构造器的自定义事件,detail:"+event.detail);
+    });
+
+    var event=document.createEvent("CustomEvent");
+    /**
+     * 创建自定义事件的方式1:initCustomEvent
+     */
+    event.initCustomEvent(
+        "myCus1", // 事件名
+        true,     //是否冒泡
+        false,    //能否取消默认行为
+        "自定义的事件1" //事件自定义信息
+    );
+    document.dispatchEvent(event);
+
+    event=document.createEvent("Event");
+    /**
+     * 创建自定义事件的方式2:initEvent
+     * 相比第一种方式只是没有了 detail属性
+     */
+    event.initEvent(
+        "myCus2",
+        true,
+        false);
+    document.dispatchEvent(event);
+
+    /**
+     * 创建自定义事件的方式3: CustomEvent构造器
+     * 推荐使用。
+     */
+    event=new CustomEvent(
+        "myCus3",//事件名称
+        //CustomEvent事件对象的属性字典对象
+        {
+            cancelable:false,
+            bubbles:true,
+            detail:"自定义事件3"
+        }
+    );
+    document.dispatchEvent(event);
+
+    /**
+     * 创建自定义事件的方式3: Event构造器
+     * 推荐使用。
+     */
+    event=new Event(
+        "myCus4", //事件名称
+        //Event事件对象的属性字典对象
+        {
+            cancelable:false,
+            bubbles:true
+        }
+    );
+
+    document.dispatchEvent(event);
+
+
+</script>
+</html>

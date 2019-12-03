@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>插入元素(HTML代码)</title>
+</head>
+<body>
+    <div id="content">
+        <p>hello world</p>
+    </div>
+</body>
+
+<script>
+    /**
+     * 这三种插入元素相关的属性和方法都定义在Element类型上 .
+     * innerHTML和outerHTML是访问器属性
+     */
+    console.log(Element.prototype.hasOwnProperty("innerHTML"));
+    console.log(Element.prototype.hasOwnProperty("outerHTML"));
+    console.log(Element.prototype.hasOwnProperty("insertAdjacentElement"));
+
+    var div=document.getElementById("content");
+    /**
+     * innerHTML表示的是 该元素内部 的所有HTML代码内容
+     */
+    console.log(div.innerHTML);
+    /**
+     * outerHTML表示的是 该元素以及其内部 的所有HTML代码内容
+     */
+    console.log(div.outerHTML);
+
+    var content="hello & <strong>world</strong>";
+    div.innerHTML=content;
+    console.log(content);
+    console.log(div.innerHTML);
+    /**
+     * 写入innerHTML后再去读取innerHTML内容，前后的值可能不同。
+     * 这是因为 字符串转化为HTML代码时，会进行转义， 比如 &符号， 会被转换为 &amp;
+     */
+    console.log(div.innerHTML!==content);
+
+    document.body.appendChild(document.createElement("div"));
+    /**
+     * 使用innerHTML插入的脚本代码不会执行。
+     */
+    document.body.lastElementChild.innerHTML="<script>alert(\"使用innerHTML插入的脚本并不会执行生效\")<\/script>";
+
+    /**
+     * 设置outerHTML时，原本的节点及其后代会被插入的HTML代码替代。
+     * 但是原本的节点及其后代并没有被真正删除，只是在文档树中没有位置罢了。
+     */
+    var lastEle=document.body.lastElementChild;
+    lastEle.outerHTML="<span>设置outerHTML后，原本节点并没有被删除，只是在文档树中没有位置罢了</span>";
+    console.log(lastEle.ownerDocument===document);
+    console.log(lastEle.isConnected===false);
+
+    document.body.appendChild(document.createElement("br"));//换行
+    document.body.appendChild(document.createElement("div"));
+    lastEle=document.body.lastElementChild;
+    var node=document.createElement("p");
+    node.innerText="这里用于测试insertAdjacentHTML方法";
+    lastEle.appendChild(node);
+
+    /**
+     * insertAdjacentHTML方法可以控制插入HTML的位置。
+     * beforebegin  等同于 在本节点之前 插入一段HTML代码
+     * afterbegin   等同于 在本节点的第一个子节点前 插入一段HTML代码
+     * beforeend    等同于 在本节点的最后一个子节点后 插入一段HTML代码
+     * afterend     等同于 在本节点后 插入一段HTML代码
+     */
+    lastEle.insertAdjacentHTML("beforebegin","<span>beforebegin</span>");
+    lastEle.insertAdjacentHTML("afterbegin","<span>afterbegin</span>");
+    lastEle.insertAdjacentHTML("beforeend","<span>beforeend</span>");
+    //在谷歌浏览器中并没有对大小写做限制
+    lastEle.insertAdjacentHTML("AFTEREND","<span>afterend</span>");
+
+    /**
+     * 我们需要注意的是，使用innerHTML插入元素(HTML代码)的效率是要高于通过DOM API的。
+     * 这是因为针对插入的HTML代码，执行解析的是浏览器的解析器。
+     * 当然，创建浏览器的HTML解析器是有开销的。
+     * 因此，最佳实践是对于大量元素的插入使用innerHTML，并事先拼接好字符串，做到少设置innerHTML，从而避免浏览器的HTML解析器对性能的影响。
+     */
+
+</script>
+</html>

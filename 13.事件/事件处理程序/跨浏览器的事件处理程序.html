@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>封装跨浏览器的事件处理程序</title>
+</head>
+<body>
+
+<input type="button" id="input1" value="跨浏览器的事件处理程序">
+
+</body>
+
+<script>
+    /**
+     * 通用的跨浏览器的事件处理程序的封装
+     */
+    function addEventHandler(ele,type,handler,isCatch) {
+        if(ele.addEventListener){  //优先DOM2级
+            ele.addEventListener(type,handler,isCatch);
+        }else if(ele.attachEvent){ //其次是IE独有的类DOM2级
+            ele.attachEvent("on"+type,handler);
+        }else{//最后才使用DOM0级
+            ele["on"+type]=handler;
+        }
+    }
+    function removeEventHandler(ele,type,handler,isCatch) {
+        if(ele.removeEventListener){
+            ele.removeEventListener(type,handler,isCatch);
+        }else if(ele.detachEvent){
+            ele.detachEvent("on"+type,handler);
+        }else{
+            ele["on"+type]=null;
+        }
+    }
+
+
+    var input1=document.getElementById("input1");
+
+    console.log("添加跨浏览器的事件处理程序");
+    addEventHandler(input1,"click",foo,false);
+    input1.click();
+
+    console.log("删除跨浏览器的事件处理程序");
+    removeEventHandler(input1,"click",foo,false);
+    input1.click();
+
+    function foo() {
+        console.log("事件处理程序的函数体内部this是否等于DOM元素自身:",this===input1);
+    }
+</script>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>放射渐变</title>
+</head>
+<body>
+
+<h3>当两个圆相离时,很少使用</h3>
+<canvas id="canvas1" height="400" width="400" style="border: 1px solid black"></canvas>
+
+
+<h3>当两个圆为包含关系时,经常使用，特别是同心圆</h3>
+<canvas id="canvas2" height="400" width="400" style="border: 1px solid black"></canvas>
+
+<h3>当两个圆为包含关系时,非同心圆的放射渐变可以营造立体效果</h3>
+<canvas id="canvas3" height="400" width="400" style="border: 1px solid black"></canvas>
+
+</body>
+
+<script>
+
+
+    /**
+     * 放射渐变时，相离的圆很少使用
+     */
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+    var radioGradient=ctx1.createRadialGradient(100,200,100,300,200,100);
+    radioGradient.addColorStop(0,"green");
+    radioGradient.addColorStop(1,"red");
+    ctx1.fillStyle=radioGradient;
+    ctx1.rect(0,0,400,400);
+    ctx1.fill();
+
+    /**
+     * 绝大多数情况下都使用的是这种同心圆
+     */
+    var canvas2=document.getElementById("canvas2");
+    var ctx2=canvas2.getContext("2d");
+    var radioGradient2=ctx2.createRadialGradient(200,200,100,200,200,200);
+    radioGradient2.addColorStop(0,"green");
+    radioGradient2.addColorStop(0.5,"red");
+    radioGradient2.addColorStop(0.5,"green");
+    radioGradient2.addColorStop(1,"orange");
+    ctx2.fillStyle=radioGradient2;
+    ctx2.fillRect(0,0,400,400);
+    ctx2.fill();
+
+    /**
+     * 描边三个色标位置
+     */
+    ctx2.StrokeStyle="black";
+    ctx2.arc(200,200,100,0,Math.PI*2);
+    ctx2.moveTo(350,200);
+    ctx2.arc(200,200,150,0,Math.PI*2);
+    ctx2.moveTo(400,200);
+    ctx2.arc(200,200,200,0,Math.PI*2);
+    ctx2.stroke();
+
+
+    /**
+     * 利用放射渐变的颜色变化效果，可以模拟光线，达到让图形立体的效果
+     */
+    var canvas3=document.getElementById("canvas3");
+    var ctx3=canvas3.getContext("2d");
+    var radioGradient3=ctx3.createRadialGradient(120,120,5,200,150,150);
+    radioGradient3.addColorStop(0,"white");
+    radioGradient3.addColorStop(0.15,"gray");
+    radioGradient3.addColorStop(1,"rgba(0,0,0,0.8)");
+    ctx3.fillStyle=radioGradient3;
+    ctx3.arc(200,200,150,0,Math.PI*2);
+    ctx3.fill();
+
+</script>
+
+</html>

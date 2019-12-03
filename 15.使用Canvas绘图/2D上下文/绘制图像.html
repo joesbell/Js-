@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制图像一一图片源</title>
+</head>
+<body>
+
+<h3>示例canvas</h3>
+<canvas id="canvas1" width="200" height="200" style="border: 1px solid black"></canvas>
+<h3>示例视频</h3>
+<video id="video1" controls="controls" autoplay="autoplay" src="测试视频.ogg" type="video/ogg"></video>
+
+<h3>canvas中绘制图像的图像源种类很多</h3>
+<canvas id="canvas2" width="1200" height="1400" style="border: 1px solid black"></canvas>
+
+</body>
+
+<script>
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+    ctx1.beginPath();
+    ctx1.fillStyle="gray";
+    ctx1.arc(100,100,100,0,Math.PI*2,false);
+    ctx1.fill();
+    ctx1.beginPath();
+    ctx1.fillStyle="black";
+    ctx1.arc(100,100,10,0,Math.PI*2,false);
+    ctx1.fill();
+
+    var canvas2=document.getElementById("canvas2");
+    var ctx2=canvas2.getContext("2d");
+
+    /**
+     * 绘制图像的第一种图片源是 HTMLCanvasElement元素。
+     */
+    ctx2.drawImage(canvas1,0,0);
+    ctx2.save();
+    ctx2.fillStyle="red";
+    ctx2.textBaseline="middle";
+    ctx2.font="30px serial";
+    ctx2.fillText("<-- 以canvas元素为图片源",300,100);
+
+    /**
+     * 绘制图像的第二种图片源是 HTMLImageElement元素。
+     */
+    var img=new Image();
+    img.onload=function () {
+        ctx2.drawImage(img,0,300)
+
+        ctx2.restore();
+        ctx2.save();
+        ctx2.fillStyle="red";
+        ctx2.textBaseline="middle";
+        ctx2.font="30px serial";
+        ctx2.fillText("<-- 以图片元素为图片源",700,500);
+    }
+    img.src="绘制图像的图像来源.png";
+
+    var img2=new Image();
+    img2.onload=function () {
+        console.log(img2.src);
+        ctx2.drawImage(img2,100,750);
+        ctx2.restore();
+        ctx2.save();
+        ctx2.fillStyle="red";
+        ctx2.textBaseline="middle";
+        ctx2.font="30px serial";
+        ctx2.fillText("<-- 以 data: url 为图片源",300,850);
+    }
+    /**
+     * 当图片源为 图片元素时， src 不仅可以是普通的 URL地址，还可以是 data:url 地址。
+     * 这里我们就使用的是canvas1 导出的 data:url 格式图像。
+     */
+    img2.src=canvas1.toDataURL();
+
+
+    /**
+     * 第三种方式就是使用位图。
+     * 创建位图的方式是通过 createImageBitmap方法,该方法接受多个参数。
+     * 作为创建位图的图片源的种类是非常多的。
+     * 这个方法返回一个promise。
+     */
+    console.log(window.hasOwnProperty("createImageBitmap"));
+
+    //这里以canvas元素作为位图的图片来源。从坐标(90,90)开始截取20*20的区域作为位图。
+    createImageBitmap(canvas1,90,90,20,20).then((bitPic)=>{
+        ctx2.drawImage(bitPic,100,1000);
+        //位图的类型是 ImageBitmap类型
+        console.log(bitPic.__proto__===ImageBitmap.prototype);
+        ctx2.restore();
+        ctx2.save();
+        ctx2.fillStyle="red";
+        ctx2.textBaseline="middle";
+        ctx2.font="30px serial";
+        ctx2.fillText("<-- 以位图为图片源",120,1010);
+    })
+
+
+
+    var video1=document.getElementById("video1");
+    var id;
+    /**
+     * 第四种方式是以HTMLVideoElement元素作为图片源。
+     * 此时绘制的图像是当前的视频截图。
+     */
+    video1.addEventListener("playing",function(){
+        id=setInterval(()=>{
+            ctx2.drawImage(video1,50,1100);
+        },1000)
+    });
+
+    video1.addEventListener("ended",function () {
+        console.log("停止绘制视频截图")
+        clearInterval(id);
+    })
+    ctx2.restore();
+    ctx2.save();
+    ctx2.fillStyle="red";
+    ctx2.textBaseline="middle";
+    ctx2.font="20px serial";
+    ctx2.fillText("<-- 以Video元素来作为图片源,此时图片为视频的截图",400,1200);
+
+
+</script>
+
+</html>

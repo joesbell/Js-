@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Node类型的变化</title>
+</head>
+<body>
+
+<div id="div1">
+    <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+</div>
+
+</body>
+
+<script>
+    /**
+     * Node类型上新增了两个和节点相关的方法：
+     * 1.isSameNode(otherNode) 判断两个节点是否是同一个节点
+     * 2.isEqualNode(otherNode) 判断两个节点的各个属性值是否完全相同
+     */
+    console.log(Node.prototype.hasOwnProperty("isSameNode"));
+    console.log(Node.prototype.hasOwnProperty("isEqualNode"));
+
+    var div1=document.getElementById("div1");
+    var div2=div1.cloneNode(true);
+    var div3=div1.cloneNode();
+    console.log(div1.isSameNode(div1));
+    console.log(div1.isEqualNode(div2));
+    /**
+     * 这里不相等的原因是因为 div1和div3的子节点属性不相同.因为div3并没有深度克隆div1的子节点树
+     */
+    console.log(div1.isEqualNode(div3)===false);
+
+    var p1=document.createElement("p");
+    p1.appendChild(document.createTextNode("reveur000"));
+    var p2=document.createElement("p");
+    p2.appendChild(document.createTextNode("reveur000"));
+    var p3=document.createElement("p");
+    /**
+     * 文本节点也是相同的道理
+     */
+    p3.appendChild(document.createTextNode("reveur"));
+    p3.appendChild(document.createTextNode("000"));
+    console.log(p1.isEqualNode(p2));
+    console.log(p1.isEqualNode(p3)===false);
+    //但是经过normolize后，合并为一个文本节点，p1和p3节点的各个属性的属性值就相同了
+    p3.normalize();
+    console.log(p1.isEqualNode(p3));
+
+</script>
+
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修缮拖动功能</title>
+    <style>
+        .box{
+            height: 100px;
+            width: 100px;
+            background: black;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+
+<input type="button" id="button1" value="开启拖拽">
+<input type="button" id="button2" value="关闭拖拽">
+
+<div class="box draggable"></div>
+
+
+</body>
+
+<script>
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    button1.addEventListener("click",function () {
+        DragDrop.enable();
+        this.disabled=true;
+        button2.disabled=false;
+    });
+    button2.addEventListener("click",function () {
+        DragDrop.disable();
+        this.disabled=true;
+        button1.disabled=false;
+    });
+
+
+    var DragDrop=function () {
+        var dragging=null;
+        var diffX=0;
+        var diffY=0;
+
+        function handlerEvent(event) {
+            var ele=event.target;
+            switch (event.type) {
+                case "mousedown":
+                    if(ele.classList.contains("draggable")){
+                        dragging=ele;
+                        /**
+                         * 修缮功能的核心：在初始时获取到鼠标位置和元素位置的偏移差
+                         */
+                        var rect=dragging.getBoundingClientRect();
+                        diffY=rect.top-event.clientY;
+                        diffX=rect.left-event.clientX;
+                    }
+                    break;
+                case "mousemove":
+                    if(dragging){
+                        /**
+                         * 随后伴随鼠标移动，每次都加上这个初始偏移差
+                         */
+                        dragging.style.left=event.clientX+diffX+"px";
+                        dragging.style.top=event.clientY+diffY+"px";
+                    }
+                    break;
+                case "mouseup":
+                    dragging=null;
+                    break;
+            }
+        }
+
+        var moveHandler=throttle(handlerEvent,50);
+
+        return {
+            enable:function () {
+                document.addEventListener("mouseup",handlerEvent);
+                document.addEventListener("mousedown",handlerEvent);
+                document.addEventListener("mousemove",moveHandler);
+            },
+            disable:function () {
+                document.removeEventListener("mouseup",handlerEvent);
+                document.removeEventListener("mousedown",handlerEvent);
+                document.removeEventListener("mousemove",moveHandler);
+            }
+        }
+    }();
+
+    function throttle(method,intervalTime) {
+        var prev;
+        var timeId;
+        return function (event) {
+
+            clearTimeout(timeId);
+            var current=Date.now();
+            var that=this;
+            if(prev && current-prev >=intervalTime){
+                method.call(that,event);
+                prev=Date.now();
+            }else{
+                timeId=setTimeout(function () {
+                    method.call(that,event);
+                    prev=Date.now();
+                },prev+intervalTime-current);
+            }
+        }
+    }
+
+</script>
+
+</html>

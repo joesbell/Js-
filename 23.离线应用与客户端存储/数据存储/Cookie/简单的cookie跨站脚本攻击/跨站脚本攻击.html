@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>简单的针对cookie的跨站脚本攻击</title>
+</head>
+<body>
+<input type="button" id="button1" value="JSONP引进的跨站脚本攻击">
+
+</body>
+
+<script>
+    /**
+     * 这里主要示范一下由于JSONP引入不安全的请求导致的 cookie被盗取。
+     */
+    var button1=document.getElementById("button1");
+
+    button1.addEventListener("click",function () {
+        sendJSONP("http://localhost:8081/jsonp","mycallback");
+    });
+
+    document.cookie="password=reveur";
+
+    function sendJSONP(url,callback) {
+        var  ele=document.createElement("script");
+        ele.src=url+"?callback="+callback;
+        document.body.appendChild(ele);
+    }
+
+    function mycallback(data) {
+        console.log("JSONP获取到的数据是:",data);
+    }
+</script>
+
+</html>

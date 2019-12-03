@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Node类型是所有节点类型的父类型</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    print("HTML文档中一共拥有下面12种类型的节点类型:");
+
+    for(var value=0;value<=12;value++){
+        for(var prop in Node.prototype){
+            try{
+                if(Node.prototype[prop]===value){
+                    print(prop,"节点类型的nodeType的值:",value);
+                    break;
+                }
+            }catch (e){
+            }
+        }
+    }
+
+
+    function print() {
+        var msgs=Array.prototype.slice.call(arguments,0);
+        var finalMsg=msgs.reduce(function (prev,current) {
+            return prev+"\t"+current;
+        });
+        var node=document.createElement("p");
+        node.innerText=finalMsg;
+        document.body.appendChild(node);
+    }
+</script>
+</html>

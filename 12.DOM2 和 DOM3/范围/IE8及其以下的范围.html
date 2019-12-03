@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IE8及其以下的范围</title>
+</head>
+<body>
+
+<div>
+    <p id="p1">hello<strong>world!</strong></p>
+</div>
+
+</body>
+
+<script>
+    var ua=navigator.userAgent;
+
+    var belowIE8=false;
+    if(/MSIE([^;]+)/.test(ua)) {
+        if (Number(RegExp.$1) < 9) {
+            belowIE8 = true;
+        }
+    }
+
+    if(belowIE8){
+        /**
+         * 使用 document.body.createTextRange()方法创建一个文本范围对象。
+         */
+        var range=document.body.createTextRange();
+        /**
+         * 利用findText函数进行简单的文本范围选择。如果找到符合的文本，那么返回true
+         */
+        var find=range.findText("Hello");
+        var p1=document.getElementById("p1");
+        console.log("是否找到了hello文本的区域",find===true);
+        console.log(range.text==="hello");
+        console.log(range.htmlText==="hello");//这里只是单纯的选择了文本节点
+        console.log(range.parentElement()===p1);
+
+        /**
+         * 与DOM范围的selectNodeContents相似的moveToElementText(node)方法也可以用于简单的选择范围。
+         */
+        range.moveToElementText(p1);
+        console.log(range.text==="helloworld!");//text本身是不包含任何HTML代码的
+        console.log("范围的html文本",range.htmlText); //这里由于横跨了标签，因此会带上HTML代码。
+        console.log(range.parentElement()===p1);
+
+
+        /**
+         * 移动范围选区进行复杂的文本范围选择。
+         */
+        range.moveStart("character",1);  //移动起始节点一个 字符单位
+        range.moveEnd("character",-1);   //移动终止节点向前一个 字符单位
+        console.log(range.text==="elloworld"); // 因此 helloworld! 变成了 elloworld
+        range.move("character",0);  //将起始和终止范围都设置为当前起始节点所在的位置。
+        console.log(range.text===""); //因此，就没有内容了
+        range.moveEnd("character",1); //终止节点向后移动一个字符
+        console.log(range.text==="e");
+        range.moveEnd("word",1); //移动一个单词的距离
+        console.log(range.text==="elloworld");
+        range.moveEnd("sentence",1); //移动一个句子的距离，此时就包含了感叹号了
+        console.log(range.text==="elloworld!");
+
+        //将文本的范围扩大到单词
+        range.expand("word");
+        console.log(range.text==="helloworld!"); //此时原本的 h 字符也会被纳入文本
+
+        range.moveStart("character",5);
+        /**
+         * 直接修改文本text内容。
+         * 此后该文本范围的起点和终点位置均会被摄制在终止位置了。
+         */
+        range.text=" reveur";
+        range.moveStart("character",-6); //移动起点回去。
+        console.log(range.text==="reveur");
+        /**
+         * pasteHTML() 可以将html代码替换到文本范围内。
+         */
+        range.pasteHTML("<strong>reveur<\/strong>");
+
+        range.moveStart("character",-6);
+        console.log(range.text==="reveur");
+
+        /**
+         * 同DOM范围的方法一致
+         */
+        range.collapse(true); //这里折叠到了起始位置
+        console.log("是否折叠了",range.boundingWidth===0); //根据 boundingWidth等于0 判断是否已经折叠。
+        range.moveEnd("character",1);
+        console.log(range.text==="r");
+
+        /**
+         * 复制范围的方法， duplicate()返回完全相同的副本。
+         */
+        var range2=range.duplicate();
+
+        /**
+         * 比较文本范围的方法和DOM范围的 compareBoundaryPoints类似。
+         * 但是how字符串参数是相反的。
+         */
+        console.log("文本范围是否相等",range2.isEqual(range));
+        range.expand("word");
+        console.log(range.text==="reveur");
+        console.log(range.compareEndPoints("StartToStart",range2)===0);
+        console.log(range.compareEndPoints("EndToEnd",range2)===1);
+        range2.moveEnd("character",1);
+        range2.moveStart("character",1);
+        console.log(range2.text==="e");
+        console.log(range.compareEndPoints("StartToStart",range2)===-1);
+        console.log(range.compareEndPoints("EndToStart",range2)===1); //比较的是 range的终止节点和 range2的开始节点
+
+        console.log(range.compareEndPoints("StartToEnd",range2)===-1); //比较的是 range的开始节点和 range2的终止节点
+
+        console.log("是否包含在范围内",range.inRange(range2)) // range包含了range2
+
+
+    }else {
+        alert("请选择IE8及其以下的浏览器进行测试");
+    }
+</script>
+
+</html>

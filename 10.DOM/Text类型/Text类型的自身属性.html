@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Text类型的自身属性(Node的)</title>
+</head>
+<body>
+
+<div>text文本节点</div>
+
+</body>
+
+<script>
+
+    /**
+     * 文本text节点类型的自身Node属性如下。
+     */
+    var text=document.getElementsByTagName("div")[0].firstChild;
+    console.log(text.nodeValue==="text文本节点");
+    console.log(text.nodeType===3);
+    console.log(text.nodeName==="#text");
+    console.log(text.__proto__===Text.prototype);
+
+</script>
+</html>

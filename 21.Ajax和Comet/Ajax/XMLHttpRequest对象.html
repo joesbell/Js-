@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>XMLHttpRequest对象</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * XMLHttpRequest类型继承自XMLHttpRequestEventTarget。
+     */
+    console.log(XMLHttpRequest.prototype.__proto__===XMLHttpRequestEventTarget.prototype);
+    console.log(XMLHttpRequestEventTarget.prototype.__proto__===EventTarget.prototype);
+
+    /**
+     * 通用的创建XMLHttpRequest对象的方法。
+     */
+    var createXHR=(function() {
+        if(typeof XMLHttpRequest !== "undefined"){
+            //现代浏览器
+            return function () {
+                return new XMLHttpRequest();
+            }
+        }else if( typeof ActiveXObject !== "undefined"){
+            //IE低版本兼容
+            var versions=["MSXML2.XMLHttp.6.0","MSXML2.XMLHttp.3.0","MSXML2.XMLHttp"];
+            var version;
+            for(var i=0;i<versions.length;i++){
+                try{
+                    //使用最新版的XHR控件
+                    new ActiveXObject(versions[i]);
+                    version=versions[i];
+                    break;
+                }catch (e) {
+
+                }
+            }
+            return function () {
+                return new ActiveXObject(version);
+            }
+        }else{
+            throw new Error("浏览器不支持XMLHttpRequest");
+        }
+    }());
+
+
+    /**
+     * 同步的Ajax请求，此时 open的第三个参数为false
+     */
+    var syncXhr=createXHR();
+    syncXhr.open("GET","/rest/a",false);
+    syncXhr.send(null);
+    console.log("同步的Ajax send 完毕");
+    if(syncXhr.status>=200&&syncXhr.status<300 || syncXhr.status===304){
+        console.log("同步的Ajax请求的响应:",syncXhr.responseText);
+    }else{
+        console.error("同步的Ajax请求的响应错误!");
+    }
+
+    /**
+     * 异步的Ajax请求，此时 open的第三个参数为true
+     */
+    var asyncXhr=createXHR();
+    /**
+     * 异步的Ajax核心就在于监听 readystatechange事件，当xhr对象的readyState===4时，说明响应已经完成了。
+     * 此时根据HTTP状态码，也就是 xhr的 status属性来判断后续如何操作。
+     */
+    asyncXhr.onreadystatechange=function(){
+        if(asyncXhr.readyState===4){
+            console.log("异步的Ajax响应完成");
+            if(asyncXhr.status>=200&&asyncXhr.status<300 || asyncXhr.status===304){
+                console.log("异步的Ajax请求的响应:",asyncXhr.responseText,asyncXhr.status);
+            }else{
+                console.error("异步的Ajax请求的响应错误:",asyncXhr.status);
+            }
+        }
+    };
+    asyncXhr.open("POST","/rest/b",true);
+    asyncXhr.send(null);
+    console.log("异步的Ajax send 完毕");
+
+    /**
+     * 异步的Ajax请求过程中是可以随时abort终止掉请求的，此时， xhr对象的readyState状态是完成状态，只是HTTP状态码和正常200不同罢了。
+     */
+    var abortedXhr=createXHR();
+    abortedXhr.onabort=function () {
+        console.log("Ajax请求被中止了");
+    };
+    abortedXhr.onreadystatechange=function(){
+        if(abortedXhr.readyState===4){
+            console.log("被中止的请求,xhr状态也是done，只是HTTP状态码和正常不同:",abortedXhr.status);
+            console.log("此时响应内容为空:",abortedXhr.responseText==="",abortedXhr.responseXML===null);
+        }
+    };
+    abortedXhr.open("POST","/rest/c",true);
+    abortedXhr.send(null);
+    abortedXhr.abort();
+
+</script>
+
+</html>

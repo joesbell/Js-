@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>与class特性相关的扩充</title>
+</head>
+<body>
+    <div>
+        <p class="myclass1">1</p>
+        <p class="myclass1">2</p>
+        <p class="myclass1 myclass2">3</p>
+        <p class="myclass2">4</p>
+    </div>
+    <p class="myclass1">5</p>
+</body>
+
+<script>
+    /**
+     * getElementsByClassName方法位于 Element和Document原型上
+     */
+    console.log(Element.prototype.hasOwnProperty("getElementsByClassName"));
+    console.log(Document.prototype.hasOwnProperty("getElementsByClassName"));
+
+    /**
+     * 该方法获取的集合是动态的集合
+     */
+    var divP=document.querySelector("div").getElementsByClassName("myclass1");
+    console.log(divP.length===3);
+    var node=document.createElement("p");
+    node.className="myclass1";
+    document.querySelector("div").appendChild(node);
+    console.log(divP.length===4);
+
+
+    /**
+     * 在Element类型上新增了 classList属性，这是个新的集合DOMTokenString类型。也是动态的。
+     * 这个集合中包含了该元素的每个class名称。
+     * 同时value属性等同于 元素的className值,length 属性表示class的个数
+     */
+    console.log(Element.prototype.hasOwnProperty("classList"));
+
+    var classList=divP[2].classList;
+    console.log(classList.__proto__===DOMTokenList.prototype);
+    console.log(classList.value===divP[2].className);
+    console.log(classList.length===2);
+    var p=document.querySelector("div").nextElementSibling;
+    classList=p.classList;
+
+    /**
+     * 同时该DOMTokenString包含5种方法:
+     * 1.add
+     * 2.remove
+     * 3.contains
+     * 4.toggle
+     * 5.replace
+     * 使用元素的classList属性的这些方法可以非常方便的操作元素的样式类
+     */
+    if(classList.contains("myclass1")){
+        classList.add("myclass2");
+    }
+    classList.remove("myclass1");
+    classList.toggle("class1");
+    classList.replace("class1","newClass1");
+    //可以使用数组的方式索引每个class名称
+    console.log(classList[0]==="myclass2");
+    //但是却不能这样赋值来操作元素的类名
+    classList[2]="new";
+    console.log(classList[2]===undefined);
+
+    //但是却可以操作value属性来赋值
+    classList.value="delete";
+    console.log(classList.value==="delete")
+</script>
+
+</html>

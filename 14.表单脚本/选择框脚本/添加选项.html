@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加选项</title>
+</head>
+<body>
+
+<h3>添加选项</h3>
+<select size="10" id="select1" style="width: 300px;">
+    <option>原始选项</option>
+</select>目前的选择框选项个数:<span id="count"></span>
+<br>
+插入的索引位置:
+<select size="1" id="select2">
+</select>
+<br>
+<input type="button" id="button1" value="创建option元素并使用DOM方法插入">
+<br>
+<input type="button" id="button2" value="使用option构造器创建元素并使用DOM方法插入">
+<br>
+<input type="button" id="button3" value="使用select元素的add方法插入option元素">
+</body>
+
+<script>
+    var select1=document.getElementById("select1");
+    var select2=document.getElementById("select2");
+    var options1=select1.options;
+    var options2=select2.options;
+    var count=document.getElementById("count");
+
+    updateInsertIndex();
+    var mutationObs=new MutationObserver(updateInsertIndex);
+
+    var config={
+        childList:true,
+        subtree:true
+    };
+
+    mutationObs.observe(select1,config);
+
+    /**
+     * 每当新插入一个选项，则更新可插入的索引序号列表。
+     */
+    function updateInsertIndex() {
+
+        var length=options1.length;
+        var currentLength=options2.length;
+
+        for(var i=currentLength;i<=length;i++){
+            select2.appendChild(new Option(i,i));
+        }
+        select2.selectedIndex=options2.length-1;
+        count.innerText=options1.length;
+    }
+
+    /**
+     * 插入option元素的操作分为两步:
+     * 1.创建option元素，具有两种方法，一者利用DOM方法创建元素并设置text value等属性，一者是利用 Option(text,value)构造函数
+     * 2.插入option元素，具有两种方法，一者利用DOM方法insertBefore(newNode,refNode)， 一者是利用 HTMLSelectElement的 add(newOpt,refOpt)方法。
+     */
+    document.addEventListener("click",function (event) {
+        var newOpt;
+        var insertIndex=select2.value;
+
+        switch (event.target.id) {
+            case "button1":
+                newOpt=document.createElement("option");
+                newOpt.text=event.target.value;
+                select1.insertBefore(newOpt,options1[insertIndex]);
+                break;
+            case "button2":
+                newOpt=new Option(event.target.value);
+                select1.insertBefore(newOpt,options1[insertIndex]);
+                break;
+            case "button3":
+                newOpt=new Option(event.target.value);
+                select1.add(newOpt,options1[insertIndex]); //这里需要注意的是一点是，如果refOpt为undefined，那么就是插入为最后一个选项。也就是说 第二个参数是可选的
+                break;
+        }
+    })
+</script>
+
+</html>

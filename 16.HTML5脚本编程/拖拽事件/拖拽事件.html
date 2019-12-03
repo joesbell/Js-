@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>拖拽事件</title>
+
+    <style>
+        .box{
+            height: 100px;
+            width: 100px;
+            border: 1px solid black;
+            text-align: center;
+            line-height: 100px;
+            user-select: none;
+        }
+
+        .zone{
+            height: 400px;
+            width: 400px;
+            border: 1px solid red;
+            position: absolute;
+            text-align: center;
+            user-select: none;
+            font-size: 30px;
+            line-height: 400px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="box" id="box1" draggable="true">
+    可拖动元素
+</div>
+
+ <div class="zone" id="zone1" style="top:200px;left: 400px;">
+    可放置的目标元素
+</div>
+
+<div class="zone" id="zone2"  style="top:200px;left: 1000px">
+    不可放置的目标元素
+</div>
+
+</body>
+
+<script>
+
+    /**
+     * DragEvent类型继承于MouseEvent类型。
+     */
+    var box1=document.getElementById("box1");
+
+    /**
+     * 对于被拖拽的元素而言，具有三种拖拽事件:
+     * 1.dragstart
+     * 2.drag
+     * 3.dragend
+     */
+    box1.addEventListener("dragstart",function (event) {
+        console.log(event.__proto__===DragEvent.prototype);
+        console.log(DragEvent.prototype.__proto__===MouseEvent.prototype);
+        console.log(MouseEvent.prototype.__proto__===UIEvent.prototype);
+        console.log(event.type+"触发","标志拖拽开始");
+    });
+    box1.addEventListener("drag",function (event) {
+        console.log(event.type+"触发","表示正在拖拽中");
+    });
+    box1.addEventListener("dragend",function (event) {
+        console.log(event.type+"触发","标志拖拽结束");
+    });
+
+    /**
+     * 而对于目标元素来说，有以下事件：
+     * 1.dragenter 表示拖拽元素进入目标元素
+     * 2.dragmove 表示拖拽元素在目标元素上移动
+     * 3.dragleave 表示拖拽元素移出目标元素
+     * 4.drop 表示拖拽元素放置在目标元素上。
+     */
+    var zone1=document.getElementById("zone1");
+    /**
+     * 阻止 dragenter和dragmove的默认行为，可以使原本不可放置的目标元素变成可以放置的。
+     */
+    zone1.addEventListener("dragenter",function (event) {
+        event.target.innerText="拖动元素进入目标元素";
+        console.log(event.type+"触发","但是被阻止默认行为");
+        event.preventDefault();
+    });
+    zone1.addEventListener("dragover",function () {
+        console.log(event.type+"触发","但是被阻止默认行为");
+        event.preventDefault()
+    });
+    zone1.addEventListener("dragleave",function () {
+        event.target.innerText="拖动元素离开目标元素";
+        console.log(event.type+"触发");
+    });
+    zone1.addEventListener("drop",function () {
+        event.target.innerText="拖动元素放置在目标元素";
+        console.log(event.type+"触发");
+    });
+
+    /**
+     * 当目标元素是不可放置元素时，drop事件不会触发，取而代之触发的是dragleave事件。
+     */
+    var zone2=document.getElementById("zone2");
+    zone2.addEventListener("dragenter",function () {
+        event.target.innerText="拖动元素进入目标元素";
+        console.log(event.type+"触发");
+    });
+    zone2.addEventListener("dragover",function () {
+        console.log(event.type+"触发");
+    });
+    zone2.addEventListener("dragleave",function () {
+        event.target.innerText="拖动元素离开目标元素";
+        console.log(event.type+"触发");
+    });
+    zone2.addEventListener("drop",function () {
+        console.log(event.type+"永远不会触发触发,因为该元素是不可放置元素");
+    });
+
+</script>
+
+</html>

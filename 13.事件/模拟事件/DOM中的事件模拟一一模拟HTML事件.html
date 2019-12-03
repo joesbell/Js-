@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM中的事件模拟一一模拟HTML事件</title>
+</head>
+<body>
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<input type="button" id="button1" value="模拟focus事件">
+
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+
+    window.addEventListener("focus",function (event) {
+        console.log("捕获到了focus模拟事件",event.isTrusted===false);
+    });
+
+    /**
+     * 在模拟HTML事件时，接口并不全面。 一般而言就是使用initEvent。
+     */
+    var event=document.createEvent("HTMLEvents");
+    event.initEvent("focus",true,true);
+    button1.dispatchEvent(event);
+
+    /**
+     * 有些HTML事件有可访问的构造器方法。 因此也可以使用构造器来模拟事件。
+     */
+    event=new FocusEvent("focus",
+        {
+            cancelable:true,
+            bubbles:true,
+            view:window
+        });
+    button1.dispatchEvent(event);
+
+
+    /**
+     * 这里虽然模拟了事件，但是焦点事件在这里并没有真正的让焦点聚集在焦点事件的目标元素上。
+     * 有可能是浏览器不支持，有可能是浏览器的安全限制，原因目前不确定一一但是能捕获到事件触发是真的。
+     */
+    console.log("焦点并不在按钮上!",document.activeElement!==button1);
+
+
+</script>
+</html>

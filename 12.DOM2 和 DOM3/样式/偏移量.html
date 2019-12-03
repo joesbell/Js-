@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>偏移量offsetXXX相关</title>
+</head>
+<body>
+
+<div>
+    <p id="p1">offset的测试元素</p>
+</div>
+
+<div style="position: relative;">
+    <div style="position: relative;top:100px;left: 100px;">
+        <div style="position: relative;top:100px;left: 100px;">
+            <p id="p2">嵌套后的测试元素</p>
+        </div>
+    </div>
+</div>
+
+<div>
+    <p id="p3">定位元素为绝对定位时</p>
+</div>
+
+</body>
+
+<script>
+
+    /**
+     * 在HTMLElement类型上定义了有关偏移的offsetXXX属性
+     */
+    console.log(HTMLElement.prototype.hasOwnProperty("offsetTop"));
+    console.log(HTMLElement.prototype.hasOwnProperty("offsetLeft"));
+    console.log(HTMLElement.prototype.hasOwnProperty("offsetWidth"));
+    console.log(HTMLElement.prototype.hasOwnProperty("offsetHeight"));
+    console.log(HTMLElement.prototype.hasOwnProperty("offsetParent"));
+
+    var p1=document.getElementById("p1");
+    console.log("垂直方向偏移:",p1.offsetTop,"水平方向偏移:",p1.offsetLeft);
+    console.log("垂直方向占用空间大小",p1.offsetHeight,"水平方向占用空间大小",p1.offsetWidth)
+    console.log(p1.offsetParent===document.body); //一般而言定位元素是body元素
+    console.log(p1.offsetParent!==p1.parentNode); //定位元素和父元素没有任何关系。不一定相等的
+
+    /**
+     * 偏移属性都是相对于定位元素的，通过修改position为relative可以修改某个元素为定位元素。
+     */
+    console.log("修改父元素为定位元素后:");
+    p1.parentNode.style.position="relative";
+    console.log(p1.offsetParent===p1.parentNode);
+    console.log("垂直方向偏移:",p1.offsetTop,"水平方向偏移:",p1.offsetLeft);
+    console.log("垂直方向占用空间大小",p1.offsetHeight,"水平方向占用空间大小",p1.offsetWidth);
+
+    /**
+     * visibility只影响可见性，但是并不影响布局，元素依旧占据位置，因此偏移相关的属性不会被影响
+     */
+    console.log("取消修改定位元素并设置元素visibility为hidden");
+    p1.parentNode.style.position="";
+    p1.style.visibility="hidden";
+    console.log("垂直方向偏移:",p1.offsetTop,"水平方向偏移:",p1.offsetLeft);
+    console.log("垂直方向占用空间大小",p1.offsetHeight,"水平方向占用空间大小",p1.offsetWidth);
+
+    /*
+    *但是display属性是影响布局的。当display为none时，元素依旧不占据位置了，因此偏移属性都为0了
+    */
+    console.log("修改display为none后");
+    p1.style.display="none";
+    console.log("垂直方向偏移:",p1.offsetTop,"水平方向偏移:",p1.offsetLeft);
+    console.log("垂直方向占用空间大小",p1.offsetHeight,"水平方向占用空间大小",p1.offsetWidth);
+
+
+    /**
+     * 获取元素相对于body元素的偏移的方式，其实就是不停迭代累加偏移量。
+     * body标签下，除了body元素本身定位元素为null外，所有在布局上可见的元素都拥有定位元素
+     */
+    function getElementOffsetLocation(ele){
+        var tempEle;
+        var location={top:0,left:0};
+        for(var tempEle=ele.offsetParent;tempEle!=null;){
+            location.top+=ele.offsetTop;
+            location.left+=ele.offsetLeft;
+            ele=tempEle;
+            tempEle=ele.offsetParent;
+        }
+        return location;
+    }
+
+    var p2=document.getElementById("p2");
+    console.log(getElementOffsetLocation(p2));
+
+    /**
+     * 使用绝对定位也可以使一个元素变为定位元素
+     */
+    var p3=document.getElementById("p3");
+    p3.parentNode.style.position="absolute";
+    console.log(p3.parentNode===p3.offsetParent);
+
+</script>
+
+
+</html>

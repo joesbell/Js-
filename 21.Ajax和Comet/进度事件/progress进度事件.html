@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>progress进度事件</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="下载数据">
+<hr>
+<input type="file" id="file1">
+<input type="button" id="button2" value="上传数据">
+
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var file1=document.getElementById("file1");
+
+    /**
+     * 下载过程的进度progress事件是在xhr对象上触发的
+     */
+    button1.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+
+        xhr.onload=function(){
+            if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                var data=xhr.response;
+                console.log("下载服务器响应数据完毕",data.__proto__===Blob.prototype);
+                console.log("下载的总字节数",data.size);
+            }else{
+                console.log("响应错误");
+            }
+        };
+
+        xhr.onprogress=function(event){
+            if(event.lengthComputable){
+                console.log("当前已下载",event.loaded,"需要下载的总字节数",event.total,"下载进度百分比:",(((event.loaded/event.total)*100)>>0)+"%");
+            }else{
+                console.log("当服务器的响应头中没有Content-Length头信息时，是无法获取当前下载进度的字节数 以及 总字节数的");
+            }
+        };
+
+        xhr.open("GET","/rest/downloadprogressevent");
+        xhr.responseType="blob";
+        xhr.send();
+
+    });
+
+    /**
+     * 上传过程的进度progress事件 是在 xhr对象的upload属性上触发的。
+     */
+    button2.addEventListener("click",function(){
+        var formdata=new FormData();
+        formdata.append("myUploadFile",file1.files[0]);
+        var xhr=new XMLHttpRequest();
+        xhr.onload=function(){
+            if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                console.log(xhr.response);
+            }else{
+                console.log("响应错误")
+            }
+        };
+        xhr.upload.onprogress=function(event){
+            if(event.lengthComputable){
+                console.log("已发送字节数:",event.loaded,"需要发送的总字节数",event.total,"发送进度百分比:",(((event.loaded/event.total)*100)>>0)+"%");
+            }
+        };
+        xhr.open("POST","/rest/uploadprogressevent");
+        //这里使用FormData类型简便地进行文件上传操作。
+        xhr.send(formdata);
+    });
+
+</script>
+
+</html>

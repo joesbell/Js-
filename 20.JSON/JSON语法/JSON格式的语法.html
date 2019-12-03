@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSON格式的语法</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 简单值的JSON。
+     */
+
+    // 简单字符串的 JSON
+    // 需要注意的是，在JS中，当JSON数据单纯为一个字符串时一一 比如 JSON数据就是 "abc" ,其双引号是需要转义的。
+    var jsonData="\"abc\"";
+    //当然这样也是可以的。
+    jsonData='"abc"';
+
+    try{
+        JSON.parse("'abc'");
+    }catch (e) {
+        console.log("JSON的string类型值 必须用 双引号括起来 而不是单引号")
+    }
+    var obj=JSON.parse(jsonData);
+    console.log(obj==="abc",typeof obj ==="string");
+
+    // 简单数字的JSON
+    jsonData="1.23";
+    obj=JSON.parse(jsonData);
+    console.log(obj===1.23,typeof obj ==="number");
+    try{
+        JSON.parse("012");
+    }catch (e) {
+        console.log("JSON的number类型不支持前导0")
+    }
+    try{
+        JSON.parse("0.");
+    }catch (e) {
+        console.log("JSON的number类型小数点后必须跟数字")
+    }
+
+
+    // null值的 JSON
+    jsonData="null";
+    obj=JSON.parse(jsonData);
+    console.log(obj===null,typeof obj ==="object");
+
+    //布尔值的 JSON
+    jsonData="true";
+    obj=JSON.parse(jsonData);
+    console.log(obj===true,typeof obj ==="boolean");
+
+    // JSON 中没有 undefined值
+    try{
+        JSON.parse("undefined");
+    }catch (e) {
+        console.log("JSON中没有undefined类型值")
+    }
+
+    /**
+     * JSON的对象
+     */
+    try{
+        JSON.parse("{ 'a':1 , 'b':2}");
+    }catch (e) {
+        console.log("JSON中对象的属性必须用 双引号括起来 ,不能用 单引号")
+    }
+
+    try{
+        JSON.parse('{ "a":1 , "b":2 , }');
+    }catch (e) {
+        console.log("JSON中对象的最后一个属性后不能跟逗号")
+    }
+
+    /**
+     * JSON的数组
+     */
+    try{
+        JSON.parse('[ 1 , 2 , 3 ,]');
+    }catch (e) {
+        console.log("JSON中数组的最后一项后不能跟逗号")
+    }
+
+    /**
+     * JSON 不支持函数
+     */
+    try{
+        JSON.parse('{ "a" : function(){ return false } }');
+    }catch (e) {
+        console.log("JSON中不支持函数")
+    }
+
+    /**
+     * JSON 不支持引用
+     */
+    try{
+        var a=10;
+        JSON.parse('{ "a" : a }');
+    }catch (e) {
+        console.log("JSON中不支持对象实例,或者说是变量引用")
+    }
+
+
+</script>
+
+</html>

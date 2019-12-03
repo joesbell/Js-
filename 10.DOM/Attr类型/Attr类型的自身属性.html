@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attr类型的自身(Node)属性</title>
+</head>
+<body>
+
+<div id="myid" ></div>
+
+</body>
+
+<script>
+    var attrNode=document.getElementById("myid").attributes["id"];
+    console.log(attrNode.nodeName==="id");
+    console.log(attrNode.nodeValue==="myid");
+    console.log(attrNode.nodeType===2);
+    console.log(attrNode.parentNode===null) //这一点一定要注意。 特性节点是没有父节点的
+</script>
+</html>

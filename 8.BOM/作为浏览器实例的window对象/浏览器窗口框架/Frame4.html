@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>rightFrame</title>
+</head>
+<body>
+    <h1>rightFrame</h1>
+</body>
+
+<script>
+    var d="d";
+
+    function getMessage(msg) {
+        msg.stopPropagation();
+        this.printLineInfo=top.printLineInfo;
+        this.printLineInfo("当前窗口名:"+window.name);
+        this.printLineInfo("rightFrame窗口收到信息:"+msg.data);
+        this.printLineInfo("证明我是rightFrame:"+d);
+        this.printLineInfo("window===top.frames[3]:"+(window===top.frames[3]));
+        this.printLineInfo("self===top.frames[3]:"+(self===top.frames[3]));
+        this.printLineInfo("window===top.frames['rightFrame']:"+(window===top.frames["rightFrame"]));
+        this.printLineInfo("window.parent===top:"+(window.parent===top));
+
+        setTimeout(()=>{
+            top.postMessage("top应该收到的信息","*");
+        },1000);
+        window.document.body.style.background="green";
+    }
+
+    window.addEventListener("message",getMessage,false);
+</script>
+
+</html>

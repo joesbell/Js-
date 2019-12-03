@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>不可扩展对象</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 所有对象默认都是可以扩展的
+     */
+    var obj={};
+    console.log(Object.isExtensible(obj)===true);
+    obj.a="普通对象默认都是可以添加属性和方法的";
+
+    /**
+     * 利用Object.preventExtensions可以将对象设置为不能扩展的，并且无法撤销。
+     */
+    Object.preventExtensions(obj);
+    console.log(Object.isExtensible(obj)===false);
+
+    /**
+     * 不可扩展的对象添加属性或者方法在非严格模式下，是静默失败的。
+     */
+    obj.b="设置为不可扩展后就不能添加属性或者方法了";
+    console.log("非严格模式下会静默的失败",obj.b===undefined);
+    (function () {
+        /**
+         * 不可扩展的对象添加属性或者方法在严格模式下，是会报错的。
+         */
+        "use strict";
+        try{
+            obj.b="严格模式下添加还会报错";
+        }catch (e) {
+            console.log("设置为不可扩展后，如果添加属性或者方法，那么在严格模式下会报错",obj.b===undefined)
+        }
+        /**
+         * 并且限制的不仅仅是 赋值新增属性，而且定义新增属性也不允许。
+         */
+        try{
+            Object.defineProperty(obj,"b",{
+                value:"定义的方式也是无效的"
+            })
+        }catch (e) {
+            console.log("使用Object.defineProperty定义的方式也无法扩展对象的属性或者方法",obj.b===undefined)
+        }
+    }());
+
+    /**
+     * 扩展并不影响 修改已有的属性或者方法
+     */
+    obj.a="但是还是可以修改已有的属性或者方法的";
+    console.log(obj.a);
+
+    /**
+     * 也不会影响 删除已有的属性或者方法
+     */
+    delete obj.a;
+    console.log("并且也是可以移除属性或者方法的",obj.a===undefined);
+
+</script>
+</html>

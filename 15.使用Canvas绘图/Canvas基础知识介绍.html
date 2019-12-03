@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas基础知识介绍</title>
+</head>
+<body>
+<p>这是Canvas绘图区</p>
+<!-- canvas元素的height和width属性用于指定绘图区域大小-->
+<canvas id="canvas1" height="200px" width="200px"></canvas>
+<br>
+<input type="button" id="button1" value="canvas生成图片">
+<hr>
+</body>
+
+<script>
+
+    /**
+     * HTML5中新增了 HTMLCanvasElement元素类型用于绘图
+     */
+    var canvas1=document.getElementById("canvas1");
+    console.log(canvas1.__proto__===HTMLCanvasElement.prototype);
+
+    /**
+     * 使用canvas元素的 getContext方法可以获取到绘图的上下文
+     */
+    console.log(HTMLCanvasElement.prototype.hasOwnProperty("getContext"));
+
+    var context=canvas1.getContext("2d"); //获取2D上下文
+    /**
+     * 这个2D上下文是 CanvasRenderingContext2D类型的
+     */
+    console.log(context.__proto__===CanvasRenderingContext2D.prototype);
+
+    /**
+     * 2D上下文对象具有一系列方法和属性用于绘制图形。
+     */
+    context.fillStyle="gray"; //填充样式
+    context.fillRect(0,0,200,200); //绘制填充矩形
+
+    context.strokeStyle="red"; //描边样式
+    context.strokeRect(50,50,100,100);  //绘制描边矩形
+
+    /**
+     * canvas类型元素还具有 toDataURL(type) 方法用于将绘制区域生成图片地址。
+     */
+    console.log(HTMLCanvasElement.prototype.hasOwnProperty("toDataURL"));
+
+    var button1=document.getElementById("button1");
+    button1.addEventListener("click",function () {
+        var imgURL=canvas1.toDataURL("image/png"); //jpeg也可以
+        var img=document.createElement("img");
+        img.src=imgURL;
+        document.body.appendChild(img);
+    })
+
+</script>
+
+</html>

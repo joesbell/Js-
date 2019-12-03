@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>dataTransfer对象</title>
+
+    <style>
+        .box{
+            height: 100px;
+            width: 100px;
+            border: 1px solid black;
+            text-align: center;
+            line-height: 100px;
+            user-select: none;
+            position: absolute;
+        }
+
+    </style>
+</head>
+<body>
+
+<input type="button" value="开启自动合并" onclick="autoMerge()">
+
+</body>
+    <script>
+
+        /**
+         * 创建10个可拖动的元素
+         */
+        (function () {
+            for(var i=0;i<10;i++){
+                var top=(window.innerHeight-100)*Math.random();
+                var left=(window.innerWidth-100)*Math.random();
+                var div=document.createElement("div");
+                div.classList.add("box");
+                div.style.top=top+"px";
+                div.style.left=left+"px";
+                div.innerText=(Math.random()*100)>>0;
+                div.draggable=true;
+                document.body.appendChild(div);
+            }
+        }());
+
+        var boxs=document.getElementsByClassName("box");
+
+        var dragEle;
+        document.addEventListener("dragstart",function (event) {
+            console.log("触发",event.type);
+            if(!event.target.classList.contains("box")){
+                return ;
+            }
+            dragEle=event.target;
+            /**
+             * 这里将使用dataTransfer对象记录 拖动元素内部的数字信息。
+             */
+            event.dataTransfer.setData("text/plain",event.target.innerText);
+        });
+
+        document.addEventListener("drop",function (event) {
+            console.log("触发",event.type);
+            if(!event.target.classList.contains("box")){
+                return ;
+            }
+
+            if(dragEle===event.target){
+                return ;
+            }
+
+            //这里获取拖动元素的信息并相加。
+            var dragNumber=Number.parseInt(event.dataTransfer.getData("text/plain"));
+            var targetNumber=Number.parseInt(event.target.innerText);
+            event.target.innerText=dragNumber+targetNumber;
+            document.body.removeChild(dragEle);
+        });
+
+        /**
+         * 将所有元素都设置为可以放置的。
+         */
+        document.addEventListener("dragover",function (event) {
+            event.preventDefault();
+        });
+        document.addEventListener("dragenter",function (event) {
+            event.preventDefault();
+        });
+
+
+        /**
+         * 利用 模拟事件分发，来达到自动合并box的目的。
+         */
+        function autoMerge() {
+            var myDataTransfer=new DataTransfer();
+            var myDragstart=new DragEvent("dragstart",{
+                bubbles:true,
+                cancelable:true,
+                dataTransfer:myDataTransfer
+            });
+
+            var myDrop=new DragEvent("drop",{
+                bubbles:true,
+                cancelable:true,
+                dataTransfer:myDataTransfer
+            });
+
+            var interId=setInterval(()=>{
+                if(boxs.length===1){
+                    clearInterval(interId);
+                    return;
+                }
+                boxs[0].dispatchEvent(myDragstart);
+                boxs[1].dispatchEvent(myDrop);
+            },1000)
+        }
+    </script>
+</html>

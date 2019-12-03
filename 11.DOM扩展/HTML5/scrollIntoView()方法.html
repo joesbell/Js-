@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>scrollIntoView()方法</title>
+</head>
+<style>
+    .menu{
+        position: fixed;
+        left: 40%;
+    }
+</style>
+<body>
+<div class="menu">
+    <input type="button" value="滚动到1">
+    <input type="button" value="滚动到2">
+    <input type="button" value="滚动到3">
+</div>
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<strong id="0">滚动到了1</strong>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<strong id="1">滚动到了2</strong>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<strong id="2">滚动到了3</strong>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+</body>
+
+<script>
+
+    /**
+     * scrollIntoView方法是定义在Element原型上的。
+     * 该方法会让页面滚动到调用元素上，并让调用元素顶部尽可能和视口顶部对齐。
+     */
+    console.log(Element.prototype.hasOwnProperty("scrollIntoView"));
+
+    var buttons=document.querySelectorAll("input");
+    for(var i=0,len=buttons.length;i<len;i++){
+        buttons[i].addEventListener("click",function (i) {
+            return function () {
+                document.getElementById(i).scrollIntoView();
+            }
+        }(i)) //避免闭包的副作用
+    }
+</script>
+
+</html>

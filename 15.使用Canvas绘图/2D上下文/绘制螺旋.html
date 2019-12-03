@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制螺旋</title>
+</head>
+<body>
+
+<canvas id="canvas1" height="800" width="800"></canvas>
+
+</body>
+
+<script>
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+    ctx1.fillStyle="black";
+    ctx1.fillRect(0,0,800,800);
+
+    for (var i=0;i<3;i++) {
+        for (var j=0;j<3;j++) {
+            ctx1.save();
+            ctx1.strokeStyle ="#9CFF00";
+            ctx1.translate(100+j*300,100+i*300);
+            drawSpirograph(ctx1,20*(j+2)/(j+1),-8*(i+3)/(i+1),10);
+            ctx1.restore();
+        }
+    }
+
+    /**
+     * 绘制螺旋
+     * @param ctx
+     * @param R 外圆半径
+     * @param r 内圆半径
+     * @param l 内圆上绘制点距离内圆原心距离
+     */
+    function drawSpirograph(ctx,R,r,l) {
+        var a=Math.PI/60;
+        var x=R-r+l;
+        var y=0;
+
+        ctx.beginPath();
+
+        for(var i=1;i<20000;i++){
+            ctx.moveTo(x,y);
+            /**
+             * 根据螺旋的方程。算出内圆转过 a*i 角度时，绘制点的坐标.
+             */
+            x=(R-r)*Math.cos(a*i)+Math.cos(a*i*R/r)*l;
+            y=(R-r)*Math.sin(a*i)+Math.sin(a*i*R/r)*l;
+            ctx.lineTo(x,y);
+
+            if(x===(R-r+l)&&y===0){
+                console.log("已经绘制完毕");
+                break;
+            }
+        }
+        ctx.stroke();
+    }
+
+</script>
+
+</html>

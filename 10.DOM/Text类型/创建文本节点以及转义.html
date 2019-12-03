@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>创建文本节点及转义</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    var text=document.createTextNode("文本节点内容");
+    document.body.appendChild(text);
+
+    /**
+     * 虽然这里字符串看起来没被转义，但是实际上在创建文本节点时是被自动转义了的。
+     */
+    text.nodeValue="<strong>HTML代码会被自动转义</strong>";
+
+
+    var node=document.createElement("p");
+    /**
+     *  上面创建文本节点时，会被转义成等同于下面内容的html文本。
+     *  也就是说 <转义成&lt; >转义成&gt;
+     */
+    node.innerHTML="&lt;strong&gt;手动进行HTML代码转义&lt;/strong&gt;";
+    document.body.appendChild(node);
+
+    node=document.createElement("p");
+    node.innerHTML="<strong>不被转义的是这样的</strong>";
+    document.body.appendChild(node);
+</script>
+
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>leftFrame</title>
+</head>
+<body>
+
+    <h1>leftFrame</h1>
+
+</body>
+<script>
+    var b="b";
+    function getMessage(msg) {
+        msg.stopPropagation();
+        this.printLineInfo=top.printLineInfo;
+        this.printLineInfo("当前窗口名:"+window.name);
+        this.printLineInfo("leftFrame窗口收到信息:"+msg.data);
+        this.printLineInfo("证明我是leftFrame:"+b);
+        this.printLineInfo("window===top.frames[1]:"+(window===top.frames[1]));
+        this.printLineInfo("self===top.frames[1]:"+(self===top.frames[1]));
+        this.printLineInfo("window===top.frames['leftFrame']:"+(window===top.frames["leftFrame"]));
+        this.printLineInfo("window.parent===top:"+(window.parent===top));
+        setTimeout(()=>{
+            top.frames[2].postMessage("centerFrame应该收到的信息","*");
+        },1000);
+        window.document.body.style.background="blue";
+    }
+
+    window.addEventListener("message",getMessage,false);
+</script>
+
+
+</html>

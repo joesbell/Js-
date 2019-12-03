@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>scrollIntoViewIfNeeded()方法</title>
+</head>
+<style>
+    .menu{
+        position: fixed;
+        left: 30%;
+    }
+</style>
+<body>
+<div class="menu">
+    <input type="button" value="滚动到1(在有必要的情况下)">
+    <input type="button" value="滚动到2(在有必要的情况下)">
+    <input type="button" value="滚动到3(在有必要的情况下)">
+</div>
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<strong id="0">滚动到了1</strong>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<strong id="1">滚动到了2</strong>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<strong id="2">滚动到了3</strong>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+</body>
+
+<script>
+
+    /**
+     * scrollIntoViewIfNeeded方法是定义在Element原型上的。
+     * 该方法在元素不在当前视口中时，让页面滚动到调用元素上，并让调用元素尽可能位于视口的垂直方向的中间位置。
+     */
+    console.log(Element.prototype.hasOwnProperty("scrollIntoViewIfNeeded"));
+
+    var buttons=document.querySelectorAll("input");
+    for(var i=0,len=buttons.length;i<len;i++){
+        buttons[i].addEventListener("click",function (i) {
+            return function () {
+                document.getElementById(i).scrollIntoViewIfNeeded();
+            }
+        }(i)) //避免闭包的副作用
+    }
+</script>
+
+</html>

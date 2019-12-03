@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>document.designMode属性</title>
+</head>
+<body>
+<h3>这是一个可供富文本编辑的窗口框架</h3>
+<iframe name="editableFrame"></iframe>
+<br>
+<input type="button" value="切换窗口框架的可编辑状态" id="button1">
+</body>
+
+<script>
+
+    /**
+     * Document类型上具有designMode属性，用于控制 文档 是否可以编辑。
+     */
+    console.log(Document.prototype.hasOwnProperty("designMode"));
+
+    var editWindow=window.frames["editableFrame"];
+    var button1=document.getElementById("button1");
+    /**
+     * 通过控制窗口框架的文档的designMode属性，可以控制窗口框架的文档内容是否可编辑。
+     * 默认的，这个属性为"off".
+     * 需要注意的是 designMode必须在文档完全加载完毕后才能设置。也就是load事件结束后。
+     */
+    console.log(editWindow.document.designMode==="off");
+
+    button1.addEventListener("click",function () {
+        if(editWindow.document.designMode==="on"){
+            editWindow.document.designMode="off";
+            console.log("切换为不可编辑状态");
+        }else if(editWindow.document.designMode==="off"){
+            editWindow.document.designMode="on";
+            console.log("切换为可编辑状态");
+        }else{
+            console.log("error")
+        }
+    })
+</script>
+</html>

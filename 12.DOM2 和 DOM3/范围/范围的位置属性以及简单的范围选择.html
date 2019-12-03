@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>范围的位置属性以及简单的范围选择</title>
+</head>
+<body>
+
+<p id="p1">1</p>
+<p id="p2"> <b>hello</b>world!<strong>this is range</strong></p>
+<p id="p3">3</p>
+
+
+<script>
+
+    /**
+     * Document类型上提供了 createRange方法用于创建一个范围
+     */
+    console.log(Document.prototype.hasOwnProperty("createRange"));
+
+    /**
+     * Range类型自身的位置相关属性
+     */
+    console.log(Range.prototype.hasOwnProperty("startContainer"));
+    console.log(Range.prototype.hasOwnProperty("startOffset"));
+    console.log(Range.prototype.hasOwnProperty("endContainer"));
+    console.log(Range.prototype.hasOwnProperty("endOffset"));
+    console.log(Range.prototype.hasOwnProperty("commonAncestorContainer"));
+
+    /**
+     * Range类型中用于简单选择范围的方法
+     */
+    console.log(Range.prototype.hasOwnProperty("selectNode"));
+    console.log(Range.prototype.hasOwnProperty("selectNodeContents"));
+    console.log(Range.prototype.hasOwnProperty("setStartBefore"));
+    console.log(Range.prototype.hasOwnProperty("setStartAfter"));
+    console.log(Range.prototype.hasOwnProperty("setEndBefore"));
+    console.log(Range.prototype.hasOwnProperty("setEndAfter"));
+
+    var p1=document.getElementById("p1");
+    var p2=document.getElementById("p2");
+    var p3=document.getElementById("p3");
+
+    /**
+     * 简单指定范围
+     */
+
+    /**
+     * 对于使用 selectNode(node) 确定的范围。
+     */
+    var range1=document.createRange();
+
+    var nodes1=p2.parentNode.childNodes; //其父节点的直接子节点数组
+    range1.selectNode(p2);
+    console.log(
+        nodes1[range1.startOffset]===p2, //其 startOffset 等于 该node在其父节点的直接子节点数组的索引。
+        nodes1[range1.endOffset-1]===p2, //其 endOffset 等于 该node在其父节点的直接子节点数组的索引+1。
+
+        range1.startContainer===p2.parentNode,   //其 startContainer及其endContainer都等于 该node的父节点
+        range1.endContainer===p2.parentNode
+    );
+
+
+    /**
+     * 对于使用 selectNodeContents(node)确定的范围
+     */
+    var range2=document.createRange();
+
+    var nodes2=p2.childNodes; //其直接子节点数组
+    range2.selectNodeContents(p2);
+    console.log(
+        range2.startOffset===0,  // 其 startOffset等于 0
+        range2.endOffset===nodes2.length, // 其 endOffset 等于 该node直接子节点个数。
+
+        range2.startContainer===p2,   //其 startContainer及其endContainer都等于 该node
+        range2.endContainer===p2
+    );
+
+    /**
+     * 对于使用setStartBefore或者 setEndBefore确定的范围.
+     */
+    var range3=document.createRange();
+    var nodes3=p1.parentNode.childNodes;
+
+    //如果上一个同胞节点为null，那么使用refNode的父节点。
+    var nodes4=p3.previousSibling?p3.previousSibling.parentNode.childNodes:p3.parentNode.childNodes;
+    range3.setStartBefore(p1);
+    range3.setEndBefore(p3);
+    console.log(
+        nodes3[range3.startOffset]===p1, //如果是setStartBefore(node),那么 startOffset 就是 node在其父节点的直接子节点数组中的索引
+        nodes4[range3.endOffset]===p3,   //如果是setEndBefore(node),那么 endOffset 就是 node在其上一个同胞节点的父节点的直接子节点数组中的索引
+
+        range3.startContainer===p1.parentNode, //如果是setStartBefore(node),那么startContainer就是 node的父节点
+        range3.endContainer===(p3.previousSibling?p3.previousSibling.parentNode:p3.parentNode) //如果是setEndBefore(node),那么endContainer就是 node的上一个同胞节点的父节点
+    );
+
+
+    /**
+     * 对于使用setStartAfter或者 setEndAfter确定的范围.
+     */
+    var range4=document.createRange();
+    //如果下一个同胞节点为null，那么使用refNode的父节点。
+    var nodes5=p1.nextSibling? p1.nextSibling.parentNode.childNodes :p1.parentNode.childNodes;
+    var nodes6=p3.parentNode.childNodes;
+    range4.setStartAfter(p1);
+    range4.setEndAfter(p3);
+    console.log(
+        nodes5[range4.startOffset-1]===p1, //如果是setStartAfter(node),那么 startOffset 就是 node在其下一个同胞节点的父节点的直接子节点数组中的索引+1
+        nodes6[range4.endOffset-1]===p3,   //如果是setEndAfter(node),那么 endOffset 就是 node在父节点的直接子节点数组中的索引+1
+
+        range4.startContainer===(p1.nextSibling? p1.nextSibling.parentNode:p1.parentNode), //如果是setStartAfter(node),那么startContainer就是 node的下一个同胞节点的父节点
+        range4.endContainer===p3.parentNode //如果是setEndAfter(node),那么endContainer就是 node的父节点
+    )
+
+</script>
+
+</html>

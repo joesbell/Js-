@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>基本的方式操作表格</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 所谓基本的方式就是说 只用核心的DOM API来进行操作.
+     * 这里创建一个 2*2的表格
+     */
+    var table=document.createElement("table");
+    var tbody=document.createElement("tbody");
+
+    var row1=document.createElement("tr");
+    var row2=document.createElement("tr");
+    var cell1_1=document.createElement("td");
+    var cell1_2=document.createElement("td");
+    var cell2_1=document.createElement("td");
+    var cell2_2=document.createElement("td");
+
+    document.body.appendChild(table);
+    table.appendChild(tbody);
+    tbody.appendChild(row1);
+    tbody.appendChild(row2);
+    row1.appendChild(cell1_1);
+    row1.appendChild(cell1_2);
+    row2.appendChild(cell2_1);
+    row2.appendChild(cell2_2);
+
+    table.border="1px solid black";
+    cell1_1.appendChild(document.createTextNode("cell 1 1"));
+    cell1_2.appendChild(document.createTextNode("cell 1 2"));
+    cell2_1.appendChild(document.createTextNode("cell 2 1"));
+    cell2_2.appendChild(document.createTextNode("cell 2 2"));
+</script>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM事件处理函数中的this取值分析</title>
+</head>
+<body>
+<ul>
+    <li style="background: red">1</li>
+    <li style="background: blue">2</li>
+    <li style="background: green">3</li>
+</ul>
+</body>
+
+<script>
+
+    /**
+     * 在DOM事件监听函数中， this取值为触发事件的DOM元素。
+     * 同时该函数的默认传参中会传入该事件本身。
+     */
+    function show(event){
+        console.log("this是触发事件的DOM元素",this);
+        console.log("触发的事件",event);//事件本身
+        console.log("触发的事件对象的target属性是触发事件的DOM元素",event.target); //事件的触发元素
+        console.log(event.target==this);
+        console.log("内容为:",this.innerText);
+    }
+
+    var lis=document.getElementsByTagName("li");
+    /**
+     * 为DOM元素添加事件监听。
+     */
+    for(var i=0;i<lis.length;i++){
+        lis[i].addEventListener("mouseover",show)
+    }
+</script>
+</html>

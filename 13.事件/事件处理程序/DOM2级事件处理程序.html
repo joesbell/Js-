@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM2级事件处理程序</title>
+</head>
+<body>
+
+<div>
+    <input type="button" id="input1" onclick="console.log(this.value,event)" value="DOM0级和DOM2级事件处理程序">
+    <input type="button" id="input2" value="取消DOM0级事件处理程序">
+    <input type="button" id="input3" value="为DOM2级事件处理程序的同一个事件类型添加多个处理函数">
+</div>
+<br>
+<div>
+    <input type="button" id="input4" value="DOM2级捕获处理">
+</div>
+
+</body>
+
+<script>
+    /**
+     * DOM2级事件处理程序的核心方法定义在 EventTarget原型上。
+     * 而Node继承EventTarget。
+     */
+    console.log(EventTarget.prototype.hasOwnProperty("addEventListener"));
+    console.log(EventTarget.prototype.hasOwnProperty("removeEventListener"));
+    console.log(Node.prototype.__proto__===EventTarget.prototype);
+
+    var input1=document.getElementById("input1");
+
+    /**
+     * DOM2级事件处理程序的 函数体中，this指向依旧为DOM元素。而函数的第一个参数依旧为被触发的事件
+     */
+
+    input1.addEventListener("click",function (eventArgs) {
+        console.log(this===input1);
+        console.log(arguments[0] instanceof Event);
+    });
+
+    var input2=document.getElementById("input2");
+    //通过DOM0级事件处理取消DOM0级事件处理函数。
+    input2.onclick=function () {
+        input1.onclick=null;
+        input1.value="取消DOM1级事件处理程序并不会影响DOM2级事件处理程序"
+    };
+
+    var input3=document.getElementById("input3");
+
+    var count=0;
+
+    //为DOM2级事件处理的click事件添加额外的处理函数
+    input3.onclick=function () {
+        input1.addEventListener("click",function (count) {
+            return function () {
+                //这里需要注意的是，实际的处理函数是这里返回的匿名函数， 而 被触发的事件 依旧会作为第一个参数。
+                console.log("利用DOM2级事件处理对click事件类型添加的额外的处理函数:",count,arguments[0] instanceof Event);
+            };
+        }(count++));//避免闭包副作用。
+    };
+
+    /**
+     * 需要注意的是，这种DOM2级事件处理函数添加的匿名处理函数是无法被移除的。
+     * 同时还需要注意，冒泡阶段和捕获阶段是不同的，就算处理函数一致.
+     * 如果添加时是冒泡阶段的，那么移除时也必须移除冒泡阶段的
+     * 如果添加时是捕获阶段的，那么移除时也必须是捕获阶段的
+     */
+    var input4=document.getElementById("input4");
+
+    input4.addEventListener("click",foo,true); //这里添加的是捕获阶段的处理函数，移除必须移除捕获阶段的。
+
+    function foo() {
+        console.log("捕获");
+    }
+    input4.removeEventListener("click",foo,false); //这里移除的是冒泡阶段的，所以是无效的。
+
+    console.log("冒泡阶段的必须在冒泡阶段移除，捕获阶段的必须在捕获阶段移除。");
+    input4.click(); //因此这里依旧会触发冒泡阶段的click事件
+    console.log("移除捕获阶段的事件处理");
+    input4.removeEventListener("click",foo,true);
+    input4.click(); //这里不会触发了
+
+
+</script>
+</html>

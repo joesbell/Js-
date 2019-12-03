@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comment类型的自身(Node)属性</title>
+</head>
+<body>
+
+<div><!--这是注释节点--></div>
+
+</body>
+
+<script>
+    var comment=document.getElementsByTagName("div")[0].firstChild;
+    console.log(comment.__proto__===Comment.prototype);
+    console.log(comment.nodeValue==="这是注释节点");
+    console.log(comment.nodeType===8);
+    console.log(comment.nodeName==="#comment");
+
+</script>
+</html>

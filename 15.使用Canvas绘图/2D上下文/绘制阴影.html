@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>绘制阴影</title>
+</head>
+<body>
+
+<canvas id="canvas1" style="border: 1px solid black" height="400" width="400"></canvas>
+
+</body>
+
+<script>
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+    /**
+     * 关于阴影主要有4个属性。
+     * shadowOffsetX shadowOffsetY shadowColor shadowBlur
+     */
+    console.log(ctx1.shadowOffsetX===0);
+    console.log(ctx1.shadowOffsetY===0);
+    console.log(ctx1.shadowBlur===0);
+
+    ctx1.shadowOffsetX=5; //控制阴影的x轴宽度
+    ctx1.shadowOffsetY=10; //控制阴影的y轴宽度
+    ctx1.shadowColor="gray"; //控制阴影的颜色
+    ctx1.fillStyle="red";
+
+    ctx1.arc(200,200,100,0,Math.PI*2);
+    ctx1.fill();
+
+    ctx1.font="40px serial";
+    ctx1.fillText("hello",100,50);
+
+    /**
+     * 需要注意的是:虽然阴影不会受变换矩阵的影响。但是，阴影会因为图形或者文字的位置改变而改变。
+     * 也就是说 当图形或者文字旋转后，图形或者文字的阴影也会跟着旋转。
+     */
+    ctx1.rotate(Math.PI/16);
+    ctx1.shadowBlur=3  //控制阴影的透明度
+    ctx1.fillText("hello",200,50)
+
+</script>
+
+</html>

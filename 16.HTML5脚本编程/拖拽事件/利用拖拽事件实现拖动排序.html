@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>利用拖拽事件实现的拖动排序</title>
+
+    <style>
+        #list {
+            position: relative;
+        }
+        #list li {
+            background: deepskyblue;
+            line-height: 40px;
+            height: 40px;
+            width: 100px;
+            text-align: center;
+            border: 1px solid blue;
+            list-style: none;
+            user-select: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div id="div1">
+    <ul id="list">
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+        <li>5</li>
+    </ul>
+</div>
+
+</body>
+
+<script>
+    var ul=document.getElementById('list');
+    var lis=Array.from(ul.children);
+    //将每个li元素都设置为可拖拽的
+    lis.forEach((li)=>{
+        li.draggable=true;
+    });
+
+    var selectLi; //拖动的元素
+    var targetLi; //拖动到的目标元素
+
+    //监听 拖动开始事件
+    ul.addEventListener("dragstart",function (event) {
+        if(event.target.tagName.toLowerCase()!=="li"){
+            return ;
+        }
+        selectLi=event.target;
+    });
+
+    //拖动结束
+    ul.addEventListener("dragend",function (event) {
+        if(!(selectLi&&targetLi)){
+            return ;
+        }
+        var lis=Array.from(ul.children);
+        //原始序号
+        var selectIndex=lis.findIndex((li)=>{
+            return li===selectLi;
+        });
+        //拖动后的序号
+        var targetIndex=lis.findIndex((li)=>{
+            return li===targetLi;
+        });
+
+        //根据序号大小决定元素的插入方式。
+        if(selectIndex<targetIndex){
+            ul.insertBefore(selectLi,targetLi.nextElementSibling)
+        }else{
+            ul.insertBefore(selectLi,targetLi)
+        }
+        selectLi=null;
+        targetLi=null;
+    });
+
+    //监听拖动进入事件。
+    ul.addEventListener("dragenter",function (event) {
+        if(event.target.tagName.toLowerCase()!=="li"){
+            return ;
+        }
+        targetLi=event.target
+    });
+
+
+
+</script>
+
+</html>

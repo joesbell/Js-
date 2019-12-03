@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>contentEditable属性的富文本编辑</title>
+<style>
+    .select{
+        border: 1px solid red;
+    }
+</style>
+
+</head>
+<body>
+<div id="editableDiv">
+    div元素
+</div>
+<hr>
+
+<p id="editableP">
+    p元素
+</p>
+
+<input type="button" value="选择元素使其可编辑" id="button1">
+<input type="button" value="选择元素使其不可编辑" id="button2">
+
+</body>
+
+<script>
+
+    /**
+     * 所有的HTML元素都具有 contentEditable属性
+     */
+    console.log(HTMLElement.prototype.hasOwnProperty("contentEditable"));
+
+    /**
+     * contentEditable属性可以赋予任何元素而不仅仅只是designMode只能对框架生效。
+     * contenteditable是特性，和contentEditable属性保持同步
+     */
+    var editDiv=document.getElementById("editableDiv");
+    var editP=document.getElementById("editableP");
+    var button1=document.getElementById("button1");
+    var isSelectEditable=false; //是否正在选择元素
+    var makeEditable=false; //是否是让元素可编辑/不可编辑
+
+    /**
+     * 在选择元素的情况下，目前选中的元素给予红边。移出时移除红边
+     */
+    document.addEventListener("mouseover",function (event) {
+        if(isSelectEditable){
+            event.target.classList.add("select");
+            if(event.relatedTarget){
+                event.relatedTarget.classList.remove("select");
+            }
+        }
+    });
+
+
+    document.addEventListener("click",function (event) {
+        /**
+         * 选择元素使其变为可编辑
+         */
+        if(isSelectEditable&&makeEditable){
+            event.target.contentEditable="true";
+            // event.target.setAttribute("contenteditable","true"); //也可以设置特性来改变编辑状态
+            console.log(event.target.getAttribute("contenteditable")==="true");
+            event.target.classList.remove("select");
+            isSelectEditable=false;
+        }
+        /**
+         * 选择元素使其变为不可编辑
+         */
+        if(isSelectEditable&&!makeEditable){
+            event.target.contentEditable="false";
+            // event.target.setAttribute("contenteditable","false"); //也可以设置特性来改变编辑状态
+            console.log(event.target.getAttribute("contenteditable")==="false");
+            event.target.classList.remove("select");
+            isSelectEditable=false;
+        }
+    });
+
+
+    button1.addEventListener("click",function (event) {
+        makeEditable=true;
+        isSelectEditable=true;//进入选元素状态
+        event.stopPropagation();
+    });
+
+    button2.addEventListener("click",function (event) {
+        makeEditable=false;
+        isSelectEditable=true; //进入选元素状态
+        event.stopPropagation();
+    });
+
+</script>
+</html>

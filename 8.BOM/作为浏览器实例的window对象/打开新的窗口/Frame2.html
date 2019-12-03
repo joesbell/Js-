@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frame2</title>
+</head>
+<body>
+
+
+
+<button id="button1">点击会打开一个全新的窗口: _blank</button>
+</body>
+
+<script>
+    window.onload=function () {
+        var node=document.createElement("h1");
+        document.body.insertBefore(node,document.body.children[0]);
+        node.innerText=window.name;
+    }
+
+
+    /**
+     * _blank能打开一个新的页面作为窗口，而且可以使用特性字符串来为新窗口的大小位置赋值。
+     * 需要注意的是，特性字符串不是CSS字符串。
+     */
+    document.getElementById("button1").addEventListener("click",function () {
+        var newWindow=window.open("newWindow.html","_blank","height=400,width=400,top=100,left=100");
+
+        newWindow.onload=function () {
+            /**
+             * 这里的被调用的函数中，必须使用this。 参考窗口间的函数调用。
+             */
+
+            var node=this.document.createElement("h1");
+            this.document.body.insertBefore(node,this.document.body.children[0]);
+            node.innerText="打开该窗口的窗口引用的name属性为:"+this.opener.name;
+
+            this.countDown=function () {
+                var node=this.document.createElement("p");
+                var body=this.document.body;
+                body.appendChild(node);
+                var time=3;
+                var id=this.setInterval(function () {
+                    if(time==0){
+                        this.clearInterval(id);
+                        this.close();
+                    }
+                    node.innerText="倒计时"+time+"秒后关闭该页面";
+                    time--;
+                },1000);
+            };
+            this.countDown();
+        }
+    })
+
+</script>
+
+</html>

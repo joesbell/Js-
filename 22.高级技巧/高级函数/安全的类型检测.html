@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>安全的类型检测</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    console.log("6大类型:null和undefined以及其他三个基本类型的包装类型以及Object引用类型的  规范属性class值都是其首字母大写的英文");
+    console.log(Object.prototype.toString.call(null)==="[object Null]");
+    console.log(Object.prototype.toString.call(undefined)==="[object Undefined]");
+    console.log(Object.prototype.toString.call(new String("str"))==="[object String]");
+    console.log(Object.prototype.toString.call({})==="[object Object]");
+    console.log(Object.prototype.toString.call(new Number(123))==="[object Number]");
+    console.log(Object.prototype.toString.call(new Boolean(true))==="[object Boolean]");
+
+
+    console.log("对于 string number boolean 的基本类型值来说，调用 Object.prototype.toString时会首先转化为其包装类型再操作");
+    console.log(Object.prototype.toString.call("str")==="[object String]");
+    console.log(Object.prototype.toString.call(123)==="[object Number]");
+    console.log(Object.prototype.toString.call(true)==="[object Boolean]");
+
+    console.log("而对于原生的Array,Function,JSON,RegExp类型来说，虽然他们都属于是Object引用类型，但是依旧有单独的class名称来区别他们");
+    console.log(Object.prototype.toString.call([])==="[object Array]");
+    console.log(Object.prototype.toString.call(function(){})==="[object Function]");
+    console.log(Object.prototype.toString.call(/a/g)==="[object RegExp]");
+    console.log(Object.prototype.toString.call(JSON)==="[object JSON]");
+
+    console.log("对于任何非原生的类型,调用Object.prototype.toString是无法判断其类型的。 因为只会统一返回 [object Object] ");
+    var myArray=Object.create(Array.prototype);
+    //虽然我们自定义的数组类型继承于 原生的数组类型。
+    console.log(myArray.__proto__===Array.prototype);
+    /**
+     * 但是依旧统一返回的是 [object Object]
+     */
+    console.log(Object.prototype.toString.call(myArray)==="[object Object]");
+</script>
+
+</html>

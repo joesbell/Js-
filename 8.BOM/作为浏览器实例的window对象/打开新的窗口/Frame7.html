@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frame7</title>
+</head>
+
+<body>
+
+<button id="button1">点击会将父窗口跳转到新窗口: _parent</button>
+<p>在这里，frame7的父框架为frame6,而frame6中只有frame7这个框架窗口</p>
+</body>
+
+<script>
+
+    window.onload=function () {
+        var node=document.createElement("h1");
+        document.body.insertBefore(node,document.body.children[0]);
+        node.innerText=window.name;
+    }
+
+    document.getElementById("button1").addEventListener("click",function () {
+        var newWindow=window.open("newWindow.html","_parent");
+    });
+
+</script>
+
+
+</html>

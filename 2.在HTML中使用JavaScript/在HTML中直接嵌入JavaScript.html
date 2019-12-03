@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>直接嵌入JavaScript</title>
+
+    <script type="text/javascript">
+        count=0;
+    </script>
+
+</head>
+<body>
+
+<script >
+    function sayHello(){
+        count++;
+        //  使用转义符号 \
+        alert("hello <\/script>元素"+"这是第"+count+"次!");
+    }
+    sayHello();
+</script>
+
+<script>
+    sayHello();
+</script>
+
+</body>
+</html>
+
+<!-- 这就是在HTML中直接嵌入JavaScript的方法， 利用的就是 <script>元素 。 其属性type可以不设置，默认就是 text/javascript -->
+

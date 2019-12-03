@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TreeWalker高级遍历</title>
+</head>
+<body>
+
+
+<div>
+    <p>开始</p>
+    <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+    </ul>
+    <p>结束</p>
+</div>
+
+
+</body>
+
+<script>
+    /**
+     * TreeWalker是更高级的NodeIterator，是用于遍历DOM的类型。 通过document.createTreeWalker函数创建
+     * 该创建函数的参数和document.createNodeIterator相同。
+     */
+    var rootNode=document.querySelector("div");
+    var treeWalker=document.createTreeWalker(rootNode,NodeFilter.SHOW_ELEMENT,null,false);
+    console.log(treeWalker.__proto__===TreeWalker.prototype);
+
+    /**
+     * TreeNode类型具有下列方法
+     */
+    console.log(TreeWalker.prototype.hasOwnProperty("parentNode"));
+    console.log(TreeWalker.prototype.hasOwnProperty("nextNode"));
+    console.log(TreeWalker.prototype.hasOwnProperty("previousNode"));
+    console.log(TreeWalker.prototype.hasOwnProperty("firstChild"));
+    console.log(TreeWalker.prototype.hasOwnProperty("lastChild"));
+    console.log(TreeWalker.prototype.hasOwnProperty("nextSibling"));
+    console.log(TreeWalker.prototype.hasOwnProperty("previousSibling"));
+    /**
+     * TreeNode类型具有下列属性
+     */
+    console.log(TreeWalker.prototype.hasOwnProperty("currentNode"));
+    //这是一个可读可写的访问器属性
+    console.log(Object.getOwnPropertyDescriptor(TreeWalker.prototype,"currentNode").set!==undefined);
+
+    /**
+     * 可以看到 TreeWalker和 NodeIterator的第一个不同是，生成TreeWalker时，当前节点就是指定的根节点.
+     * 而不需要像NodeIterator调用nextNode方法获取指定的根节点
+     */
+    console.log(treeWalker.currentNode===rootNode);
+
+    var nodes1=[];
+    var node=treeWalker.currentNode; //此时node为指定的根节点
+    while(node!==null){
+        nodes1.push(node);
+        node=treeWalker.nextNode();
+    }
+    console.log("顺序深度遍历",nodes1);
+
+    /**
+     * 同样，遍历到最后一个节点调用nextNode返回null时，currentNode就是最后一个节点。
+     * 不再需要像NodeIterator类型一样通过previousNode来获取最后一个节点了
+     */
+    var nodes2=[];
+    node=treeWalker.currentNode; //此时node是最后一个节点
+    while(node!==null){
+        nodes2.push(node);
+        node=treeWalker.previousNode();
+    }
+    console.log("逆序深度遍历",nodes2);
+
+    /**
+     * 除此之外还有一个不同，过滤器里的返回值 除了NodeFilter.FILTER_ACCEPT和NodeFilter.FILTER_SKIP，还有一个额外的NodeFilter.FILTER_REJECT。
+     * 对NodeFilter.FILTER_ACCEPT和NodeFilter.FILTER_SKIP这两个返回值，TreeWalker和NodeIterator的处理方式是相同的。
+     * 但是对于NodeFilter.FILTER_REJECT返回值，处理结果完全不同。
+     */
+    var filter1={
+        acceptNode:function (node) {
+            return node.nodeName.toLowerCase()==="li"?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP;
+        }
+    };
+    treeWalker=document.createTreeWalker(rootNode,NodeFilter.SHOW_ELEMENT,filter1,false);
+    var nodes3=[];
+    node=treeWalker.nextNode();
+    while(node!==null){
+        nodes3.push(node);
+        node=treeWalker.nextNode();
+    }
+    console.log("过滤器:",nodes3);
+
+
+    /**
+     * 在NodeIterator中,过滤器返回 NodeFilter.FILTER_REJECT和NodeFilter.FILTER_SKIP效果都是相似的，仅仅是跳过该节点。
+     * 但是在TreeWalker中就不同，过滤器返回NodeFilter.FILTER_REJECT表示的是跳过该节点及其节点树，而NodeFilter.FILTER_SKIP才是仅仅只跳过节点不跳过其子树。
+     */
+    var filter2=function (node) {
+        return node.nodeName.toLowerCase()==="ul"?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;
+    };
+    treeWalker=document.createTreeWalker(rootNode,NodeFilter.SHOW_ELEMENT,filter2,false);
+    var nodes4=[];
+    node=treeWalker.nextNode();
+    while(node!==null){
+        nodes4.push(node);
+        node=treeWalker.nextNode();
+    }
+    /**
+     * 可以看到，TreeWalker的遍历结果中 UL元素及其子树的所有节点都被跳过了。
+     */
+    console.log("TreeWalker NodeFilter.FILTER_REJECT 过滤器:",nodes4);
+
+
+    var nodeIterator=document.createNodeIterator(rootNode,NodeFilter.SHOW_ELEMENT,filter2,false);
+    var nodes5=[];
+    node=nodeIterator.nextNode();
+    while(node!==null){
+        nodes5.push(node);
+        node=nodeIterator.nextNode();
+    }
+    /**
+     * 可以看到，NodeIterator的遍历结果中 只是UL元素被跳过了罢了，子树并没有被跳过。
+     */
+    console.log("NodeIterator NodeFilter.FILTER_REJECT 过滤器:",nodes5);
+
+
+    /**
+     * 这里再展示一下TreeWalker更强大的遍历功能.
+     */
+
+    //创建treeWalker后， 节点已经指向了根节点 div元素。
+    treeWalker=document.createTreeWalker(rootNode,NodeFilter.SHOW_ELEMENT,null,false);
+
+    //此时调用 firstChild(),当前节点会变更为 div元素的第一个子节点。
+    console.log(treeWalker.firstChild().nodeName==="P");
+    //再利用nextSibling()又可以将当前节点变更为p节点的下一个同胞节点。
+    console.log(treeWalker.nextSibling().nodeName==="UL");
+    console.log(treeWalker.firstChild().nodeName==="LI");
+    console.log(treeWalker.parentNode().nodeName==="UL");
+
+    /**
+     * 同时，在遍历过程中，直接手动修改 currentNode访问器属性，可以直接修改当前节点
+     */
+    treeWalker.currentNode=rootNode;
+    console.log(treeWalker.lastChild().nodeName==="P");
+    console.log(treeWalker.previousSibling().nodeName==="UL");
+    console.log(treeWalker.firstChild().nodeName==="LI");
+    console.log(treeWalker.parentNode().nodeName==="UL");
+
+    /**
+     * 甚至 ，指定的当前节点可以跟最初创建treeWalker遍历器时指定的根节点毫无关系！
+     */
+    treeWalker.currentNode=document.documentElement; //这里指定的节点根本不属于创建时的根节点的子树下。
+    console.log(treeWalker.nextNode().nodeName==="HEAD"); //但是依旧可以正常运行。
+
+</script>
+
+</html>

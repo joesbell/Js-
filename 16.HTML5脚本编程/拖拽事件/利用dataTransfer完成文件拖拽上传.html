@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文件拖拽/粘贴上传</title>
+</head>
+<body>
+
+<h3>拖拽上传文件或者粘贴上传</h3>
+
+<canvas id="canvas1"  style="border: 1px solid black;" ></canvas>
+
+<br>
+
+</body>
+
+<script>
+
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+    /**
+     * 拖动上传。
+     */
+    canvas1.addEventListener("drop",function (event) {
+        /**
+         * 阻止默认的图片拖拽事件，默认的行为会直接在浏览器中打开图片.
+         */
+        event.preventDefault();
+        console.log(event.dataTransfer);
+        var file=event.dataTransfer.files[0];
+        if(file){
+            var type=file.type;
+            if(type.indexOf("image")!==-1){
+                var imgSrc=URL.createObjectURL(file);
+                var img=new Image();
+                img.onload=function () {
+                    canvas1.height=img.height;
+                    canvas1.width=img.width;
+                    ctx1.drawImage(img,0,0);
+                };
+                img.src=imgSrc;
+            }else{
+                alert(type+"不是支持的拖拽文件类型");
+            }
+        }
+    });
+
+    /**
+     * 粘贴上传 . 这里需要注意的是，粘贴上传的不能是桌面的文件，实际在windows中，复制桌面文件只是复制了本地文件路径，而不是实际的内容。
+     * 因此这个功能可以对 截屏，浏览器内的复制图片 等使用。
+     */
+    document.addEventListener("paste",function (event) {
+        var clipboard=event.clipboardData||window.clipboardData;
+        //这里两个属性都可以获取到文件。 不过 items里需要调用getAsFile方法将其变成 File类型 对象
+        var file=clipboard.files[0]||clipboard.items[0].getAsFile();
+        if(file){
+            var type=file.type;
+            if(type.indexOf("image")!==-1){
+                var imgSrc=URL.createObjectURL(file);
+                var img=new Image();
+                img.onload=function () {
+                    canvas1.height=img.height;
+                    canvas1.width=img.width;
+                    ctx1.drawImage(img,0,0);
+                };
+                img.src=imgSrc;
+            }else{
+                alert(type+"不是支持的粘贴文件类型");
+            }
+        }
+    });
+
+    document.addEventListener("dragover",function (event) {
+        event.preventDefault();
+    });
+    document.addEventListener("dragenter",function (event) {
+        event.preventDefault();
+    });
+
+</script>
+
+</html>

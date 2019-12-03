@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frame1</title>
+</head>
+<body>
+
+
+
+<button id="button1">点击会将当前框架窗口跳转到新窗口：_self</button>
+
+</body>
+
+<script>
+    window.onload=function () {
+        var node=document.createElement("h1");
+        document.body.insertBefore(node,document.body.children[0]);
+        node.innerText=window.name;
+    }
+
+
+    /**
+     *   _self特性字符串会将当前窗口作为新窗口的载体。 打开后，原始窗口等于被关闭了，因此 新打开的窗口的opener属性为null
+     */
+    document.getElementById("button1").addEventListener("click",function () {
+        var newWindow=window.open("newWindow.html","_self");
+    })
+</script>
+
+</html>

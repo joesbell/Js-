@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>模拟事件的局限</title>
+</head>
+<body>
+
+<h3>键盘输入并不能真正的进行模拟</h3>
+    <p>keypress模拟按键事件并不能真实地进行输入:</p>
+    <input type="text" id="text1">
+<hr>
+    <p>但是可以通过监听模拟事件,达到类似于输入的目的:</p>
+    <input type="text" id="text2">
+<hr>
+    <p>请在这里进行真实输入:</p>
+    <input type="text" id="text3">
+<hr>
+
+<h3>有些模拟事件，又和实际操作没啥两样。比如说模拟点击事件进行跳转。</h3>
+<a href="https://github.com/Reveur000">这个链接会在3秒后被模拟点击事件触发，随后跳转</a>
+</body>
+
+<script>
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+    var text3=document.getElementById("text3");
+
+    /**
+     * 模拟keypress按键输入.
+     * 分发模拟事件给两个输入框。
+     */
+    function simulateKeyPress(charCode) {
+        var event=new KeyboardEvent("keypress",
+            {
+                bubbles:true,
+                cancelable:false,
+                view:document.defaultView,
+                charCode:charCode
+            }
+        );
+
+        text1.dispatchEvent(event);
+        text2.dispatchEvent(event);
+    }
+
+    /**
+     * 通过监听模拟事件来达到模拟输入的目的。
+     */
+    text2.addEventListener("keypress",function (event) {
+        console.log("监听模拟输入",event.isTrusted===false);
+        //方式是通过修改文本框的value
+        this.value+=String.fromCharCode(event.charCode);
+    });
+
+    /**
+     * 真实输入的时候，实时产生模拟输入事件。
+     */
+    text3.addEventListener("keypress",function (event) {
+        console.log("真实输入:"+String.fromCharCode(event.charCode),event.isTrusted===true);
+        simulateKeyPress(event.charCode);
+    });
+
+
+    /**
+     * 有些模拟事件，又和实际操作没啥两样。比如说模拟点击事件进行跳转。
+     */
+    setTimeout(()=>{
+        document.links[0].dispatchEvent(new MouseEvent("click",
+            {
+                bubbles:true,
+                cancelable:false,
+                view:document.defaultView
+            }
+        ))
+    },3000);
+
+    /**
+     * 受制于浏览器本身的安全策略，模拟事件的效果是未知的。不同浏览器可能会有不同的表现。
+     */
+</script>
+</html>

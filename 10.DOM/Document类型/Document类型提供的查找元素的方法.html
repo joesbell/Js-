@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document类型提供的查找元素的方法</title>
+</head>
+<body>
+
+<input type="radio" name="sex" value="man">男
+<input type="radio" name="sex" value="female">女
+<p>你勾选的是:</p><p id="choose"></p>
+
+
+<input type="checkbox" name="color" value="red">red
+<input type="checkbox" name="color" value="yellow">yellow
+<input type="checkbox" name="color" value="blue">blue
+<p>你勾选了:</p><p id="choose2"></p>
+
+</body>
+<script>
+    /**
+     * document对象提供的这三种查找元素的方法都是 Document类型提供的。
+     * 第一个方法的返回值为 元素 ，如果没找到返回的是null.
+     * getElementsByTagName返回的是HTMLCollection对象
+     * getElementsByName 返回的是NodeList对象
+     * 这两者均是是动态的根据DOM结构变化的节点的集合，如果没找到返回空集合
+     *
+     */
+    console.log(Document.prototype.hasOwnProperty("getElementById"));
+    console.log(Document.prototype.hasOwnProperty("getElementsByTagName"));
+    console.log(Document.prototype.hasOwnProperty("getElementsByName"));
+
+    console.log(document.getElementById("notExist")===null);
+
+    /**
+     * 可以通过getElementsByName方法获取 name特性与参数相同的所有元素的NodeList动态集合。
+     * 应用主要用于方便获取同名元素，特别是在单选框和复选框的时候。
+     */
+    var radios=document.getElementsByName("sex");
+
+    console.log(radios.__proto__===NodeList.prototype);
+
+    for(var i=0,len=radios.length;i<len;i++){
+        radios[i].addEventListener("click",changeSex)
+    }
+    function changeSex() {
+        document.getElementById("choose").innerText=this.value;
+    }
+
+    /**
+     * 可以看到，这里很方便的获取了该勾选框的所有元素。
+     */
+    var checkboxs=document.getElementsByName("color");
+    for(i=0,len=checkboxs.length;i<len;i++){
+        checkboxs.item(i).addEventListener("click",chooseColor);
+    }
+    function chooseColor() {
+        var result=[];
+        for(i=0,len=checkboxs.length;i<len;i++){
+            if(checkboxs[i].checked===true){
+                result.push(checkboxs[i].value);
+            }
+        }
+        document.getElementById("choose2").innerText=Array.prototype.toString.call(result);
+    }
+
+    //需要注意的是 如果没有找到，那么返回的集合是空的NodeList集合 而不是[]数组。
+    console.log(document.getElementsByName("notExist").length===0);
+
+    /**
+     *  getElementsByTagName则能快速获取标签名为某个名称的所有元素。
+     *  使用起来也是非常方便。
+     */
+    var inputs=document.getElementsByTagName("input");
+    console.log(inputs.length===5);
+    var ps=document.getElementsByTagName("p");
+    console.log(ps.length===4);
+
+    console.log(inputs.__proto__===HTMLCollection.prototype);
+
+    //需要注意的是 如果没有找到，那么返回的集合是空的HTMLCollection集合 而不是[]数组。
+    console.log(document.getElementsByTagName("notExist").length===0);
+</script>
+</html>

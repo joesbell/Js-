@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>离线检测</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 获取当前在线状态的onLine属性位于Navigator原型上
+     */
+    console.log("Navigator原型上具有onLine访问器属性",Navigator.prototype.hasOwnProperty("onLine")===true);
+
+    /**
+     * window对象上新增了两个事件，这两个事件必须在 在线状态 切换的情况下才会触发。
+     */
+    window.addEventListener("offline",function () {
+        console.log("当前从在线切换到离线状态，此时onLine属性为false",navigator.onLine===false);
+    });
+    window.addEventListener("online",function () {
+        console.log("当前从离线切换到在线状态，此时onLine属性为true",navigator.onLine===true);
+    });
+</script>
+
+</html>

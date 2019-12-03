@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div id="myid" class="myclass" dir="ltr" title="mytitle" lang="en" data-myattr="mydata" align="center" style="text-align: center" onclick="alert('reveur')">内容在这里</div>
+</body>
+
+<script>
+    /**
+     * HTMLElement类型有关特性的方法均放在 Element原型上。
+     */
+    console.log(Element.prototype.hasOwnProperty("setAttribute"));
+    console.log(Element.prototype.hasOwnProperty("getAttribute"));
+    console.log(Element.prototype.hasOwnProperty("removeAttribute"));
+
+    var mydiv=document.getElementById("myid");
+
+    /**
+     * 一. 第一种方法:根据特性名获取特性值 getAttribute
+     */
+    console.log(mydiv.getAttribute("id")==="myid");
+    //特性名是不区分大小写的。
+    console.log(mydiv.getAttribute("ID")==="myid");
+
+    console.log(mydiv.getAttribute("class")==="myclass");
+    console.log(mydiv.getAttribute("dir")==="ltr");
+    console.log(mydiv.getAttribute("title")==="mytitle");
+    console.log(mydiv.getAttribute("lang")==="en");
+
+    //getAttribute方法不仅可以获取HTMLElement节点的标准特性，还有获取用户自定义特性
+    console.log(mydiv.getAttribute("data-myattr")==="mydata");
+    //同时这里我们也能看到，根据属性是无法获取这些自定义特性的值的。
+    console.log(mydiv["data-myattr"]===undefined);
+    // 属性只能获取几个标准特性的值 比如 id class什么的
+    console.log(mydiv["id"]==="myid");
+    //对于不存在的特性， getAttribute方法返回null
+    console.log(mydiv.getAttribute("noExist")===null);
+    //有两种特殊的特性，通过属性访问和特性访问返回的值是不同的。
+
+    //1.第一种特殊特性是 style
+
+    //通过特性访问时 返回的是 基本类型字符串
+    console.log(typeof mydiv.getAttribute("style") ==="string");
+    //通过属性访问时 返回的是 CSSStyleDeclaration对象
+    console.log(mydiv.style instanceof CSSStyleDeclaration);
+
+    //有的除了5个最基础的标准特性以外的标准特性，修改属性同时也会修改特性！！！
+    mydiv.style.backgroundColor="gray";
+
+    console.log(mydiv.getAttribute("style")==="text-align: center; background-color: gray;");
+
+    //2.第二种特殊特性是 事件处理程序的特性
+
+    //通过特性访问时返回的是 基本类型字符串
+    console.log(typeof mydiv.getAttribute("onclick")=== "string");
+    //通过属性访问时返回的是 函数对象
+    console.log(mydiv.onclick instanceof Function);
+
+    //而有的除了5个最基础的标准特性以外的标准特性，修改属性同时并不会修改特性！！！
+    mydiv.onclick=function () {
+        console.log("修改onclick属性并不会影响onclick特性的返回值");
+    };
+    console.log(mydiv.getAttribute("onclick") === "alert('reveur')"); //依旧特性值没变化
+
+
+    /**
+     * 二. 第二种方法:设置特性的特性值 getAttribute(attrName,attrValue)。
+     * 需要注意的是，尽管特性名是不分大小写的。但是调用该方法时，会自动将特性名转化为小写
+     */
+    mydiv.setAttribute("DATA-MYATTR","newValue");
+    console.log(mydiv.getAttribute("DATA-MYATTR")==="newValue");
+
+    //对于不存在的特性，会创建该特性。
+    mydiv.setAttribute("DATA-NEWATTR","newValue2");
+    console.log(mydiv.getAttribute("DATA-newATTR")==="newValue2");
+
+    //为元素创建特性只有这种方式，而不能通过为属性赋值创建新特性(除非是5大基础标准特性以及某些属性可以影响特性的扩展的标准特性)
+    mydiv.myPropData="自定义属性是不能创建对应的特性的";
+    console.log(mydiv.myPropData);
+    console.log(mydiv.getAttribute("mypropdata")===null);
+
+
+    /**
+     * 三. 第三种方法:移除特性 removeAttribute(attrName)。
+     * 需要注意的是，该方法不仅是移除特性值，而是完全移除该特性。
+     */
+
+    mydiv.removeAttribute("data-newdata");
+    //完全移除特性
+    console.log(mydiv.getAttribute("data-newdata")===null);
+
+    //对于5大标准特性，移除5大标准特性会影响属性。
+    mydiv.removeAttribute("class");
+    console.log(mydiv.getAttribute("class")===null);
+    console.log(mydiv.className==="");
+
+    //而其他的标准特性，目前来看移除特性同样会影响属性
+    setTimeout(()=>{
+        if(confirm("是否移除点击事件")){
+            mydiv.removeAttribute("onclick");
+            console.log(mydiv.onclick===null);
+            console.log("移除点击事件特性可以影响到属性");
+        }
+    },3000);
+</script>
+</html>

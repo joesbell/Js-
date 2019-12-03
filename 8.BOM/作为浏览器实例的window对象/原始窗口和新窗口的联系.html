@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>原始窗口和新窗口的联系</title>
+</head>
+<body>
+
+<button id="button1">点击会主动使用新窗口切断和原始窗口的联系</button>
+<button id="button2">点击会主动关闭原始窗口来切断和新窗口的联系</button>
+
+</body>
+
+<script>
+
+    if(this.opener==null){
+        this.name="原始窗口";
+    }else{
+        this.name="新窗口";
+    }
+
+    document.getElementById("button1").addEventListener("click",function () {
+        var newWindow=window.open("原始窗口和打开窗口的联系.html","_blank");
+        newWindow.onload=function () {
+            this.document.body.innerHTML="";
+            this.document.title="新窗口";
+
+            this.logInfo=logInfo;
+            var num=5;
+            var id=this.setInterval(function () {
+                if(num==0){
+
+                    //保存原始窗口的window引用。
+                    var localOpener= this.opener;
+
+                    //断开连接
+                    this.opener=null;
+                    this.logInfo("已经切断同原始窗口的连接，当前窗口的opener属性为:"+this.opener);
+                    this.clearInterval(id);
+
+
+                    setTimeout(()=>{
+                        this.logInfo("切断3秒后再次连接,前提是保存了原始窗口的window引用");
+
+                        //恢复连接
+                        this.opener=localOpener;
+                        this.opener.logInfo("新窗口主动切断连接后，依旧可以重新恢复连接,只要保存了原始窗口的window对象引用");
+                        this.logInfo(" 恢复同原始窗口的连接，当前窗口的opener属性的name值为:"+this.opener.name);
+                    },3000);
+                }else{
+                    this.logInfo("距离主动切断同原始窗口的连接还有"+num+"秒,当前窗口的opener属性的name为:"+this.opener.name);
+                    num--;
+                }
+            },1000);
+        };
+
+        setInterval(function () {
+            logInfo("是否还能同新窗口进行通信:"+!newWindow.closed);
+        },1000);
+
+        setTimeout(function () {
+            newWindow.logInfo("原始窗口在 新窗口主动切断连接后，依旧可以控制新窗口的行为");
+        },7000)
+    });
+
+
+    document.getElementById("button2").addEventListener("click",function () {
+        var newWindow=window.open("原始窗口和打开窗口的联系.html","_blank");
+
+        newWindow.onload=function () {
+            this.document.body.innerHTML="";
+            this.document.title="新窗口";
+
+            this.logInfo=logInfo;
+
+            /**
+             * 原始窗口关闭后，我们可以观察到的现象是，新窗口再也没有输出了。这是因为之前我们提到的,伴随着整个页面的关闭，这里的JS代码已经不会再执行.
+             * 这是我们提到的，函数最终会回到创建该函数的地方获取函数体代码并执行。类似于 严格模式中调用非严格模式函数的例子。
+             * 当然，规范中也从来没提到过这种多页面函数调用的行为。因此也可以认为这是浏览器各自决定实现的行为。
+             *
+             * 目前测试的是在谷歌浏览器中的使用。在火狐浏览器中测试的情况，却完全不同了。比如说 火狐浏览器不允许close掉非open打开的窗口。
+             * 在这些方面上，浏览器的差异性蛮大的。 所以不用太过于纠结。
+             * 甚至上面所说的函数调用，在火狐浏览器中，关闭了原始窗口后，新窗口中依旧可以调用原始窗口创建的函数。
+             */
+            this.id=this.setInterval(function () {
+                this.logInfo("同原始窗口是否还有连接:"+(this.opener!=null));
+            },1000);
+        };
+
+        var num=5;
+        var id=setInterval(function () {
+            if(num==0){
+                clearInterval(id);
+                this.close();
+            }else{
+                logInfo("距离关闭原始窗口还有"+num+"秒");
+                num--;
+            }
+        },1000);
+    });
+
+
+    function logInfo(msg) {
+        var node=this.document.createElement("p");
+        this.document.body.appendChild(node);
+        node.innerText= new Date().toLocaleString()+"   "+msg;
+    }
+
+</script>
+</html>

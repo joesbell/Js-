@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IE中的事件对象</title>
+</head>
+<body>
+    <input type="button" id="input1" value="IE特殊的DOM0级事件"><br>
+
+    <!--虽然对象的各个属性的基本类型值相同，但是并不是同一个对象，这有可能是IE的实现问题-->
+    <input type="button" id="input2" value="IE的实现问题" onclick="console.log(event!=undefined);console.log(event!==window.event)"><br>
+
+    <input type="button" id="input3" value="IE的类DOM2级事件"><br>
+
+    <a href="someURL">测试returnValue属性(等同于标准的preventDefault方法)</a><br>
+
+    <input type="button" id="input4" value="测试事件对象的type属性"><br>
+
+    <div id="div1">
+        <input type="button" id="input5" value="测试事件对象的cancelBubble属性(等同于标准的stopPropagation方法)"><br>
+    </div>
+
+    <div id="div2">
+        <input type="button" id="input6" value="测试事件对象的srcElement属性"><br>
+    </div>
+</body>
+
+
+<script>
+    /**
+     * IE中事件对象可以通过window的event属性进行访问。(实际上谷歌浏览器也兼容这个)
+     */
+
+    console.log("-----测试 IE8及其以下的非标准DOM0级事件处理程序的事件对象 开始----------");
+
+    var input1=document.getElementById("input1");
+
+    /**
+     * IE8及其以下DOM0级事件程序的事件处理函数并不会传入事件对象作为第一个参数.(非IE是会传的，因此可以说IE8及其以下的DOM0级也是非标准化的)
+     * 此时只能通过window.event来访问事件对象。
+     */
+    input1.onclick=function(event){ //IE8及其以下的DOM0级并不会传入事件对象作为事件处理函数的第一个参数。 IE9及其以上会传入的。
+        console.log(window.event.type==="click");
+        console.log(event===undefined);//IE8及以下为true，谷歌中为false。原因是因为IE8及其以下的DOM0级是非标准的。
+        console.log(window.event!==event);  //在谷歌浏览器中为false
+    };
+    input1.click();
+
+    console.log("-----测试 IE8及其以下的非标准DOM0级事件处理程序的事件对象 结束----------");
+
+    /**
+     * 而IE特有的类DOM2级事件处理程序，会将事件对象作为第一个参数传入事件处理函数中。
+     * 但是需要注意的是， window.event 和该事件对象虽然各项基本类型的值相同，但是却不是同一个对象。(这有可能是实现问题,在谷歌中，两者依旧为同一对象)
+     */
+
+
+    console.log("-----测试 IE8及其以下的非标准类DOM2级事件处理程序的事件对象 开始----------");
+
+    var input3=document.getElementById("input3");
+    input3.attachEvent("onclick",function(event){//类DOM2级事件处理程序会传入 事件对象作为第一个参数。
+        //此时window.event 和 event都可以访问事件对象
+        console.log(window.event.type==="click",event.type==="click");
+        //但是，这两个对象并不是同一个对象！
+        console.log(window.event!==event);
+    });
+    input3.click();
+
+    console.log("-----测试 IE8及其以下的非标准类DOM2级事件处理程序的事件对象 结束----------");
+
+    console.log("-----测试 IE事件对象的returnValue属性(等同于标准的preventDefault方法) 开始----------");
+    /**
+     * 事件对象的returnValue属性在IE8及其以下默认为undefined，以上为true。
+     * 我们可以通过设置returnValue属性为false来取消事件的默认行为。
+     */
+    var a1=document.links[0];
+    a1.attachEvent("onclick",function(event){
+        if(confirm("是否取消事件的默认行为")){
+            console.log(event.returnValue===undefined||event.returnValue===true); //IE8及其以下默认值为undefined。 IE8以上默认值为true
+            event.returnValue=false;
+            console.log(event.returnValue===false);
+        }
+    });
+    a1.click();
+
+    console.log("-----测试 IE事件对象的returnValue属性(等同于标准的preventDefault方法) 结束----------");
+
+    console.log("-----测试 IE事件对象的type属性 开始----------");
+
+    var input4=document.getElementById("input4");
+    input4.attachEvent("onclick",function(event){
+        console.log(event.type==="click");
+    });
+    input4.click();
+    console.log("-----测试 IE事件对象的type属性 结束----------");
+
+    console.log("-----测试 IE事件对象的cancelBubble属性(等同于标准的stopPropagation方法) 开始----------");
+
+    /**
+     * 事件对象的cancelBubble属性表示是否取消事件冒泡，默认是false。
+     * 我们可以通过设置cancelBubble属性为true来取消事件的冒泡。
+     */
+
+    var input5=document.getElementById("input5");
+    input5.attachEvent("onclick",function(event){
+        if(confirm("是否取消事件冒泡")){
+            console.log(event.cancelBubble===false);
+            event.cancelBubble=true;
+            console.log(event.cancelBubble===true);
+        }
+        console.log("input的click事件被触发");
+    });
+    var div1=document.getElementById("div1");
+    div1.attachEvent("onclick",function(event){
+        console.log("div的click事件被触发");
+    });
+
+    input5.click();
+
+    console.log("-----测试 IE事件对象的cancelBubble属性(等同于标准的stopPropagation方法) 结束----------");
+    console.log("-----测试 IE事件对象的srcElement属性 开始----------");
+
+    /**
+     * 事件对象的srcElement属性同标准DOM事件的target属性，表示目标元素。
+     */
+    var input6=document.getElementById("input6");
+    input6.attachEvent("onclick",function(event){
+        console.log(event.srcElement===input6);
+        console.log(this===window); //IE的类DOM2级方法中this永远指向window！
+    });
+    var div2=document.getElementById("div2");
+    div2.attachEvent("onclick",function(event){
+        console.log(event.srcElement!==div2);
+        console.log(this===window);
+    });
+
+    input6.click();
+
+    console.log("-----测试 IE事件对象的srcElement属性 结束----------");
+
+
+</script>
+
+</html>

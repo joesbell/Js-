@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>打开数据库连接</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="连接数据库">
+
+<input type="button" id="button2" value="升级数据库">
+
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    var db,db1,db2;
+
+    /**
+     * 先开启一个连接，确保数据库test被初始化。
+     */
+    var req=indexedDB.open("test");
+
+    req.onupgradeneeded=function(){
+        console.log("test数据库正在初始化");
+    };
+    req.onsuccess=function (event) {
+        db=event.target.result;
+        console.log("test数据库已经初始化完毕");
+    };
+
+    /**
+     * 当正常连接已存在的数据库时(不提供更高的版本号)，只会触发IDBRequest请求的success事件。
+     */
+    button1.addEventListener("click",function () {
+        closeDB();
+        var  req=indexedDB.open("test");
+        console.log(req.__proto__===IDBOpenDBRequest.prototype);
+        console.log(IDBOpenDBRequest.prototype.__proto__===IDBRequest.prototype);
+
+        req.onsuccess=function (event) {
+            console.log("正常连接数据库时不会进行版本变更，只会触发success事件",event);
+            db1=event.target.result;
+            console.log(db1.__proto__===IDBDatabase.prototype);
+        };
+    });
+
+    /**
+     * 使用更高的版本号连接数据库时，还会触发 IDBRequest请求的upgradeneeded事件。并且该事件触发先于success事件。
+     */
+    button2.addEventListener("click",function () {
+        closeDB();
+        /**
+         * 建立一个连接用来获取当前的数据库版本号
+         */
+        var  req=indexedDB.open("test");
+        req.onsuccess=function (event) {
+            console.log("连接成功",event);
+            var db3=event.target.result;
+            var version=db3.version;
+            db3.close();//关闭数据库
+            /**
+             * 使用更高的版本号再次发起连接。就会在IDBRequest请求上触发upgradeneeded事件
+             */
+            var updateReq=indexedDB.open("test",version+1);
+            updateReq.onupgradeneeded=function (event) {
+                console.log("增加版本号时,进行版本变更");
+                db2=event.target.result;
+                console.log(db2.__proto__===IDBDatabase.prototype);
+            };
+
+        };
+    });
+
+    /**
+     * 如果数据库连接存在，那么将连接关闭并置空。
+     */
+    function closeDB() {
+        db&&(db.close()||(db=null));
+        //等价于下面的写法
+        // if(db){
+        //     db.close();
+        //     db=null;
+        // }
+        db1&&(db1.close()||(db1=null));
+        db2&&(db2.close()||(db2=null));
+    }
+
+</script>
+
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>合成的应用</title>
+</head>
+<body>
+
+    <h3>利用合成来完成裁剪</h3>
+    <canvas id="canvas1"  style="border: 1px solid black;" ></canvas>
+    <br>
+    <input type="file" id="input1">
+    <input type="button" id="input2" value="点击裁剪">
+    <input type="button" id="input3" value="关闭裁剪路径">
+    <input type="button" id="input4" value="导出处理后的图片">
+
+</body>
+
+<script>
+
+
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+    var input1=document.getElementById("input1");
+    var input2=document.getElementById("input2");
+    var input3=document.getElementById("input3");
+    var input4=document.getElementById("input4");
+
+    var prevImgURL; //保存上次上传的图片的地址
+
+    var isClip=false; //是否在裁剪状态中
+
+
+    var operatePoint=[]; //裁剪操作过程中点击的点。
+    var imgData=null;    //保存开始裁剪时的图像信息。
+
+    /**
+     * 上传图片的浏览器本地处理
+     */
+    input1.addEventListener("change",function(event){
+        var img=new Image();
+        img.onload=function(){
+            canvas1.height=img.height;
+            canvas1.width=img.width;
+            ctx1.drawImage(img,0,0);
+        };
+
+        var imgSrc=URL.createObjectURL(event.target.files[0]);
+        img.src=imgSrc;
+        if(prevImgURL){
+            URL.revokeObjectURL(prevImgURL);
+        }
+        prevImgURL=imgSrc;
+    });
+
+    /**
+     * 开始裁剪操作
+     */
+    input2.addEventListener("click",function () {
+        ctx1.save(); //备份绘制状态
+        isClip=true; //设置裁剪状态
+        operatePoint=[]; //清空点击的点的数组
+        imgData=ctx1.getImageData(0,0,canvas1.width,canvas1.height); //备份画布内容
+    });
+
+    /**
+     * 点击画布选择裁剪区域
+     */
+    canvas1.addEventListener("click",function (event) {
+        if(isClip===false){
+            return ;
+        }
+
+        var mouseX=event.clientX;
+        var mouseY=event.clientY;
+        var boudingRect=this.getBoundingClientRect();
+        var canvasX=boudingRect.left;
+        var canvasY=boudingRect.top;
+        //这里就计算出了鼠标指针的位置在canvas的坐标系中的坐标了。
+        var x=(mouseX-canvasX)>>0;
+        var y=(mouseY-canvasY)>>0;
+
+        //当每一个点击的点保存
+        operatePoint.push([x,y]);
+
+        if(operatePoint.length===1){
+            //如果为操作的第一个点，不执行连接操作
+            ctx1.beginPath();
+            ctx1.moveTo(x,y);
+        }else{
+            //否则连接点
+            ctx1.lineTo(x,y);
+            ctx1.stroke();
+        }
+
+    });
+
+    /**
+     * 完成裁剪。
+     */
+    input3.addEventListener("click",function () {
+        isClip=false;
+
+        /**
+         * 这里本质是通过记录 用户的操作，再还原到初始画布的绘制内容和绘制状态，根据所记录的用户操作，
+         * 还原用户的真实有效操作。
+         */
+        ctx1.putImageData(imgData,0,0);
+        imgData=null;
+        ctx1.restore();
+        drawClipArea(ctx1,operatePoint);
+
+        ctx1.save();
+
+        /**
+         * 这里利用合成属性，达到裁剪的目的。
+         */
+        ctx1.globalCompositeOperation="destination-atop";
+        ctx1.fill();
+
+        ctx1.restore();
+    });
+
+
+    /**
+     * 导出裁剪图
+     */
+    input4.addEventListener("click",function () {
+        var link=document.createElement("a");
+        var imgURL=canvas1.toDataURL();
+        link.href=imgURL;
+        link.download="裁剪图";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+
+    /**
+     * 根据 pointArray里的点坐标来绘制裁剪区域
+     * @param ctx
+     * @param pointArray
+     */
+    function drawClipArea(ctx,pointArray) {
+        ctx.save();
+        ctx.beginPath();
+        pointArray.forEach((point,index)=>{
+            if(index===0){
+                ctx.moveTo(point[0],point[1]);
+            }else{
+                ctx.lineTo(point[0],point[1]);
+            }
+        });
+        ctx.closePath();
+        ctx.restore();
+    }
+
+
+</script>
+
+</html>

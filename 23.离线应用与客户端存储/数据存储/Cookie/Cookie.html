@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cookie</title>
+</head>
+<body>
+<input type="button" id="button1" value="从服务器获取cookie">
+<hr>
+name:<input type="text" id="text1"><br>
+value:<input type="text" id="text2"><br>
+<input type="button" id="button2" value="本地设置cookie">
+<hr>
+<input type="button" id="button3" value="显示所有cookie">
+<hr>
+要删除的cookie:<input type="text" id="text3"><br>
+<input type="button" id="button4" value="删除cookie">
+<hr>
+<input type="button" id="button5" value="子cookie技术" >
+</body>
+
+<script src="CookieUtil.js"></script>
+
+<script>
+    /**
+     * cookie属性位于document原型上，并且该属性是个访问器属性。
+     */
+    console.log(Document.prototype.hasOwnProperty("cookie")===true);
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+    var text3=document.getElementById("text3");
+
+    /**
+     * cookie最初是通过 服务器Set-Cookie响应头来进行设置的。
+     */
+    button1.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        xhr.open("GET","/rest/getcookie");
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log("获取cookie成功");
+                }
+            }
+        };
+        xhr.send();
+    });
+
+    /**
+     * 通过脚本也能设置cookie
+     */
+    button2.addEventListener("click",function () {
+        /**
+         * 需要注意的是 设置的path一定要包含当前location.pathname，否则在当前页面中，document.cookie是看不到我们设置的cookie的
+         */
+       CookieUtil.setCookie(encodeURIComponent(text1.value),encodeURIComponent(text2.value),new Date(Date.now()+3600000),"/","localhost",null);
+    });
+
+    button3.addEventListener("click",function () {
+       console.log("所有的cookie如下:",CookieUtil.getCookieAll());
+    });
+
+    button4.addEventListener("click",function () {
+        CookieUtil.deleteCookie(text3.value,"/","localhost",null);
+        if(CookieUtil.getCookie(text3.value)==null){
+            console.log("删除cookie成功");
+        }
+    });
+
+    /**
+     * 子cookie技术，本质是将格式化的信息存储在一个cookie中，解析时按照格式进行解析。
+     */
+    button5.addEventListener("click",function () {
+        /**
+         * 这里我们选取的 子cookie的格式是JSON字符串格式。
+         */
+        var subcookies={
+            subcookie1Name:"subcookie1Value",
+            subcookie2Name:"subcookie2Value",
+            createor:"reveur"
+        };
+        var value=JSON.stringify(subcookies);
+        value=encodeURIComponent(value);
+        CookieUtil.setCookie("subcookies",value,new Date(Date.now()+3600000),"/","localhost",null);
+
+        var xhr=new XMLHttpRequest();
+        xhr.open("GET","/rest/subcookies");
+        xhr.onload=function () {
+            console.log("子cookies的内容是:",JSON.parse(decodeURIComponent(xhr.response)));
+        };
+        xhr.send();
+    })
+
+
+</script>
+</html>

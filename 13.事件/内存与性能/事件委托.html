@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>事件委托</title>
+<style>
+    .clicked{
+        background: red;
+    }
+</style>
+
+</head>
+<body>
+
+<p>不使用事件委托</p>
+<ul id="ul1">
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+    <li>4</li>
+</ul>
+
+<hr>
+
+<p>使用事件委托</p>
+
+<ul id="ul2">
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+    <li>4</li>
+</ul>
+
+</body>
+
+<script>
+    var ul1=document.getElementById("ul1");
+    var ul2=document.getElementById("ul2");
+
+    function clickLi() {
+        this.classList.toggle("clicked");
+    }
+
+    /**
+     * 不采取事件委托
+     */
+    for(var li of Array.prototype.slice.call(ul1.children,0)){
+        li.addEventListener("click",clickLi,false);
+    }
+
+
+    /**
+     * 采取事件委托
+     */
+    document.addEventListener("click",function (event) {
+        if(event.target.nodeName==="LI"&&event.target.parentNode===ul2){
+            clickLi.call(event.target);
+        }
+    });
+
+    /**
+     * 对比来看，的确极大的减少了事件监听程序的数量
+     */
+
+</script>
+
+</html>

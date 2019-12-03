@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>frame1</title>
+</head>
+<body>
+<ul id="ul1">
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+</ul>
+</body>
+<script>
+    /**
+     * document.defaultView属性永远指向当前文档的窗口对象self(window)
+     */
+    window.opener.console.log("来自frame2:",document.defaultView===self);
+    window.opener.console.log("来自frame2:",document.defaultView!==window.opener)
+</script>
+</html>

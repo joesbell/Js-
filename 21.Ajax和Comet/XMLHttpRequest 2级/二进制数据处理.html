@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>二进制数据处理</title>
+    <script src="utf8_to_unicode.js"></script>
+</head>
+
+<body>
+
+<input type="file" id="file1">
+<input type="button" id="button1" value="上传到服务器1">
+<input type="button" id="button2" value="上传到服务器2">
+
+<hr>
+<input type="text" id="text1" value="[1,2,3]"  size="40" placeholder="填写要发送的二进制数据(byte 8位)序列 数组格式">
+<input type="button" id="button3" value="发送二进制数据">
+<input type="button" id="button4" value="上传到服务器3">
+</body>
+
+<script>
+
+    var file1=document.getElementById("file1");
+    var text1=document.getElementById("text1");
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var uploadFile;
+    file1.addEventListener("change",function () {
+        uploadFile=file1.files[0];
+    });
+
+    /**
+     * 第一种发送二进制数据的方式:
+     * 直接发送 ArrayBuffer类型的对象。
+     */
+    button1.addEventListener("click",function () {
+        var fr=new FileReader();
+
+        fr.onload=function(){
+            /**
+             * 通过读取文件获取文件数据的ArrayBuffer类型对象
+             */
+            var data=fr.result;
+            console.log("发送的数据为ArrayBuffer类型",data.__proto__===ArrayBuffer.prototype)
+
+            //既然使用了ArrayBuffer对象，那么我们可操作空间就小了，所以我们先要和服务器协商 文件名是什么。
+            var xhr=new XMLHttpRequest();
+            xhr.open("POST","/rest/filename");
+            xhr.responseType="json";
+            xhr.onload=function(){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+
+                    if(xhr.response==="OK"){
+                        console.log("协商文件名成功,准备开始发送二进制数据");
+                        var xhr2=new XMLHttpRequest();
+                        xhr2.open("POST","/rest/binaryUpload");
+                        xhr2.onload=function () {
+                            if(xhr2.status>=200&&xhr2.status<300 || xhr2.status===304){
+                                console.log("上传文件:",xhr2.response);
+                            }
+                        }
+                        //直接发送ArrayBuffer类型对象
+                        xhr2.send(data);
+                    }
+                }
+            }
+            xhr.send(uploadFile.name);
+        }
+
+        fr.readAsArrayBuffer(uploadFile);
+    })
+
+    /**
+     * 第二种方式： 我们通过 读取文件的binaryString，经过处理获取文件真实的二进制数据。
+     * 然后将我们想要附加的信息填上。 最终序列化为字符串后发送。
+     * 这个方式的缺点也很明显，序列化为字符串很耗费资源的，并且二进制序列化为字符串后需要的更大的空间。
+     * 因此无法传输大量二进制数据，否则会浏览器崩溃。
+     */
+    button2.addEventListener("click",function () {
+        var fr=new FileReader();
+        fr.onload=function(){
+            var data=fr.result;
+            console.log("读取文件数据的 binaryString ",typeof data==="string");
+
+            //获取文件的真实 2进制序列
+            var binArray=new Uint8Array(data.length);
+            for(var i=0;i<data.length;i++){
+                binArray[i]=data.charCodeAt(i)&0xff;
+            }
+
+            //组装我们附加的信息。
+            var sendData={
+                name:uploadFile.name,
+                data:binArray,
+                arraySize:binArray.length //这是必须的。因为Uint8Array对象序列化后length信息会丢失。
+            }
+
+            var xhr=new XMLHttpRequest();
+            xhr.open("POST","/rest/binaryUpload2");
+            xhr.onload=function () {
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log("上传文件:",xhr.response);
+                }
+            }
+            //序列化后发送
+            xhr.send(JSON.stringify(sendData));
+        }
+        fr.readAsBinaryString(uploadFile)
+    });
+
+    /**
+     * 第三种方式:发送Blob类型对象。
+     * 这种方式还是非常方便的，我们可以自己创建Blob对象，从而进行二进制数据的发送。
+     */
+    button3.addEventListener("click",function () {
+        var binStr=text1.value;
+        var binArray=JSON.parse(binStr);
+
+        /**
+         * 发送二进制数据的关键在于构建二进制序列。
+         * 二进制序列一般是使用 Uint8Array类型来承载的。 因为这个类型的数组每一项都刚好都是 8位 1byte 取值范围为 [0,255]
+         */
+        var int8Array=new Uint8Array(binArray.length);
+        binArray.forEach((value,index)=>{
+            int8Array[index]=value;
+        })
+
+        //然后将其封装为Blob类文件对象
+        var blob=new Blob([int8Array]);
+
+        //发送请求
+        var xhr=new XMLHttpRequest();
+        xhr.open("POST","/rest/sendBinary");
+        xhr.overrideMimeType('text/plain; charset=x-user-defined'); //在现代浏览器中，overrideMimeType方法已经没效果了，因此这段代码有没有都一样。
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+
+                    //解析收到的二进制数据。
+                    var data=xhr.response;
+                    var int8Array=new Uint8Array(data.length); //同样适用的是 TypeArray来承载的
+                    for(var i=0;i<data.length;i++){
+                        int8Array[i]= data.charCodeAt(i)&0xff;
+                    }
+                    console.log("服务器接受到的二进制序列是:",int8Array)
+                }
+            }
+        }
+
+        //这里发送的是Blob类文件对象
+        xhr.send(blob);
+    });
+
+
+    /**
+     * 第四种方式，也是最灵活的，我们直接发送 TypeArray类型对象。
+     * 这种类型是个装载二进制数据的类数组类型。
+     * xhr对象的send方法原生支持直接发送TypeArray类型对象。
+     *
+     * 在TypeArray类型对象中，我们可以直接操作二进制数据的序列，从而可以自己制定数据格式的协议，使得数据的发送更加纯粹(也就是空间更小)。
+     */
+    button4.addEventListener("click",function () {
+        var fr=new FileReader();
+        fr.onload=function(){
+            /**
+             * 在这里我们制定一个协议,在上传文件的过程中，我们发送的二进制数据的序列的构成有以下3个部分构成:
+             * 1.描述文件名的UTF8编码的二进制长度。 占1位  也就是我们最大支持255长度的文件名
+             * 2.文件名的UTF8编码序列。
+             * 3.上传文件的文件内容序列。
+             * 因此在我们发送的二进制序列中，实际文件内容是从 1+文件名UTF8编码长度 这个索引开始的。
+             * 而服务器可以通过读取起始的二进制信息，获取文件名信息。
+             */
+
+            var dataStr=fr.result;
+            var filename=uploadFile.name;
+            var nameUnicodeArray=[];
+
+            //获取文件名的unicode编码序列。
+            for(var i=0;i<filename.length;i++){
+                nameUnicodeArray.push(filename.charCodeAt(i));
+            }
+
+            //利用我们写的编码转换工具将 Unicode编码序列转化为UTF8编码序列
+            var nameUTF8Array=CodeUtil.UnicodeArrayToUTF8ByteStream(nameUnicodeArray)
+
+            //要发送的二进制数据的长度 为 1+UTF8编码长度+真实文件内容长度
+            var binArray=new Uint8Array(dataStr.length+nameUTF8Array.length+1);
+
+            //写入 名称UTF8编码长度信息
+            binArray[0]=nameUTF8Array.length;
+
+            //写入 名称UTF8编码信息
+            for(var i=0;i<nameUTF8Array.length;i++){
+                binArray[i+1]=nameUTF8Array[i];
+            }
+
+            //写入 文件二进制信息
+            for(var i=0;i<dataStr.length;i++){
+                binArray[nameUTF8Array.length+1+i]=dataStr.charCodeAt(i)&0xff;
+            }
+
+            var xhr=new XMLHttpRequest();
+            xhr.open("POST","/rest/binaryUpload3");
+            xhr.onreadystatechange=function(){
+                if(xhr.readyState===4){
+                    if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                        console.log(xhr.response)
+                    }
+                }
+            }
+            xhr.send(binArray);
+        }
+        fr.readAsBinaryString(uploadFile);
+    });
+</script>
+
+</html>

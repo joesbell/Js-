@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>线性渐变</title>
+</head>
+<body>
+
+<h3>线性渐变是一个向量，可以想象为画笔沿着向量的方向绘制,而渐变的效果由addColorStop添加的对应的色标和颜色来决定。</h3>
+<canvas id="canvas1" height="400" width="400" style="border: 1px solid black"></canvas>
+<p>只有白色区域不会发生渐变</p>
+
+<h3>当线性渐变的方向(向量)沿着X轴方向时,渐变范围是[startX,endX]这个X轴区间。</h3>
+<canvas id="canvas2" height="200" width="400" style="border: 1px solid black"></canvas>
+<p>此时X轴区间内均是渐变区间。而Y轴坐标没有任何影响</p>
+
+<h3>当线性渐变的方向(向量)沿着Y轴方向时,渐变的范围是[startY,endY]这个Y轴区间。</h3>
+<canvas id="canvas3" height="200" width="400" style="border: 1px solid black"></canvas>
+<p>此时Y轴区间内均是渐变区间。而X轴坐标没有任何影响</p>
+
+<h3>一个渐变中可以有多个色标</h3>
+<canvas id="canvas4" height="400" width="200" style="border: 1px solid black"></canvas>
+
+</body>
+
+<script>
+
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("createLinearGradient"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("createRadialGradient"));
+
+    console.log(CanvasGradient.prototype.hasOwnProperty("addColorStop"));
+
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+
+    /**
+     *  线性渐变我们可以理解为沿着向量方向进行变化。
+     *  我们设定的渐变范围并不是真正的说渐变只在这个范围内发生。
+     */
+    var lineGradient=ctx1.createLinearGradient(100,100,300,300);
+    ctx1.fillStyle=lineGradient;
+    lineGradient.addColorStop(0,"blue");
+    lineGradient.addColorStop(1,"red");
+
+    ctx1.fillRect(0,0,400,400);
+    ctx1.fill();
+
+    /**
+     * 绘制我们制定的线性渐变区域
+     */
+    ctx1.strokeStyle="black";
+    ctx1.strokeRect(100,100,200,200);
+
+    /**
+     * 绘制起点和终点连线外的另一条 矩形对角线
+     */
+    ctx1.lineWidth=5;
+    ctx1.moveTo(0,400);
+    ctx1.lineTo(400,0);
+    ctx1.stroke();
+    ctx1.beginPath();
+    /**
+     * 绘制起点和终点的连线
+     */
+    ctx1.strokeStyle="green";
+    ctx1.moveTo(100,100);
+    ctx1.lineTo(300,300);
+    ctx1.stroke();
+
+    /**
+     * 绘制起点和终点
+     */
+    ctx1.beginPath();
+    ctx1.fillStyle="black";
+    ctx1.arc(100,100,5,Math.PI*2,0);
+    ctx1.arc(300,300,5,Math.PI*2,0);
+    ctx1.fill();
+
+    /**
+     * 这里是不发生渐变的区域
+     */
+    ctx1.beginPath();
+    ctx1.fillStyle="white";
+    ctx1.moveTo(200,0);
+    ctx1.lineTo(0,200);
+    ctx1.lineTo(0,0);
+    ctx1.fill();
+
+    ctx1.moveTo(200,400);
+    ctx1.lineTo(400,200);
+    ctx1.lineTo(400,400);
+    ctx1.fill();
+
+    ctx1.fill();
+    /**
+     * 当线性渐变的方向沿着X轴方向，此时y轴坐标已经不重要了。(因为本质是向量)
+     * 因此这里设置y轴为1000还是 10000 都是相同的效果，只要startY=endY就行。
+     * 此时，渐变范围是 [startX,endX]区间。 而其余X坐标区间已经属于渐变外的区域了。
+     */
+    var canvas2=document.getElementById("canvas2");
+    var ctx2=canvas2.getContext("2d");
+    var lineGradient2=ctx2.createLinearGradient(20,10000,380,10000);
+
+    lineGradient2.addColorStop(0,"blue");
+    lineGradient2.addColorStop(1,"red");
+
+    ctx2.fillStyle=lineGradient2;
+
+    ctx2.fillRect(20,20,160,160);
+    ctx2.fill();
+
+    ctx2.moveTo(200,100)
+    ctx2.arc(300,100,80,0,Math.PI*2);
+    ctx2.fill();
+
+    /**
+     * 当线性渐变的方向沿着Y轴方向，此时X轴坐标已经不重要了。(因为本质是向量)
+     * 因此这里设置X轴为1000还是 10000 都是相同的效果，只要startX=endX就行。
+     * 此时，渐变范围是 [startY,endY]区间。 而其余Y坐标区间已经属于渐变外的区域了。
+     */
+    var canvas3=document.getElementById("canvas3");
+    var ctx3=canvas3.getContext("2d");
+    var lineGradient3=ctx3.createLinearGradient(10000,20,10000,180);
+
+    lineGradient3.addColorStop(0,"blue");
+    lineGradient3.addColorStop(1,"red");
+
+    ctx3.fillStyle=lineGradient3;
+
+    ctx3.fillRect(20,20,160,160);
+    ctx3.fill();
+
+    ctx3.moveTo(200,100);
+    ctx3.arc(300,100,80,0,Math.PI*2);
+    ctx3.fill();
+
+
+    function drawLinearGradientRect(ctx,x,y,width,height,colorStart,colorEnd){
+        ctx.save();
+        var lineGradient=ctx.createLinearGradient(x,y,x+width,y+height);
+        lineGradient.addColorStop(0,colorStart);
+        lineGradient.addColorStop(1,colorEnd);
+        ctx.fillStyle=lineGradient;
+        ctx.fillRect(x,y,width,height);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    function drawLinearGradientLine(ctx,startX,startY,endX,endY,colorStart,colorEnd){
+        ctx.save();
+        var lineGradient=ctx.createLinearGradient(startX,startY,endX,endY);
+        lineGradient.addColorStop(0,colorStart);
+        lineGradient.addColorStop(1,colorEnd);
+        ctx.strokeStyle=lineGradient;
+        ctx.moveTo(startX,startY);
+        ctx.lineTo(endX,endY);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+
+
+    var canvas4=document.getElementById("canvas4");
+    var ctx4=canvas4.getContext("2d");
+
+    var fillLinearStyle=ctx4.createLinearGradient(0,0,0,200);
+    /**
+     * 一个渐变的色标可以有多个，甚至，不同色标还可以重叠。但是顺序不能互相交换。
+     */
+    fillLinearStyle.addColorStop(0,"blue");
+    fillLinearStyle.addColorStop(0.5,"white");
+    fillLinearStyle.addColorStop(0.5,"green");
+    fillLinearStyle.addColorStop(1,"white");
+    ctx4.fillStyle=fillLinearStyle;
+    ctx4.rect(20,20,160,160);
+    ctx4.fill();
+
+    var strokeLinearStyle=ctx4.createLinearGradient(0,40,0,120);
+    strokeLinearStyle.addColorStop(0,"black");
+    strokeLinearStyle.addColorStop(1,"rgba(0,0,0,0)");
+    ctx4.strokeStyle=strokeLinearStyle;
+    ctx4.strokeRect(40,40,120,100);
+
+    var rainbowStyle=ctx4.createLinearGradient(0,200,0,400);
+    rainbowStyle.addColorStop(0,"red");
+    rainbowStyle.addColorStop(1/6,"orange");
+    rainbowStyle.addColorStop(2/6,"yellow");
+    rainbowStyle.addColorStop(3/6,"green");
+    rainbowStyle.addColorStop(4/6,"cyan");
+    rainbowStyle.addColorStop(5/6,"blue");
+    rainbowStyle.addColorStop(6/6,"purple");
+    ctx4.fillStyle=rainbowStyle;
+    ctx4.fillRect(0,200,200,200);
+
+</script>
+
+</html>

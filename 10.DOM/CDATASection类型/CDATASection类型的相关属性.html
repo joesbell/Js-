@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div>
+
+</div>
+
+</body>
+
+<script>
+    /**
+     * CDATASection类型只有在XML文档中才能使用。
+     */
+    try{
+        document.createCDATASection("");
+    }catch (e){
+        console.log("HTML文档是无法创建CDATA类型对象的");
+    }
+
+    //因此这里通过这种方式创建一个 XML文档。
+    var xmlDoc=document.implementation.createDocument(null,"xml",null);
+    //这个文档是 XMLDocument类型的。
+    console.log(xmlDoc.__proto__===XMLDocument.prototype);
+    //通过XML类型文档创建一个CDATASection类型的节点。
+    var cdata=xmlDoc.createCDATASection("这是CDATA类型数据");
+
+    /**
+     * CDATA 类型的自身(继承自Node)属性
+     */
+    console.log(cdata.__proto__===CDATASection.prototype);
+    console.log(cdata.nodeName==="#cdata-section");
+    console.log(cdata.nodeType===4);
+    console.log(cdata.nodeValue==="这是CDATA类型数据");
+
+
+    console.log(CDATASection.prototype.__proto__===Text.prototype);
+    //从文档中获取根节点. 可以使用标签名获取 也可以直接使用Document类型的documentElement属性获取。
+    var xmlNode=xmlDoc.getElementsByTagName("xml")[0]||xmlDoc.documentElement;
+    xmlNode.appendChild(cdata);
+    console.log(xmlNode.innerHTML);
+    //拥有CharacterData类型的方法
+    cdata.appendData("添加一些数据进去");
+    console.log(xmlNode.innerHTML);
+    //同时也拥有Text类型的方法
+    cdata.splitText(2);
+    console.log(xmlNode.innerHTML);
+    console.log(xmlNode.childNodes.length===2);
+
+</script>
+</html>

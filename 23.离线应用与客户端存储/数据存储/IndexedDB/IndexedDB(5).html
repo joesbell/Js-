@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>遍历数据</title>
+</head>
+<body>
+<input type="button" id="button1" value="遍历所有数据">
+</body>
+
+<script>
+
+    var IDBName="test"+Math.random(); //保证每次打开页面连接数据库都是新建操作。
+    var button1=document.getElementById("button1");
+
+    /**
+     * 新建一个数据库以及对象仓库
+     */
+    var req=indexedDB.open(IDBName);
+    var db;
+    req.onupgradeneeded=function (event) {
+        db=event.target.result;
+
+        var store=db.createObjectStore("users",{ autoIncrement:true});
+
+        var versionChangeTransaction=event.target.transaction;
+
+        versionChangeTransaction.oncomplete=function () {
+            console.log("数据库创建Schema完毕");
+        };
+        versionChangeTransaction.onerror=function () {
+            console.log("数据库创建Schema失败");
+        }
+    };
+    req.onsuccess=function () {
+        console.log("连接到新创建的数据库成功");
+        var transaction=db.transaction("users","readwrite");
+        var store=transaction.objectStore("users");
+        //写入10个随机数据
+        var total=10;
+        var datas=[];
+        for(var i=0;i<total;i++){
+            datas.push({
+                name:generateWord(6),
+                age:(Math.random()*30>>0)
+            })
+        };
+        datas.forEach((data)=>{
+            store.add(data);
+        });
+
+        transaction.oncomplete=function(){
+            console.log("数据初始化完毕");
+        };
+
+        transaction.onerror=function(){
+            console.log("数据初始化失败")
+        };
+        //关闭页面时，删除数据库
+        window.onunload=function () {
+            indexedDB.deleteDatabase(IDBName);
+        }
+    };
+
+    /**
+     * 遍历所有数据
+     */
+    button1.addEventListener("click",function () {
+        var transaction=db.transaction("users","readonly");
+        var store=transaction.objectStore("users");
+
+        /**
+         * 请求指针，用于遍历数据仓库或者索引。
+         */
+        var req=store.openCursor();
+
+        //请求指针成功
+        req.onsuccess=function (event) {
+            var cursor=event.target.result;
+           if(cursor){
+               //如果指针存在，也就是还没遍历到最后一个值。
+                console.log("主键:",cursor.primaryKey,"数据:",cursor.value,cursor instanceof IDBCursor);
+                //continue方法会继续请求当前位置的下一个指针.
+                cursor.continue();
+            }else{
+               //否则cursor对象为null，此时说明遍历完成了。
+               console.log("此时指针为null",cursor===null);
+               console.log("数据遍历完毕")
+           }
+        }
+    });
+
+    /**
+     * 生成 length长度的字符串 ，这些字符串的每个字符均是 A-Z
+     * @param length
+     * @returns {string}
+     */
+    function generateWord(length) {
+        var result="";
+        for(var i=0;i<length;i++){
+            result+=String.fromCharCode(((Math.random()*26)>>0)+65);
+        }
+        return result;
+    }
+
+</script>
+
+</html>

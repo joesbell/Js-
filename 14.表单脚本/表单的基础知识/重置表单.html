@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>重置表单</title>
+</head>
+<body>
+
+<form id="form1" name="myForm1">
+    <h3>利用元素type特性重置</h3>
+    <input type="text" value="默认值">
+    <input type="reset"  value="reset按键重置表单">
+    <button type="reset" >reset按键重置表单</button>
+</form>
+
+<hr>
+
+<form id="form2" name="myForm2">
+    <h3>利用对象的reset()方法重置表单</h3>
+    <input type="text" value="默认值">
+    <input type="button"  value="reset()方法重置表单" onclick="ConfirmReset()">
+</form>
+</body>
+
+<hr>
+
+<form id="form3" name="myForm3">
+    <h3>不管是type特性的方法还是对象reset方法重置表单，都会触发reset事件</h3>
+    <input type="text" value="取消reset事件的触发">
+    <input type="button"  value="reset()方法重置表单" onclick="reset()"
+    <input type="reset"  value="reset按键重置表单">
+
+</form>
+
+
+<script>
+
+    var form1=document.getElementById("form1");
+    var form2=document.getElementById("form2");
+    var form3=document.getElementById("form3");
+
+
+    function ConfirmReset() {
+        if(confirm("确认重置表单?")){
+            form2.reset();
+        }
+    }
+
+    /**
+     * 不管是reset方法重置表单还是type=reset特性来重置表单，都会触发表单的reset事件。
+     */
+    window.addEventListener("reset",function (event) {
+        if(event.target===form3){
+            console.log("reset事件也是一个冒泡的可以取消默认行为的事件",event.cancelable===true,event.bubbles===true);
+            event.preventDefault();
+            console.log("取消重置表单reset事件成功",event.defaultPrevented===true);
+        }
+
+    })
+
+</script>
+</html>

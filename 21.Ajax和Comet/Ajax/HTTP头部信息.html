@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTTP头部信息</title>
+</head>
+<body>
+
+<input type="text" id="text1" placeholder="待添加头部信息名">
+<input type="text" id="text2" placeholder="待添加头部信息值">
+<input type="button" id="button1" value="添加请求头部信息">
+<input type="button" id="button2" value="获取当前的请求头信息">
+<input type="button" id="button3" value="获取当前的响应头信息">
+
+</body>
+
+<script>
+
+    /**
+     * XMLHttpRequest类型提供了以下方法用于设置请求头信息以及获取响应头信息。
+     */
+    console.log(XMLHttpRequest.prototype.hasOwnProperty("setRequestHeader"));
+    console.log(XMLHttpRequest.prototype.hasOwnProperty("getAllResponseHeaders"));
+    console.log(XMLHttpRequest.prototype.hasOwnProperty("getResponseHeader"));
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+
+    var appendInfo=Object.create(null);
+
+
+    button1.addEventListener("click",function () {
+        if(text1.value&&text2.value){
+            appendInfo[text1.value]=text2.value;
+        }
+    })
+
+    button2.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        xhr.open("POST","/rest/requesthead");
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log("当前的请求头信息是",JSON.stringify(JSON.parse(xhr.responseText),null,"\t"));
+                }
+            }
+        }
+        /**
+         * 需要注意的是，为请求添加请求头信息必须在xhr初始化open之后，在send发送之前。
+         */
+        for(var key in appendInfo){
+            xhr.setRequestHeader(key,appendInfo[key]);
+        }
+
+        xhr.send();
+    })
+
+
+    button3.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        xhr.open("POST","/rest/responsehead");
+        xhr.onreadystatechange=function() {
+            /**
+             * 这里有个疑问:当readyState为2时，此时xhr刚处于发送状态，竟然已经可以获取响应头信息了???????????
+             */
+            if (xhr.readyState >= 2) {
+                if (xhr.status >= 200 && xhr.status < 300 || xhr.status === 304) {
+                    console.log("当前xhr状态",xhr.readyState,"当前的响应头信息是:");
+                    console.log(xhr.getAllResponseHeaders());
+                }
+            }
+        }
+        xhr.send();
+        /**
+         * 发送后并不会立即得到服务器响应，所以此时的响应头信息为空字符串
+         */
+        console.log(xhr.getAllResponseHeaders()==="");
+    })
+
+</script>
+
+</html>

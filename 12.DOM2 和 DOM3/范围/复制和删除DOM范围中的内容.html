@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>复制和删除DOM范围中的内容.</title>
+</head>
+<body>
+
+<div>
+    <p id="p1">hello</p>
+</div>
+<p id="p2">world</p>
+
+</body>
+
+<script>
+    /**
+     * Range类型具有以下方法用于删除和复制范围内的内容
+     */
+    console.log(Range.prototype.hasOwnProperty("cloneContents"));
+    console.log(Range.prototype.hasOwnProperty("deleteContents"));
+    console.log(Range.prototype.hasOwnProperty("extractContents"));
+
+
+    var p1=document.getElementById("p1");
+    var p2=document.getElementById("p2");
+
+    var range=document.createRange();
+    var hello=p1.firstChild;
+    var world=p2.firstChild;
+    range.setStart(hello,2);
+    range.setEnd(world,3)
+
+
+    setTimeout(()=>{
+        if(confirm("开始复制内容")){
+            /**
+             * cloneContents()方法返回的是一个DocumentFragment文档片段。
+             * 被复制的内容会自动补齐标签，作为该文档标签的子节点。
+             */
+            var cloneRangeContent=range.cloneContents();
+            console.log(cloneRangeContent.__proto__===DocumentFragment.prototype)
+            document.body.appendChild(cloneRangeContent);
+        }
+    },1000)
+
+    setTimeout(()=>{
+        var input=prompt("移动还是删除?","移动");
+
+        if(input==="移动"){
+            /**
+             * extractContents方法会将内容删除，返回被删除的内容的文档片段。
+             * 这些内容依旧是被自动补齐标签的，位于文档片段下。
+             */
+            var deleteContent=range.extractContents();
+            console.log(deleteContent.__proto__===DocumentFragment.prototype)
+            document.body.appendChild(deleteContent);
+        }else if(input==="删除"){
+            /**
+             * deleteContents()方法则是仅仅删除内容，没有返回值(返回undefined).
+             */
+            var deleteContent=range.deleteContents()
+            console.log(deleteContent===undefined);
+        }else{
+
+        }
+    },2000)
+
+
+
+</script>
+</html>

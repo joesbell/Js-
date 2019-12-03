@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>普通的自动移动方块demo</title>
+</head>
+<body>
+
+<div id="box" style="position: absolute;top:0;left:0;height: 100px;width: 100px;background: black;color:red;">
+    <p>自动移动的元素</p>
+</div>
+
+<div id="des" style="position: absolute;height: 10px;width:10px;background: red"></div>
+
+<h2 id="tip"></h2>
+
+</body>
+<script>
+    var box=document.getElementById("box");
+    var des=document.getElementById("des");
+    var tip=document.getElementById("tip");
+
+    var running=false; //是否在移动中。
+
+    /**
+     * 让ele(左上角)自动到达(desX,desY)坐标。
+     */
+    function  autoGoto(ele,desX,desY,speed,fps) {
+        if(running){
+            return ;
+        }
+        running=true;
+
+        tip.innerText="当前前往坐标("+desX+","+desY+"),速度"+speed+"px每秒,fps为"+fps;
+        des.style.top=desY+"px";
+        des.style.left=desX+"px";
+
+        var boundingRect=ele.getBoundingClientRect();
+        var currentX=boundingRect.left;
+        var currentY=boundingRect.top;
+
+        /**
+         * 根据参数计算 横纵轴速度。
+         */
+        var distanceX=desX-currentX;
+        var distanceY=desY-currentY;
+        var angel=Math.atan(distanceY/distanceX);
+        var xSpeed=Math.abs(Math.cos(angel)*speed);
+        var ySpeed=Math.abs(Math.sin(angel)*speed);
+        var intervalTime=1000/fps;
+
+        /**
+         * 开始移动
+         */
+        var intervalId=setInterval(()=>{
+
+            if(!running){
+                clearInterval(intervalId);
+                running=false;
+                return ;
+            }
+            distanceX=desX-currentX;
+            distanceY=desY-currentY;
+
+            /**
+             * 如果坐标差值小于每帧移动的距离，那么说明这一帧以内，可以移动到目标坐标了。
+             */
+            if(Math.abs(distanceX) < Math.abs(xSpeed/fps)){
+                //如果
+                currentX=desX;
+            }else{
+                currentX += xSpeed/fps * (distanceX>0?1:-1);
+            }
+            if(Math.abs(distanceY) < Math.abs(ySpeed/fps)){
+                currentY=desY;
+            }else{
+                currentY += ySpeed/fps * (distanceY>0?1:-1);
+            }
+
+            ele.style.top=currentY+"px";
+            ele.style.left=currentX+"px";
+            /**
+             * 当横纵坐标都到了目标点，那么就可以停止移动了。
+             */
+            if(currentX===desX&&currentY===desY){
+                clearInterval(intervalId);
+                /**
+                 * 此时应该停止移动
+                 */
+                running=false;
+                document.dispatchEvent(new Event("arrive"));
+            }
+        },intervalTime)
+    }
+
+
+    /**
+     * 每当移动过程完毕后，再次移动到随机坐标
+     */
+    document.addEventListener("arrive",function () {
+        var randomX=Math.random()*(window.innerWidth);
+        var randomY=Math.random()*(window.innerHeight);
+        var randomSpeed=Math.random()*1000+500;
+        var fps=Math.random()*30+30;
+        autoGoto(box,Math.ceil(randomX),Math.ceil(randomY),Math.ceil(randomSpeed),Math.ceil(fps));
+    });
+
+    autoGoto(box,1000,500,1500,20);
+</script>
+</html>

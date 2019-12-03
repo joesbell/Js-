@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>服务器端</title>
+</head>
+<body>
+<div id="content" style="border: 1px solid black;height: 800px;width:800px;overflow: auto;">
+
+</div>
+<input type="text" value="请输入用户名" id="text1">
+<input type="button" value="加入聊天" id="button1">
+</body>
+
+<script>
+    var text1=document.getElementById("text1");
+    var button1=document.getElementById("button1");
+    var content=document.getElementById("content");
+
+    var users=[]; //维护聊天室所有用户的信息
+
+    button1.addEventListener("click",function () {
+        var username=text1.value;
+        var newWindow=window.open("chatClient.html?username="+username); //打开聊天室客户端窗口。用户名通过search参数传递
+        users.push([username,newWindow]);
+        newWindow.postMessage("connect...",location.origin);
+    });
+
+    //监听message事件
+    window.addEventListener("message",function (event) {
+        //这里验证身份。
+        if(event.origin!==location.origin){
+            return ;
+        }
+
+        var message=event.data;
+        var srcWindow=event.source;
+
+        //寻找发送信息的窗口
+        var user=users.find((kv)=>{
+            if(kv[1]===srcWindow){
+                return true;
+            }
+        });
+
+        if(user){
+            if(message==="alive"){ //确认信息 这里不处理
+                return;
+            }else if(message!=="connected"){  //聊天信息
+                showChatMessage(user[0],message);
+            }else{
+                //连接信息
+                showChatMessage("系统",user[0]+"加入了聊天室");
+                user[2]=true;
+            }
+        }else{
+
+        }
+    });
+
+    //每过一秒钟发送心跳，将离线用户删除。
+    setInterval(()=>{
+        users=users.filter((user)=>{
+            if(user[2]===false){
+                showChatMessage("系统",user[0]+"退出了聊天室");
+            }
+            return user[2]===true;
+        });
+
+        //询问当前所有用户是否还在线
+        users.forEach((userInfo)=>{
+            userInfo[1].postMessage("alive?",location.origin);
+            userInfo[2]=false;
+        });
+
+
+    },1000);
+
+    //这里监听所有客户端的 确认在线 信息。
+    window.addEventListener("message",function (event) {
+        if(event.origin!==location.origin){
+            return ;
+        }
+        var message=event.data;
+        var srcWindow=event.source;
+        var user=users.find((kv)=>{
+            if(kv[1]===srcWindow){
+                return true;
+            }
+        });
+        if(user){
+            if(message==="alive"){
+                user[2]=true;
+            }
+        }else{
+
+        }
+    });
+
+    //在聊天室展示聊天记录
+    function showChatMessage(username,message) {
+        var p=document.createElement("p");
+        p.innerText=username+":"+message;
+        content.appendChild(p);
+    }
+
+</script>
+
+</html>

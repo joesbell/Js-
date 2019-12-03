@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comet</title>
+</head>
+<body>
+
+<h4>轮询</h4>
+<input type="button" id="button1" value="短轮询">
+<input type="button" id="button2" value="长轮询">
+<br>
+<hr>
+<h4>HTTP流</h4>
+<input type="button" id="button3" value="测试标准的HTTP流(最好在火狐中测试)"><br>
+<hr>
+<input type="button" id="button4" value="对比:谷歌浏览器中的服务器flush的内容如果小于1024字节，则谷歌浏览器会截留本次服务器响应的结果">
+<input type="button" id="button5" value="对比:谷歌浏览器中的服务器flush的内容如果大于等于1024字节，则谷歌浏览器的表现和标准一致">
+<br>
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+
+    /**
+     * 短轮询就是客户端不停地间隔请求数据。
+     */
+    button1.addEventListener("click",function(){
+        var old;//保存上一次的数据。
+
+        //每隔一秒请求一次
+        setInterval(()=>{
+            shortPolling();
+        },1000);
+
+        /**
+         * 简单的短轮询请求的方法。这里我们默认所有的请求的响应都会在1秒内返回。
+         */
+        function shortPolling() {
+            var xhr=new XMLHttpRequest();
+            xhr.onload=function () {
+                var data=xhr.responseText;
+                if(data===old){
+                    console.log(new Date().toLocaleString(),"数据不变")
+                }else{
+                    console.log(new Date().toLocaleString(),"数据变更为:",data);
+                    old=data;
+                }
+            };
+            xhr.open("GET","/rest/shortpolling");
+            xhr.send();
+        }
+    });
+
+    /**
+     * 长轮询则是在服务器响应完成后，再继续轮询。
+     */
+    button2.addEventListener("click",function(){
+        longPolling();
+
+        /**
+         * 长轮询请求的方法
+         */
+        function longPolling() {
+            var xhr=new XMLHttpRequest();
+            /**
+             * 当响应完成后，才接着轮询。
+             */
+            xhr.onload=function () {
+                var data=xhr.responseText;
+                console.log(new Date().toLocaleString(),"数据变更为:",data);
+                xhr=null;
+                longPolling();
+            };
+
+            xhr.open("GET","/rest/longpolling");
+            xhr.send();
+        }
+    });
+
+    /**
+     * HTTP流的请求方式。
+     */
+    function httpStream(url){
+        var receivedLength=0;//保存已经接受到的内容的长度。
+        var xhr=new XMLHttpRequest();
+        /**
+         * 监听 readystatechange事件
+         */
+        xhr.onreadystatechange=function(){
+            /**
+             * 服务器端会间隔地发送数据，就会不停触发readystatechange事件，而此时xhr对象的readyState==3.
+             */
+            if(xhr.readyState===3){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    var data=xhr.response.substring(receivedLength); //截去已经接受到的数据。
+                    console.log("当前收到的数据是:",data,"\n之前已收到的数据总长度为:",receivedLength);
+                    receivedLength+=data.length;//更新已经收到的数据
+                }else{
+                    console.log("响应的HTTP码错误:",xhr.status);
+                }
+            }else if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log("数据已全部接受完毕:",xhr.response,"\n收到的数据总长度为:",xhr.response.length);
+                }else{
+                    console.log("响应的HTTP码错误:",xhr.status);
+                }
+            }
+        };
+        xhr.open("GET",url);
+        xhr.send(null);
+    }
+    /**
+     * HTTP流的请求方式2。
+     */
+    function httpStream2(url){
+        var receivedLength=0;//保存已经接受到的内容的长度。
+        var xhr=new XMLHttpRequest();
+        /**
+         * 监听 progress事件以及load事件也是同样的效果
+         */
+        xhr.onprogress=function(){
+            /**
+             * 服务器端会间隔地发送数据。此时就会触发xhr对象的progress进度事件。
+             */
+            if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                var data=xhr.response.substring(receivedLength);
+                console.log("当前收到的数据是:",data,"\n之前已收到的数据总长度为:",receivedLength);
+                receivedLength+=data.length;
+            }else{
+                console.log("响应的HTTP码错误:",xhr.status);
+            }
+        };
+        /**
+         * 而当完全接受完毕后，就会触发load事件。
+         */
+        xhr.onload=function(){
+            if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                console.log("数据已全部接受完毕:",xhr.response,"\n收到的数据总长度为:",xhr.response.length);
+            }else{
+                console.log("响应的HTTP码错误:",xhr.status);
+            }
+        };
+        xhr.open("GET",url);
+        xhr.send(null);
+    }
+
+
+    button3.addEventListener("click",function(){
+        httpStream("/rest/httpstream1");
+    });
+
+    button4.addEventListener("click",function(){
+        httpStream2("/rest/httpstream2");
+    });
+
+    button5.addEventListener("click",function(){
+        httpStream2("/rest/httpstream3");
+    });
+</script>
+
+</html>

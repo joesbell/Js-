@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOMImplementation类型的变化</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * DOMImplementation类型上新增了以下方法 用于创建文档和文档类型。
+     */
+    console.log(DOMImplementation.prototype.hasOwnProperty("createDocumentType"));
+    console.log(DOMImplementation.prototype.hasOwnProperty("createDocument"));
+    console.log(DOMImplementation.prototype.hasOwnProperty("createHTMLDocument"));
+
+
+    /**
+     * createDocumentType方法可以创建新的文档类型DocumentType对象。
+     */
+    var publicId="-//W3C//DTD HTML 4.01//EN";
+    var systemId="http://www.w3.org/TR/html4/strict.dtd";
+    var doctype=document.implementation.createDocumentType("html",publicId,systemId);
+    console.log(doctype.publicId===publicId);
+    console.log(doctype.systemId===systemId);
+
+    /**
+     * createDocument方法可以创建新的文档。
+     */
+    publicId="-//W3C//DTD XHTML 1.0 Transitional//EN";
+    systemId="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd";
+    //参数分别是 命名空间 ， 根元素名称， 文档类型
+    var xhtml=document.implementation.createDocument("http://www.w3.org/1999/xhtml","html",doctype);
+    console.log("创建出来的xhtml文档对象:\n",xhtml);
+
+    //创建一个XML文档对象
+    var xml=document.implementation.createDocument("","root",null);
+    console.log("创建出来的XML文档对象:\n",xml);
+
+    /**
+     * createHTMLDocument方法可以创建新的HTML文档
+     */
+    var title="新的HTML文档的title";
+    //参数为新的HTML文档的title。
+    var newDocument=document.implementation.createHTMLDocument(title);
+    console.log("创建出来的新的HTML文档对象:\n",newDocument);
+    console.log(newDocument.title===title);
+
+
+</script>
+</html>

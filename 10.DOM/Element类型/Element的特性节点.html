@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <div id="myid" class="myclass" dir="ltr" title="mytitle" lang="en" data-myattr="mydata" align="center" style="text-align: center" onclick="alert('reveur')">内容在这里</div>
+</body>
+
+<script>
+    /**
+     * Element节点的特性集合的方法 是在 NamedNodeMap原型上。
+     */
+    console.log(NamedNodeMap.prototype.hasOwnProperty("setNamedItem"));
+    console.log(NamedNodeMap.prototype.hasOwnProperty("getNamedItem"));
+    console.log(NamedNodeMap.prototype.hasOwnProperty("removeNamedItem"));
+    console.log(NamedNodeMap.prototype.hasOwnProperty("item"));
+
+    var mydiv=document.getElementById("myid");
+    var attrsMap=mydiv.attributes;
+    /**
+     * Element节点的attributes属性可以返回该元素节点的特性节点集合。
+     * 该集合是一个动态的集合，会随着DOM节点中特性的改变而改变。
+     */
+    console.log(attrsMap instanceof NamedNodeMap);
+    for(var i=0,len=attrsMap.length;i<len;i++){
+        if(attrsMap[i].specified===true){
+            //针对IE7以下早期的版本的 特性节点遍历的BUG一一会返回所有特性而不是指定了的特性
+            console.log("特性节点nodeName:"+attrsMap[i].nodeName,"特性节点nodeValue:"+attrsMap[i].nodeValue)
+        }else{
+            console.error(attrsMap[i]+"特性节点并没有被指定");
+        }
+    }
+    console.log("当前attributes属性的特性节点集合的长度为:",attrsMap.length);
+
+    /**
+     * 1. getNamedItem 同 element的 getAttribute方法相同， 该方法可以获取指定特性名的特性节点.再通过nodeValue或者nodeName访问特性节点相关属性
+     */
+    console.log(attrsMap.getNamedItem("id").nodeValue==="myid");
+    //该方法在找不到特性节点的时候返回null
+    console.log(attrsMap.getNamedItem("notExist")===null);
+
+    /**
+     * 2. setNamedItem就比较复杂了，传入的参数必须是特性节点，整个过程比较麻烦
+     */
+
+    //创建特性节点
+    var newAttriNode=document.createAttribute("data-attr");
+    //设置特性节点的值
+    newAttriNode.nodeValue="my-attr";
+    //为element元素的特性节点集合设置新的特性节点
+    attrsMap.setNamedItem(newAttriNode);
+    console.log(attrsMap.getNamedItem("data-attr").nodeValue==="my-attr");
+    console.log("添加新的特性节点后，attributes属性的特性节点集合的长度为:",attrsMap.length);
+
+    /**
+     * 3. removeNamedItem 和 removeAttribute的唯一区别就是返回值是 被删除的特性节点。
+     * 特性节点Attr类型 继承自 Node类型
+     */
+    console.log(attrsMap.removeNamedItem("data-attr") instanceof Attr);
+    console.log("移除一个特性节点后，attributes属性的特性节点集合的长度为:",attrsMap.length);
+
+    /**
+     * item方法基本用不上。因为NamedNodeMap是个类数组对象，可以使用 数组访问的方法访问。
+     * 不过需要注意的一点是，数组中特性节点的顺序不一定和HTML中书写特性的顺序一致。
+     */
+
+</script>
+</html>

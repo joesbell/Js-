@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>裁剪</title>
+</head>
+<body>
+
+<canvas id="canvas1" height="500" width="500"></canvas>
+
+</body>
+
+<script>
+    /**
+     * 与合成不同，裁剪则是根据路径，将后续绘制的图形只保留裁剪路径范围内的部分。
+     */
+    var canvas=document.getElementById("canvas1");
+    var ctx=canvas.getContext("2d");
+    canvas.height=500;
+    ctx.fillStyle="black";
+    ctx.fillRect(0,0,500,500);
+    ctx.fillStyle="blue";
+    ctx.arc(250,250,150,Math.PI*2,0);
+    ctx.fill();
+    ctx.save();
+    ctx.clip();
+
+    for(var i=0;i<50;i++){
+        drawStar(ctx,(Math.random()*500)>>0,(Math.random()*500)>>0,10,"white")
+    }
+
+    //需要注意的是这个状态是可以保存和还原的，因此这里将其还原为没有裁剪前的状态，后续的绘制就没有裁剪了。
+    ctx.restore();
+
+    for(var i=0;i<50;i++){
+        drawStar(ctx,(Math.random()*500)>>0,(Math.random()*500)>>0,10,"red")
+    }
+
+    /**
+     * 绘制星星的方法. r决定星星的外接圆半径。
+     */
+    function drawStar(ctx,x,y,r,color) {
+        ctx.save();
+        var angle=Math.PI*2/10;
+        ctx.translate(x,y);
+
+        ctx.beginPath();
+        ctx.moveTo(r,0);
+        for(var i=0;i<9;i++){
+            ctx.rotate(angle);
+            if(i%2===1){
+                ctx.lineTo(r,0);
+            }else{
+                ctx.lineTo(r/3,0);
+            }
+        }
+        ctx.fillStyle=color;
+        ctx.fill();
+        ctx.restore();
+    }
+
+</script>
+</html>

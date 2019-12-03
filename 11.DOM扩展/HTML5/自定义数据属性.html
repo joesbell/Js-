@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>data-的自定义数据属性</title>
+</head>
+<body>
+
+    <div id="mydiv" data-mydata="myvalue" data-my-name="reveur"></div>
+    <div id="div1" data-Action="大写是不允许的"></div>
+    <div id="div2" data-xmlstart="以xml开头是允许的"></div>
+    <div id="div3" data-zheshi;fenhao="分号是不允许的"></div>
+</body>
+<script>
+
+
+    /**
+     * 只有以 data-开头的特性名的自定义特性才是标准自定义特性。
+     * 对于标准自定义特性可以使用 元素的dataset属性方便操作。
+     */
+
+    //dataset属性是在HTMLElement类型上实现的
+    console.log(HTMLElement.prototype.hasOwnProperty("dataset"));
+    var div=document.getElementById("mydiv");
+
+
+
+    var dataset=div.dataset;
+    //dataset属性的值是 一个 DOMStringMap对象 也就是一个存储键值对对象。
+    console.log(dataset.__proto__===DOMStringMap.prototype);
+
+    console.log(dataset.mydata==="myvalue");
+    console.log(dataset["mydata"]==="myvalue");
+    //如果标准自定义特性名称中有-号，那么-号有特殊的转换规则 : 删除-号，并将紧挨的小写字母变成大写字母。
+    console.log(dataset["my-name"]===undefined);
+    // 特性名称为data-my-name 的标准自定义特性 的 键名是 myName
+    console.log(dataset.myName==="reveur");
+    //当然直接获取特性也是可以的。。
+    console.log(div.getAttribute("data-my-name")==="reveur");
+
+    //反之，利用dataset新增标准自定义特性时，也会经历这个转化步骤，只不过是反向转化。
+    dataset.A="A";
+    console.log(div.getAttribute("data--a")==="A");
+
+    //这里还需要注意的一点是 如果-号是最后一个字符，那么-号是不需要转换的。
+    dataset["B-"]="B-";
+    console.log(div.getAttribute("data--b-")==="B-");
+
+    /**
+     * 大写字母会让 dataset识别不了。
+     */
+    var div1=document.getElementById("div1");
+    console.log(div1.getAttribute("data-Action")==="大写是不允许的");
+    console.log(div1.dataset.Action===undefined);
+
+    /**
+     * 以xml开头的依旧可以识别
+     */
+    var div2=document.getElementById("div2");
+    console.log(div2.getAttribute("data-xmlstart")==="以xml开头是允许的");
+    console.log(div2.dataset.xmlstart==="以xml开头是允许的");
+
+    /**
+     * 具有;分号的特性名两者均无法识别。
+     */
+    var div3=document.getElementById("div3");
+    console.log(div1.getAttribute("data-zheshi;fenhao")===null);
+    console.log(div1.dataset["zheshi;fenhao"]===undefined);
+
+
+</script>
+
+</html>

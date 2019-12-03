@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>移动和重排选项</title>
+</head>
+
+<body>
+
+<select id="select1" size="3">
+    <option>选择框1的1</option>
+    <option>选择框1的2</option>
+    <option>选择框1的3</option>
+</select>
+
+
+<select id="select2" size="3">
+    <option>选择框2的1</option>
+    <option>选择框2的2</option>
+    <option>选择框2的3</option>
+</select>
+
+</body>
+
+<script>
+
+    var select1=document.getElementById("select1");
+    var select2=document.getElementById("select2");
+    var options1=select1.options;
+    var options2=select2.options;
+
+    /**
+     * 移动和重排选项 本质和 添加选项没有任何区别。只是是把已有的option元素添加了而已。因此有两种方式:
+     * 1. 普通DOM方法的insertBefore(newNode,refNode)
+     * 2. select元素的add(newOpt,refOpt)
+     */
+    var option1=options2[0];
+    var option2=options2[1];
+    var option3=options2[2];
+
+    select1.add(option1,null); //将下拉框2的第一个选项移动到下拉框1的最后一个位置。
+
+    select2.insertBefore(option3,option2); //将原本下拉框2的第3个选项移动到第2个选项之前。
+</script>
+
+</html>

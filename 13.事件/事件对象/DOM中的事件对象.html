@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+    <input id="input1" type="button" onclick="console.log(event.hasOwnProperty('isTrusted'))" value="特殊的isTrusted属性直接生成在事件对象上"><br>
+
+    <input id="input2" type="button" value="测试bubbles属性" ><br>
+
+    <a href="someUrl" id="a1">测试cancelable,defaultPrevent属性和preventDefault方法</a><br>
+
+    <input id="input3" type="button" value="测试currentTarget属性" ><br>
+
+    <div id="div1">
+        <input id="input4" type="button" value="测试eventPhase属性和target属性" >
+    </div>
+
+    <input id="input5" type="button" value="测试type属性" ><br>
+
+    <div id="div2">
+        <input id="input6" type="button" value="测试stopPropagation属性" >
+    </div>
+
+</body>
+
+<script>
+
+
+    /**
+     * 事件对象中有以下通用的属性和方法，这些属性和方法都定义在 Event原型上。
+     */
+
+    /**
+     * 这些都是只读的访问器属性
+     */
+    console.log(Event.prototype.hasOwnProperty("bubbles"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"bubbles").set===undefined);
+    console.log(Event.prototype.hasOwnProperty("cancelable"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"cancelable").set===undefined);
+    console.log(Event.prototype.hasOwnProperty("currentTarget"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"currentTarget").set===undefined);
+    console.log(Event.prototype.hasOwnProperty("defaultPrevented"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"defaultPrevented").set===undefined);
+    console.log(Event.prototype.hasOwnProperty("eventPhase"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"eventPhase").set===undefined);
+    console.log(Event.prototype.hasOwnProperty("target"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"target").set===undefined);
+    console.log(Event.prototype.hasOwnProperty("type"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"type").set===undefined);
+
+    /**
+     * 这些都是可读可写的数据属性
+     */
+    console.log(Event.prototype.hasOwnProperty("preventDefault"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"preventDefault").writable===true);
+    console.log(Event.prototype.hasOwnProperty("stopImmediatePropagation"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"stopImmediatePropagation").writable===true);
+    console.log(Event.prototype.hasOwnProperty("stopPropagation"));
+    console.log(Object.getOwnPropertyDescriptor(Event.prototype,"stopPropagation").writable===true);
+
+    //有一个特殊的属性 isTrusted 是不在任何原型上的。 但是却可以访问。
+
+    console.log("--------------");
+
+    var input2=document.getElementById("input2");
+
+
+    /**
+     * 这里需要明确一个概念， DOM事件冒泡与否是由被触发的事件对象决定的。
+     * 和事件处理程序没有任何关系。
+     */
+    console.log("------开始测试bubbles属性------")
+    //事件对象大多数情况下默认的都是冒泡的。其bubbles属性为true，和事件处理程序是DOM0级还是DOM2级没有任何关系。
+    input2.onclick=function(eventObj){
+        console.log(eventObj.bubbles===true);
+    }
+    input2.click();
+
+    //DOM2级事件处理程序可以设置为捕获，但是，此时的事件对象的bubbles属性依旧为true！！！事件处理程序并不会影响事件对象本身，两者没有任何关系!
+    input2.addEventListener("click",function(eventObj){
+        console.log(eventObj.bubbles===true);
+        //甚至是停止传播后，bubbles属性还是为true
+        eventObj.stopPropagation();
+        console.log(eventObj.bubbles===true);
+    },true);
+    input2.click();
+
+    //这里例举一个不冒泡的事件 resize。其 bubbles属性为false
+    window.addEventListener("resize",function(eventObj){
+        console.log(eventObj.bubbles===false); //火狐中为true，当时实际上是没有关系的，因为只有window对象才有resize事件(才有意义)。
+    },true);
+    console.log("------结束测试bubbles属性------");
+    console.log("------开始测试cancelable,defaultPrevent属性和preventDefault方法------");
+    /*
+    * cancelable表示的是是否可以取消事件的默认行为。 一般来说是true。如果cancelable为true，那么可以调用 preventDefault()方法来取消事件的默认行为。
+    * 比如针对 <a href="XXX"></a> 默认的点击行为是会跳转的。但是一旦取消了默认行为，就不跳转了。
+    * 在执行preventDefault之前，defaultPrevent属性为false，执行完毕后，defaultPrevent属性为true，表示已经阻止了默认行为.
+    */
+    document.getElementById("a1").addEventListener("click",function(eventObj){
+        console.log(eventObj.cancelable===true); //该事件的默认行为是可以取消的
+        console.log(eventObj.defaultPrevented===false); //阻止默认行为之前,defaultPrevented属性为false
+        eventObj.preventDefault();  //取消默认行为
+        console.log(eventObj.defaultPrevented===true);//阻止默认行为之后,defaultPrevented属性为true
+        console.log(eventObj.cancelable===true); //需要注意的是，取消事件默认行为后，并不改变cancelable属性。
+    });
+    document.getElementById("a1").click();
+    console.log("------结束测试cancelable,defaultPrevent属性和preventDefault方法------");
+
+    console.log("------开始测试currentTarget属性------");
+    /**
+     * currentTarget表示当前正在执行处理的事件处理程序的元素
+     * currentTarget永远等于this，而this在DOM0和DOM2级事件处理程序中永远等于事件处理程序所在的DOM元素。
+     */
+    var input3=document.getElementById("input3");
+    input3.addEventListener("click",function(eventObj){
+        console.log(eventObj.currentTarget===this&&eventObj.currentTarget===input3);
+    });
+    input3.click();
+    console.log("------结束测试currentTarget属性------");
+
+    console.log("------开始测试eventPhase，target属性------");
+    var div1=document.getElementById("div1");
+    var input4=document.getElementById("input4");
+    /**
+     * eventPhase表示当前事件处于的事件流的哪个阶段:
+     * 1.捕获阶段 值为1
+     * 2.处于目标阶段 值为2
+     * 3.冒泡阶段 值为3
+     * 而target表示事件的目标元素。 也就是说 只有位于处于目标阶段的元素，其内部target才等于this
+     */
+    div1.addEventListener("click",function(eventObj){
+        console.log("冒泡阶段:",eventObj.eventPhase===3,";target!==this?",eventObj.target!==this);
+    });
+    div1.addEventListener("click",function(eventObj){
+        console.log("捕获阶段:",eventObj.eventPhase===1,";target!==this?",eventObj.target!==this);
+    },true);
+    input4.addEventListener("click",function(eventObj){
+        console.log("处于目标阶段(定义为DOM2冒泡):",eventObj.eventPhase===2,";target===this?",eventObj.target===this);
+    });
+    input4.addEventListener("click",function(eventObj){
+        console.log("处于目标阶段(定义为DOM2捕获):",eventObj.eventPhase===2,";target===this?",eventObj.target===this);
+    },true);
+    input4.click();
+    console.log("------结束测试eventPhase,target属性------");
+
+    console.log("------开始测试type属性------");
+    var input5=document.getElementById("input5");
+    /**
+     * type属性表示事件对象的事件类型。
+     */
+    input5.addEventListener("click",function(eventObj){
+        console.log(eventObj.type==="click");
+    });
+    input5.click();
+    input5.addEventListener("focus",function(eventObj){
+        console.log(eventObj.type==="focus");
+    });
+    input5.focus();
+
+    console.log("------结束测试type属性------");
+    console.log("------开始测试stopPropagation属性------");
+
+    var div2=document.getElementById("div2");
+    var input6=document.getElementById("input6");
+    div2.addEventListener("click",function(eventObj){
+        console.log("捕获阶段停止传播");
+        eventObj.stopPropagation();
+    },true);
+    div2.addEventListener("click",function(eventObj){
+        console.log("冒泡阶段");
+    });
+    input6.addEventListener("click",function(eventObj){
+        console.log("处于目标阶段");
+    },true);
+    input6.click();
+    console.log("------结束测试stopPropagation属性------");
+
+
+</script>
+
+</html>

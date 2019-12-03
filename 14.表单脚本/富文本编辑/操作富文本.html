@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>操作富文本</title>
+</head>
+<body>
+
+
+<div id="editableDiv" contenteditable="true">
+    可编辑的DIV区域
+</div>
+
+
+<input type="button" value="加粗字体" data-action="bold">
+<input type="button" value="斜体" data-action="italic">
+<input type="button" value="下划线" data-action="underline">
+<input type="button" value="文字居中对齐" data-action="justifycenter">
+<input type="button" value="文字居左对齐" data-action="justifyleft">
+<input type="button" value="文字居右对齐" data-action="justifyright">
+
+<hr>
+
+<input type="button" value="复制选中" data-action="copy">
+<input type="button" value="剪切选中" data-action="cut">
+<input type="button" value="粘贴" data-action="paste">
+<input type="button" value="删除选中" data-action="delete">
+<input type="button" value="缩进文本" data-action="indent">
+<input type="button" value="减少缩进" data-action="outdent">
+<input type="button" value="选中全文" data-action="selectall">
+
+
+<hr>
+
+<input type="button" value="插入hr元素" data-action="inserthorizontalrule">
+<input type="button" value="插入ol元素" data-action="insertorderedlist">
+<input type="button" value="插入ui元素" data-action="insertunorderedlist">
+<input type="button" value="插入p元素" data-action="insertparagraph">
+<input type="button" value="插入图像" data-action="insertimage" data-need-value="请输入图片地址">
+
+<hr>
+<input type="button" value="将文本转化为链接" data-action="createlink" data-need-value="请输入URL链接地址">
+<input type="button" value="移除文本的链接" data-action="unlink">
+<input type="button" value="设置背景颜色" data-action="backcolor" data-need-value="请输入颜色字符串">
+<input type="button" value="设置字体类型" data-action="fontname" data-need-value="请输入字体名称">
+<input type="button" value="设置字体大小(1~7)" data-action="fontsize" data-need-value="请输入字体大小">
+<input type="button" value="设置字体颜色" data-action="forecolor" data-need-value="请输入颜色字符串">
+<input type="button" value="设置格式标签" data-action="formatblock" data-need-value="请输入标签名">
+<input type="button" value="移除格式标签" data-action="removeformat">
+
+
+<hr>
+刚刚执行的指令<input type="text" id="text1">
+是否执行完毕<input type="text" id="text2">
+<button id="button1">查询这个执行指令的参数</button>
+
+</body>
+
+<script>
+    /**
+     * Document类型提供了以下适合用于富文本操作的方法。
+     * 但是需要知道的是，不同浏览器对这些方法的实现是不一样的。
+     * 甚至不同浏览器对不同指令的支持程度也是不一样的。
+     */
+    console.log(Document.prototype.hasOwnProperty("execCommand"));
+    console.log(Document.prototype.hasOwnProperty("queryCommandState"));
+    console.log(Document.prototype.hasOwnProperty("queryCommandValue"));
+
+    var editableDiv=document.getElementById("editableDiv");
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+    document.querySelectorAll("input").forEach((button)=>{
+        if(button.type!=="button"){
+            return ;
+        }
+        button.addEventListener("click",function(event){
+            if(event.target.dataset.needValue){
+                var input=prompt(event.target.dataset.needValue);
+                executeCommand(event.target.dataset.action,false,input);
+                text1.value=event.target.dataset.action;
+            }else {
+                executeCommand(event.target.dataset.action,false,null);
+                text1.value=event.target.dataset.action;
+            }
+
+
+        })
+    });
+
+
+    /**
+     * 封装document.execCommand。
+     * document.execCommand具有三个参数:
+     * 1.指令名
+     * 2.是否提供用户界面 一般永远设置为false
+     * 3.指令参数
+     * 有些指令具有参数，有些不需要。
+     */
+    function executeCommand(cmdName,provideUI,cmdParam) {
+        /**
+         * document.queryCommandEnabled(cmdName)提供了查询当前是否可以执行cmdName指令的功能。
+         * 如果返回true，那么大概率上可以说是允许执行cmdName指令。但是这不一定，取决于浏览器自身的实现。
+         */
+        if(document.queryCommandEnabled(cmdName)){
+               document.execCommand(cmdName,provideUI,cmdParam);
+                var id=setInterval(()=>{
+                    /**
+                     * document.queryCommandState(cmdName)提供了查询cmdName指令是否执行完毕的功能。
+                     * 如果返回true，那么指令就执行完毕了。但是并不代表返回false就没有执行完毕。
+                     * 这同样取决于浏览器的实现。甚至可能执行完毕了还一直返回false。
+                     */
+                    if(document.queryCommandState(cmdName)===true){
+                        clearInterval(id);
+                        text2.value=cmdName+"已经执行完毕";
+                    }else {
+                        text2.value=cmdName+"可能还没有执行完毕";
+                    }
+                },100);
+        }else{
+            alert("当前不允许执行"+cmdName+"指令")
+        }
+    }
+
+    /**
+     * document.queryCommandValue(cmdName)方法用于查询上一次cmdName执行时使用的参数。
+     */
+    document.getElementById("button1").addEventListener("click",function () {
+        var cmdName=text1.value;
+        alert(cmdName+"指令执行的参数是"+document.queryCommandValue(cmdName));
+    })
+
+</script>
+</html>

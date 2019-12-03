@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DocumentType类型的自身属性</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    var doctype=document.childNodes[0]||document.doctype;
+    console.log(doctype.__proto__===DocumentType.prototype);
+    console.log(doctype.nodeValue===null);
+    console.log(doctype.nodeName==="html");
+    console.log(doctype.nodeType===10);
+
+    //DocumentType类型的name属性和nodeName属性相同。 都代表 <!DOCTYPE 后的内容
+    console.log(doctype.name==="html")
+</script>
+</html>

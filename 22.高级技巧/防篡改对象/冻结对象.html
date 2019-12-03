@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>冻结对象</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 冻结对象的访问器属性和数据属性有些许不同
+     */
+    var obj={
+        a:"原有属性"
+    };
+    Object.defineProperty(obj,"b",{
+        set:function (v) {
+            console.log(v)
+        }
+    });
+
+    /**
+     * 默认的所有的对象都不是 冻结对象
+     */
+    console.log(Object.isFrozen(obj)===false);
+    /**
+     * 利用 Object.freeze(obj)可以使obj对象变成冻结对象
+     */
+    Object.freeze(obj);
+    /**
+     * 一个冻结的对象必定是不可扩展不可配置的对象。
+     */
+    console.log(Object.isFrozen(obj)===true);
+    console.log(Object.isSealed(obj)===true);
+    console.log(Object.isExtensible(obj)===false);
+
+    /**
+     * 在不可扩展和不可配置对象的基础上，冻结对象的属性和方法是无法更改的。
+     * 不管是使用赋值语句还是重定义属性。
+     */
+    obj.a="无法修改";
+    console.log(obj.a);
+    try{
+        Object.defineProperty(obj,"a",{
+            value:"无法修改"
+        });
+    }catch (e) {
+        console.log("重定义任何特性均会报错")
+    }
+    /**
+     * 但是对访问器属性赋值，访问器set方法是会生效执行的。
+     */
+    obj.b="访问器set依旧是可以生效的";
+</script>
+</html>

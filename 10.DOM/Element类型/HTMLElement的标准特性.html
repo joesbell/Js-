@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML中的Element类型一一HTMLElement元素的5大标准特性</title>
+</head>
+<body>
+
+    <element-area >
+        <div id="myid" class="myclass" dir="ltr" title="mytitle" lang="en">内容在这里</div>
+    </element-area>
+
+    <hr>
+
+    <input type="button" id="button1">改变id
+    <input type="button" id="button2">改变class
+    <input type="button" id="button3">改变dir
+    <input type="button" id="button4">改变title
+    <input type="button" id="button5">改变lang
+    <hr>
+    <show-area>
+
+    </show-area>
+</body>
+
+
+<script>
+    /**
+     *  id class title dir lang 是 HTMLElement元素的5大基础标准特性
+     *  这些标准特性也是这些元素的 属性。
+     *  这些属性是在HTMLElement和Element原型上规定的。
+     */
+    console.log(Element.prototype.hasOwnProperty("id"));
+    console.log(Element.prototype.hasOwnProperty("className"));
+    console.log(HTMLElement.prototype.hasOwnProperty("title"));
+    console.log(HTMLElement.prototype.hasOwnProperty("dir"));
+    console.log(HTMLElement.prototype.hasOwnProperty("lang"));
+
+
+    var mydiv=document.getElementById("myid");
+    var elementArea=document.getElementsByTagName("element-area")[0];
+    var showArea=document.getElementsByTagName("show-area")[0];
+
+    /**
+     * 改变这些标准特性的对应属性时，改变会反馈到DOM元素的特性上。
+     */
+    document.getElementById("button1").addEventListener("click",function () {
+        mydiv.id="newid";
+        refreshShowArea();
+    });
+    document.getElementById("button2").addEventListener("click",function () {
+        mydiv.className="newclass";
+        refreshShowArea();
+    });
+    document.getElementById("button3").addEventListener("click",function () {
+        mydiv.dir="rtl";
+        refreshShowArea();
+    });
+    document.getElementById("button4").addEventListener("click",function () {
+        mydiv.title="newtitle";
+        refreshShowArea();
+    });
+    document.getElementById("button5").addEventListener("click",function () {
+        mydiv.lang="zh";
+        refreshShowArea();
+    });
+
+    function refreshShowArea() {
+        showArea.innerText=elementArea.innerHTML.trim();
+    }
+
+    refreshShowArea();
+
+    /**
+     * 需要注意的是， 除这5大基础标准特性外，还有一些标准特性。比如style ，比如onclick等。
+     * 但是这些标准特性，并不一定遵循   改变这些标准特性的对应属性时，改变会反馈到DOM元素的特性上 的 规则。
+     * 比如style标准特性的 属性改变会影响到特性值。
+     * 但是onclick标准特性的 属性改变并不会影响到特性值，只会影响到具体的事件处理。
+     */
+
+</script>
+
+</html>

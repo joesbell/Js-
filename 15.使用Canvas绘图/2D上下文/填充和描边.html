@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>填充和描边</title>
+</head>
+<body>
+<canvas id="canvas1"></canvas>
+</body>
+<script>
+    var canvas1=document.getElementById("canvas1");
+    /**
+     * 设置canvas的宽度和高度时 不要使用px单位。 canvas的height和width就是单纯的数字。
+     */
+    canvas1.height="200";
+    canvas1.width="200";
+
+    var context=canvas1.getContext("2d");
+
+    //使用 颜色字符串来 描述描边样式
+    context.strokeStyle="black";
+    context.strokeRect(0,0,200,200);
+
+    //使用16进制颜色值 来描述填充样式
+    context.fillStyle="#dd0d0d";
+    context.fillRect(0,0,200,50);
+
+    //使用rgba颜色值来描述填充样式
+    context.fillStyle="rgba(100,100,100,0.5)";
+    context.fillRect(0,50,200,50);
+
+    //使用rgb颜色值来描述填充样式
+    context.fillStyle="rgba(100,100,100)";
+    context.fillRect(0,100,200,50);
+
+    /**
+     * 当然还可以使用 渐变对象和模式对象来设置样式。后续会说明。
+     */
+
+
+</script>
+</html>

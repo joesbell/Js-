@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSONP序列化问题</title>
+</head>
+<body>
+
+</body>
+
+<script>
+
+    /**
+     * 在与后台传送信息时，特别是使用JSONP的技术传输信息时，可能会出现解析或者序列化的信息不对的情况。
+     * 这是因为在javascript中 某些特殊控制符 比如 行分割符 段落分割符 在javascript中编码是 \u2028 \u2029
+     * JS可以直接打印出这些符号。但是，在JSON序列化后，这些数据(\u2028 \u2029)就会变成行分割符 段落分割符的字符串。
+     * 这样服务器端就收不到具体的控制编码信息一一也就是说，JavaScript的JSON.stringify方法并没有对这些字符进行转义。
+     * 因此我们需要手动地替换字符串，使其在服务器端能正确识别。
+     * 原理就是在这些编码之前多加一个反斜杠转义。
+     */
+
+
+    function JSONPStringify(obj) {
+        return JSON.stringify(obj)
+            .replace(/\u2028/g,"\\u2028")
+            .replace(/\u2029/g,"\\u2029");
+    }
+
+    var message={
+        a: String.fromCharCode(0x2028),
+        b: String.fromCharCode(0x2029)
+    };
+    console.log("原始信息",message);
+    console.log("普通方式序列化后:",JSON.stringify(message));
+    console.log("添加反斜杠的序列化",JSONPStringify(message));
+
+    /**
+     * 还有一些特殊字符需要进行处理，我们可以引用一些外部的 JSON 解析 序列化库对 JSON数据进行处理，而不是只依赖于 原生JSON对象提供的stringify和parse。
+     * 当然，原生JSON提供的功能在绝大多数情况下都是够用的。 具体的外部JSON库 可以参看 json2.js json3.js等开源库
+     */
+
+</script>
+
+</html>

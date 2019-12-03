@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>动态载入脚本</title>
+</head>
+<body>
+
+<div>
+    <input type="button" id="button1" value="显示js1声明的a的值">
+    <input type="button" id="button2" value="显示js2声明的b的值">
+    <input type="button" id="button3" value="动态载入js1">
+    <input type="button" id="button4" value="动态载入js2">
+    <input type="button" id="button5" value="动态载入code">
+</div>
+
+
+<!--用于展示动态脚在的脚本-->
+<show-area></show-area>
+
+</body>
+
+
+<script>
+
+    /**
+     * 动态加载脚本文件的方法。
+     * 通过创建script元素并设置其src属性，最后将其添加到文档树中 达到动态加载的目的。
+     * @param path
+     */
+    function loadJavascriptFile(path) {
+        var node=document.createElement("script");
+        node.type="text/javascript";
+        node.src=path;
+
+        node.setAttribute("name","jsfile");//这里只是为了标记动态加载文件的script元素
+
+        document.body.appendChild(node);
+    }
+
+    /**
+     * 动态加载脚本代码的方法。
+     * 通过创建script元素并设置script元素内部文本，最后将其添加到文档树中 达到动态加载的目的。
+     * 需要注意的就是得处理好IE的兼容问题:IE不允许直接访问控制script元素的子节点，只能通过script属性的text属性控制。
+     * @param code
+     */
+    function loadJavascriptCode(code) {
+        var node=document.createElement("script");
+        node.type="text/javascript";
+        try{
+            //对于非IE浏览器 直接在script元素下添加文本节点即可
+            node.appendChild(document.createTextNode(code));
+        }catch (e){
+            //对于IE浏览器 通过script元素的text属性设置内部代码内容
+            node.text=code;
+        }
+
+        node.setAttribute("name","jscode");//这里只是为了标记动态加载代码的script元素
+        document.body.appendChild(node);
+    }
+
+    /**
+     * 在页面展示被动态加载的内容
+     */
+    function updateShowArea() {
+        var node=document.getElementsByTagName("show-area")[0];
+        var jsfiles=Array.prototype.slice.call(document.getElementsByName("jsfile"),0);
+        var jscodes=Array.prototype.slice.call(document.getElementsByName("jscode"),0);
+
+        var fileresult="动态载入的js文件:\n";
+        var coderesult="动态载入的code:\n";
+        jsfiles.forEach(function (value) {
+            fileresult+=value.getAttribute("src")+"\n";
+        });
+
+        jscodes.forEach(function (value) {
+            coderesult+=value.innerHTML+"\n"
+        });
+        node.innerText=fileresult+coderesult;
+    }
+
+    updateShowArea();
+
+    document.getElementById("button1").addEventListener("click",function () {
+        try{
+            alert(a);
+        }catch (e){
+            alert("a还没有声明")
+        }
+    });
+
+    document.getElementById("button2").addEventListener("click",function () {
+        try{
+            alert(b);
+        }catch (e){
+            alert("b还没有声明")
+        }
+    });
+
+    document.getElementById("button3").addEventListener("click",function () {
+        loadJavascriptFile("js1.js");
+        updateShowArea()
+    });
+
+    document.getElementById("button4").addEventListener("click",function () {
+        loadJavascriptFile("js2.js");
+        updateShowArea()
+    });
+
+    document.getElementById("button5").addEventListener("click",function () {
+        var code;
+        code=prompt("请输入想要动态执行的代码","b=300");
+        if(code){
+            loadJavascriptCode(code);
+            updateShowArea()
+        }
+
+    });
+
+</script>
+</html>

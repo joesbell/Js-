@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>客户区大小相关的属性</title>
+</head>
+
+<body>
+
+<div style="height: 100px;width: 100px;">
+    <p id="p1" style="border-top: 12px solid black;">div中具有上边框的p1元素</p>
+</div>
+
+<div style="height: 100px;width: 100px;">
+    <p id="p2" style="border-left: 12px solid black;">div中具有左边框的p2元素</p>
+</div>
+
+<span id="span1" style="border: 10px solid black;">具有边框的span元素</span>
+
+</body>
+
+<script>
+    /**
+     * 在Element类型上定义了客户区大小相关的属性
+     */
+    console.log(Element.prototype.hasOwnProperty("clientHeight"));
+    console.log(Element.prototype.hasOwnProperty("clientWidth"));
+    console.log(Element.prototype.hasOwnProperty("clientTop"));
+    console.log(Element.prototype.hasOwnProperty("clientLeft"));
+
+    var p1=document.getElementById("p1");
+    console.log("水平方向元素及其内边距占据大小:",p1.clientWidth,"垂直方向元素及其内边距占据大小:",p1.clientHeight);
+    /**
+     * clientTop属性表示的是元素的上边距大小.
+     */
+    console.log(p1.clientTop===12);
+    console.log(p1.clientTop+"px"===getComputedStyle(p1).borderTopWidth);
+    console.log(p1.clientLeft===0);
+
+    var p2=document.getElementById("p2");
+    console.log("水平方向元素及其内边距占据大小:",p2.clientWidth,"垂直方向元素及其内边距占据大小:",p2.clientHeight);
+    /**
+     * clientLeft属性表示的是元素的左边距大小.
+     */
+    console.log(p2.clientLeft===12);
+    console.log(p2.clientLeft+"px"===getComputedStyle(p2).borderLeftWidth);
+    console.log(p2.clientTop===0);
+
+
+    /**
+     * 对于一些特殊元素 比如 span。 客户区属性永远返回0，尽管这些特殊元素的确实在的占据着空间
+     */
+    var span1=document.getElementById("span1");
+    console.log(
+        span1.clientWidth===0,
+        span1.clientHeight===0,
+        span1.clientTop===0,
+        span1.clientLeft===0
+    );
+    /**
+     * 当然，这种情况下 offset偏移量相关的属性和实际样式信息对象依旧是有效的。
+     */
+    console.log(span1.offsetWidth,
+        span1.offsetHeight,
+        getComputedStyle(span1).borderTopWidth,
+        getComputedStyle(span1).borderLeftWidth,)
+</script>
+
+</html>

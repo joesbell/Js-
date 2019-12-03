@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML内嵌代码中的严格模式</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 这里首先对HTML内联JS代码的解释顺序进行说明。
+     */
+    try{
+        console.log(foo);
+    }catch (e){
+        console.log("在前面script标签中的代码是不能提前解析后面script标签中的代码的，因此，我们这里可以这样认为:" +
+            "浏览器的JS引擎会沿着标签顺序分别解释执行各个标签中的代码，后面的代码执行声明式初始化时，使用的初始词法环境和变量环境是前面代码执行后的词法环境和变量环境。" +
+            "而这个顺序是无法更改的。因此前面标签中的代码是无法获取到后面标签中的代码中声明的变量和函数的。")
+    }
+
+    //因此，这段标签内的代码为非严格模式代码，同时也无法访问后面标签代码段中的变量以及函数声明
+
+    //函数fnn是在非严格模式下声明的，因此fnn函数为 非严格模式函数代码。
+    function fnn(){
+        //我们采用这种方式来判断是否为严格模式
+        try{
+            arguments.callee;
+            console.log("非严格模式",this==window ===true);
+        }catch (e){
+            console.log("严格模式",this==undefined ===true)
+        }
+    }
+
+    fnn(); //非严格模式
+
+</script>
+
+
+
+
+<script>
+
+    /**
+     * 本标签下的代码为 严格模式。
+     */
+    "use strict";
+
+    /**
+     * 函数调用时，本质上是跳转到该函数体执行代码，由此可能引起严格模式的切换。
+     * 在这里，虽然 fnn是在严格模式下调用的，但是在调用后，跳转到非严格模式下执行了。
+     * 由此我们得出结论，函数调用是否为严格模式完全取决于声明时，函数代码本身是否是严格模式函数代码。
+     */
+    fnn(); //非严格模式
+
+
+    //foo为 严格模式函数代码，所以在任何地方执行都是严格模式下的。
+    function foo(){
+        try {
+            arguments.callee;
+            console.log("非严格模式", this == window === true);
+        } catch (e) {
+            console.log("严格模式", this == undefined === true)
+        }
+    }
+
+    foo();//这里证明了，当前代码段的确为严格模式
+
+</script>
+
+<script>
+    //foo是在严格模式下声明的，因此就算在非严格模式的代码段中调用也依旧是严格模式。
+    foo(); //严格模式
+
+    /**
+     * 这里的立即执行函数调用可以看出， 本标签内的代码是非严格模式下的。
+     * 这也说明了一个道理，HTML中script标签下的代码段是分标签进行解释执行的，各个标签中的代码的解释执行虽然共享同一个全局环境，但是严格模式互不影响。
+     */
+    (function(){
+        try{
+            arguments.callee;
+            console.log("非严格模式",this==window ===true);
+        }catch (e){
+            console.log("严格模式",this==undefined ===true)
+        }
+    }()); //非严格模式
+</script>
+
+
+
+
+</html>

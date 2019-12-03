@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>合成</title>
+</head>
+
+<body>
+
+</body>
+
+    <script>
+
+        /**
+         * 所谓合成，指的是 新绘制的图形与已有的图形如何生成新的图形。
+         */
+        var compositions=[
+            'source-over',  //这是默认值。 后绘制的图形遮盖先绘制的图形
+            'source-in',    //后绘制的图形与先绘制的图形的重叠部分可见。  可见的是后绘制的图形。 先绘制的图形完全不可见
+            'source-out',   //后绘制的图形与先绘制的图形的不重叠部分可见。可见的是后绘制的图形。 先绘制的图形完全不可见
+            'source-atop',  //后绘制的图形与先绘制的图形的重叠部分可见。  后绘制的图形遮盖先绘制的图形。 先绘制的图形的其他部分(不重叠)不受影响。
+            'destination-over', //后绘制的图形位于先绘制的图形的下方。  先绘制的图形遮盖了后绘制的图形。 与source-over相反
+            'destination-in',   //后绘制的图形与先绘制的图形的重叠部分可见。 可见的是先绘制的图形。  后绘制的图形完全不可见
+            'destination-out',  //后绘制的图形与先绘制的图形的不重叠部分可见。可见的是先绘制的图形。 后绘制的图形完全不可见
+            'destination-atop', //后绘制的图形与先绘制的图形的重叠部分可见。  先绘制的图形遮盖后绘制的图形。 后绘制的图形的其他部分(不重叠)不受影响。
+            'lighter',         //后绘制的图形与先绘制的图形的重叠部分的值相加，使其变亮。同时其余不重叠部分互不干扰
+            'copy',            //后绘制的图像完全替代先绘制的图形。
+            'xor',            //后绘制的图形与先绘制的图形的重叠部分的值执行 异或操作。同时其余不重叠部分互不干扰
+
+            //其余这些不常用就不介绍了。
+            'multiply', 'screen', 'overlay', 'darken',
+            'lighten', 'color-dodge', 'color-burn', 'hard-light', 'soft-light',
+            'difference', 'exclusion', 'hue', 'saturation', 'color', 'luminosity'];
+
+        compositions.forEach((composite)=>{
+            var canvas=createCanvas();
+            testComposite(canvas.getContext("2d"),composite);
+        });
+
+        /**
+         * 测试合成。
+         */
+        function testComposite(ctx,composite) {
+            drawCircle(ctx,50,50,49,"red");
+            drawRect(ctx,110,10,80,80,"blue");
+            drawCircle(ctx,250,50,49,"red");
+            ctx.globalCompositeOperation=composite;
+            drawRect(ctx,210,10,80,80,"blue");
+
+            ctx.globalCompositeOperation="source-over";
+            ctx.font="20px serial";
+            ctx.textBaseline="middle";
+            ctx.fillText(composite,320,50)
+
+        }
+
+        /**
+         * 绘制填充圆
+         */
+        function drawCircle(ctx,x,y,r,color) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle=color;
+            ctx.arc(x,y,r,Math.PI*2,0,false);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        /**
+         * 绘制填充矩形
+         */
+        function drawRect(ctx,x,y,width,height,color) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle=color;
+            ctx.fillRect(x,y,width,height);
+            ctx.restore();
+        }
+
+        /**
+         * 创建一个新的画布并返回
+         */
+        function  createCanvas() {
+            var canvas=document.createElement("canvas");
+            canvas.height=100;
+            canvas.width=500;
+            canvas.style.border=" 1px solid black";
+            document.body.appendChild(canvas);
+            document.body.appendChild(document.createElement("br"));
+            return canvas;
+        }
+
+    </script>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UI事件</title>
+</head>
+<body>
+    <p id="p1">p元素</p>
+    <img id="img1"/>
+    <img id="img2"/>
+    <br>
+    <input id="input1" type="text" value="文本框中的字符被选中后触发select事件">
+</body>
+
+<script>
+    var p1=document.getElementById("p1");
+    /**
+     * DOMActivate事件已经被废弃了，基本可以使用click事件来替代。
+     */
+    p1.addEventListener("DOMActivate",function(event){
+        console.log("DOMActivate事件被激发",event instanceof UIEvent);
+    });
+    p1.click();
+
+    /**
+     * 当使用DOM0级事件处理程序在 document.body上定义load事件处理程序时，实际等价于在window上定义。
+     */
+    document.body.onload=function(event){
+        //虽然是在body上定义的，但是实际是在window上定义的。 内部的this指向window
+        console.log("window上的load事件被触发",event instanceof Event,this===window);
+    };
+    /**
+     * 而利用DOM2级事件处理程序在document.body上定义load事件处理程序，是永远不会触发的，因为body元素没有load事件！
+     */
+    document.body.addEventListener("load",function(){
+        console.log("body上的DOM2级load事件永远不会被触发");
+    });
+
+    /**
+     * 不仅window对象有load事件， 资源文件也有load事件，表示资源已经被加载完毕。
+     */
+    var img1=document.getElementById("img1");
+    img1.addEventListener("load",function(event){
+        console.log("img1上的load事件被触发",event instanceof Event);
+    });
+    img1.src="1.png";
+
+    var img2=document.getElementById("img2");
+    /**
+     * error事件表明的是资源或者页面加载失败。 利用error事件我们可以及时纠正。
+     */
+    img2.addEventListener("error",function(event){
+        console.log("img2上的error事件被触发",event instanceof Event);
+        console.log("更改图片src");
+        event.target.src="1.png"; //及时纠正错误
+    });
+    img2.src="2.png"; //2.png是不存在的资源，因此肯定会触发 img元素上的error事件
+    img2.addEventListener("load",function(event){
+        console.log("img2上的load事件被触发",event instanceof Event);
+    });
+
+    /**
+     * 通过load事件，我们可以感知到动态加载的脚本或者样式文件是否已经被加载完毕。
+     */
+    var script1=document.createElement("script");
+    script1.addEventListener("load",function(){
+        console.log("script上的load事件被触发",event instanceof Event);
+        console.log("外部脚本加载完毕后，可以正常访问",a===10); //只要外部资源的load事件触发了，那就表示加载完毕了
+    });
+    script1.src="script1.js";
+    document.body.appendChild(script1);
+
+    console.log("外部脚本中定义的变量在未加载完毕之前，在当前文档中是不存在的",typeof a==="undefined"); //这里虽然开始加载资源，但是没有加载完毕。
+
+
+    /**
+     * select事件表示文本框或者输入框的字符被选中。
+     */
+    document.getElementById("input1").addEventListener("select",function(event){
+        console.log("input上的select事件被触发",event instanceof Event);
+    });
+    window.addEventListener("select",function(event){
+        console.log("window上的select事件被触发",event instanceof Event);
+    });
+
+    /**
+     * 当使用DOM0级事件处理程序在 document.body上定义resize事件处理程序时，实际等价于在window上定义。
+     */
+    document.body.onresize=function(event){
+        //虽然是在body上定义的，但是实际是在window上定义的。 内部的this指向window
+        console.log("window上的resize事件被触发",event instanceof Event);
+        console.log(event.currentTarget===window,this===window);
+    };
+
+    document.body.style.height="2000px";
+    /**
+     * 当使用DOM0级事件处理程序在 document.body上定义scroll事件处理程序时，实际等价于在window上定义。
+     */
+    document.body.onscroll=function(event){
+        //虽然是在body上定义的，但是实际是在window上定义的。 内部的this指向window
+        console.log("window上的scroll事件被触发",event instanceof Event);
+        console.log(event.currentTarget===window,this===window);
+    };
+
+
+
+
+</script>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>内联事件处理函数的this取值</title>
+
+    <script>
+
+    </script>
+
+</head>
+<body>
+
+<!--这种就叫内联事件处理函数 on-event类型的, 在这种事件处理函数中,html中的this永远指向的是当前事件监听器所在的DOM元素-->
+<input type="button" onclick="show(this.type)">
+<input type="checkbox" onclick="console.log(this.type);">
+
+</body>
+
+<script>
+    /**
+     * 这里非常容易混淆！
+     * 内联事件处理函数的this取值主要分为两种： html传参中的this 和 函数体中的this.
+     * 其中html传参中的this是指向事件监听器所在的DOM元素，
+     * 而函数体中的this取值，在非严格模式下依旧指向的是全局对象window，在严格模式下为undefined。
+     */
+    function show(e) {
+        console.log(e);
+
+        console.log(this==window ===true)
+    }
+</script>
+</html>

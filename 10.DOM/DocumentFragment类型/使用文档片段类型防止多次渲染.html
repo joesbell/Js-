@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用文档片段类型防止多次渲染</title>
+</head>
+<body>
+
+<ul>
+
+</ul>
+
+</body>
+<script>
+    var df=document.createDocumentFragment();
+    var node;
+    /**
+     * 先将要添加的节点全部放在文档片段中。
+     */
+    for(var i=0;i<10;i++){
+        node=document.createElement("li");
+        node.innerText=i;
+        df.appendChild(node);
+    }
+
+    console.log(node.ownerDocument===document);
+    console.log(node.parentNode===df);
+    console.log(df.childNodes.length===100);
+
+    //再讲文档片段中的内容一次性添加到文档树中。 防止了多次渲染
+    document.getElementsByTagName("ul")[0].appendChild(df);
+    console.log(df.childNodes.length===0);
+</script>
+</html>

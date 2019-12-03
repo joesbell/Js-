@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>变动事件一一移除节点</title>
+</head>
+<body>
+
+<div id="div1">
+    <p id="p1">p元素</p>
+</div>
+
+</body>
+<script>
+    /**
+     * 删除或者替换节点会触发的变动事件有：
+     * 1.DOMNodeRemoved  这个是冒泡的，可以在顶层元素上声明后进行捕获。
+     * 2.DOMNodeRemovedFromDocument 这个不冒泡，必须提前在被移除的元素上声明。
+     */
+
+    /**
+     * DOMSubtreeModified 监听子树上DOM结构的变化。在其他变动事件后触发。
+     */
+    document.body.addEventListener("DOMSubtreeModified",function(event){
+        console.log("DOMSubtreeModified事件允许冒泡,并且不允许取消冒泡",event.bubbles===true,event.cancelBubble===false,event.eventPhase===3);
+        console.log("变更的子树是:",event.target);
+        console.log("此时div的子元素个数",div1.children.length);
+    });
+
+    /**
+     * DOMNodeRemoved 节点被 移除之前 触发。由于冒泡，因此可以在顶层捕获。
+     * 其 relatedTarget指向被移除的节点的父节点。
+     */
+    document.body.addEventListener("DOMNodeRemoved",function(event){
+        console.log("DOMNodeRemoved事件允许冒泡,并且不允许取消冒泡",event.bubbles===true,event.cancelBubble===false,event.eventPhase===3);
+        console.log("移除的节点是:",event.target);
+        console.log("其父节点和relatedNode相等并且不为null，意味着触发时还没有正式在DOM结构上移除:",event.relatedNode!==null,event.relatedNode===event.target.parentNode)
+    });
+
+    var div1=document.getElementById("div1");
+    var p1=document.getElementById("p1");
+
+    /**
+     * DOMNodeRemovedFromDocument 节点被 移除之前 触发。但是不冒泡，因此必须在节点移除之前在节点上声明。
+     * 其 relatedTarget指向null。
+     */
+    p1.addEventListener("DOMNodeRemovedFromDocument",function(event){
+        console.log("DOMNodeRemovedFromDocument事件不允许冒泡",event.bubbles===false);
+        console.log("移除的节点是:",event.target);
+        console.log("relatedNode为null，但是节点父节点不为null说明还没有在DOM上移除",event.relatedNode===null,event.target.parentNode!==null);
+    });
+
+    var p2=document.createElement("p");
+    p2.appendChild(document.createTextNode("替换后的p元素"));
+    /**
+     * 替换节点操作的时候，事件触发顺序如下:
+     * p1的DOMNodeRemoved -> p1的DOMNodeRemovedFromDocument-> p1删除后的DOMSubtreeModified -> p2添加后的DOMSubtreeModified
+     * 这里要注意的是发生了2次DOMSubtreeModified！
+     * 同时也可以看出来，replaceChild操作其实是 先删除节点，再添加节点。
+     */
+    div1.replaceChild(p2,p1);
+
+    /**
+     * 删除节点操作的时候，事件触发顺序如下:
+     * p2的DOMNodeRemoved  -> p2的DOMNodeRemovedFromDocument -> p2删除后的DOMSubtreeModified
+     */
+    div1.removeChild(p2);
+
+</script>
+</html>

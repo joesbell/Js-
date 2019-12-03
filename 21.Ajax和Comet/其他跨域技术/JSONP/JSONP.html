@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JSONP</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="发起JSONP请求">
+<input type="button" id="button2" value="发起JSONP请求">
+</body>
+
+<script>
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    button1.addEventListener("click",function(){
+        sendJSONPRequest("http://localhost:8081/jsonp/user",{id:1},"myCallbackHandler")
+    });
+    button2.addEventListener("click",function(){
+        sendJSONPRequest("http://localhost:8081/jsonp/user",{id:2},"myCallbackHandler")
+    });
+
+    /**
+     * 这里是JSONP跨域请求的核心。
+     * @param url 请求的地址
+     * @param params 请求的参数
+     * @param callback 本地处理请求数据的回调函数名
+     */
+    function sendJSONPRequest(url,params,callback) {
+        /**
+         * 核心是通过引入服务器封装好数据的JS脚本，来达到跨域请求数据的目的。
+         * @type {HTMLElement}
+         */
+        var ele=document.createElement("script");
+        //这里添加一些请求参数
+        for(var prop in params){
+            url=addParam(url,prop,params[prop]);
+        }
+        url=addParam(url,"callback",callback);
+
+        ele.onload=function(){
+            console.log("请求成功");
+        };
+        ele.onerror=function(){
+            console.log("请求失败");
+        };
+        ele.src=url;
+        //将脚本元素插入文档，此时脚本在请求完毕后就会自动执行。
+        document.body.insertBefore(ele,document.body.firstChild);
+    }
+
+    /**
+     * 本地用于处理请求的数据的回调函数
+     * @param data JSONP跨域请求得到的数据。
+     */
+    function myCallbackHandler(data) {
+        console.log("通过JSONP获取到的数据是:",data);
+    }
+
+    //用于拼接字符串
+    function addParam(url,key,value){
+        if(url.indexOf("?")!==-1){
+            url+="&";
+        }else{
+            url+="?";
+        }
+        url+= encodeURIComponent(key)+"="+encodeURIComponent(value);
+        return url;
+    }
+
+</script>
+
+</html>

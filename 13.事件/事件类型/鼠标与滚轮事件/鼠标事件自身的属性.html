@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>鼠标事件自身的属性</title>
+
+    <style>
+        .div1{
+            height: 200px;
+            background: black;
+        }
+
+        .div2{
+            height: 100px;
+            background:blue;
+        }
+        .in{
+            background: red;
+        }
+    </style>
+</head>
+<body style="height: 2000px;width: 2000px;">
+
+<p id="p1">测试修改鼠标行为的键位(ctrl,alt,shift,Meta)</p>
+
+<p id="p2">测试鼠标事件的button属性一一事件触发时鼠标单个按键的映射值</p>
+
+<p id="p3">测试鼠标事件的buttons属性一一事件触发时鼠标多个按键的映射值的组合值</p>
+
+<p id="p4">测试鼠标事件的detail属性一一连续click点击次数</p>
+
+<p id="p5">测试鼠标事件的detail属性一一dblclick会中断计数</p>
+
+<p id="p6">测试滚轮事件mousewheel</p>
+
+<p id="p7">测试现在的DOM3级标准滚轮事件wheel</p>
+<h3>relatedTarget在mouseout mouseover mouseenter mouseleave事件类型中表示 <span style="color: red;">离开时进入的元素 或者是 进入时离开的元素</span></h3>
+<div id="div1" class="div1">
+    <div id="div2" class="div2">
+    </div>
+</div>
+<hr>
+<input type="button" id="button1" value="相对客户区的鼠标位置">
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<input type="button" id="button2" value="相对页面文档的的鼠标位置">
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<input type="button" id="button3" value="相对屏幕的的鼠标位置">
+</body>
+
+<script>
+
+    /**
+     * 鼠标事件继承自 UI事件！
+     * 而滚轮事件继承自鼠标事件!
+     */
+    console.log(MouseEvent.prototype.__proto__===UIEvent.prototype);
+    console.log(WheelEvent.prototype.__proto__===MouseEvent.prototype);
+
+    /**
+     * MouseEvent类型上鼠标坐标相关的属性
+     */
+    console.log(MouseEvent.prototype.hasOwnProperty("clientX"));
+    console.log(MouseEvent.prototype.hasOwnProperty("clientY"));
+    console.log(MouseEvent.prototype.hasOwnProperty("pageX"));
+    console.log(MouseEvent.prototype.hasOwnProperty("pageY"));
+    console.log(MouseEvent.prototype.hasOwnProperty("screenX"));
+    console.log(MouseEvent.prototype.hasOwnProperty("screenY"));
+
+    /**
+     * MouseEvent类型上额外按键相关的属性
+     */
+    console.log(MouseEvent.prototype.hasOwnProperty("shiftKey"));
+    console.log(MouseEvent.prototype.hasOwnProperty("ctrlKey"));
+    console.log(MouseEvent.prototype.hasOwnProperty("metaKey"));
+    console.log(MouseEvent.prototype.hasOwnProperty("altKey"));
+
+    //和 mouseout mouseenter mouseleave mouseover 有关的属性
+    console.log(MouseEvent.prototype.hasOwnProperty("relatedTarget"));
+
+    /**
+     * detail属性属于UIEvent。但是在鼠标事件中具有意义。
+     */
+    console.log(UIEvent.prototype.hasOwnProperty("detail"));
+
+    /**
+     * 和鼠标按键有关的属性
+     */
+    console.log(MouseEvent.prototype.hasOwnProperty("button"));
+    console.log(MouseEvent.prototype.hasOwnProperty("buttons"));
+
+
+    /**
+     * 滚轮事件的相关属性
+     */
+    console.log(WheelEvent.prototype.hasOwnProperty("wheelDelta"));
+    console.log(WheelEvent.prototype.hasOwnProperty("deltaX"));
+
+
+
+    /**
+     * 鼠标事件的clientX和clientY是鼠标事件触发时鼠标相对于浏览器文档视口的坐标。
+     */
+    var button1=document.getElementById("button1");
+    button1.addEventListener("click",function (event) {
+       console.log("按钮1相对于客户区坐标",event.clientX,event.clientY);
+       console.log("由于没有滚动滚动条，因此和相对页面的坐标是相等的,",event.clientX===event.pageX,event.clientY===event.pageY)
+    });
+
+    /**
+     * 鼠标事件的pageX和pageY是鼠标事件触发时鼠标相对于浏览器页面文档的坐标。和视口坐标一般不相等。
+     */
+    var button2=document.getElementById("button2");
+    button2.addEventListener("click",function (event) {
+        console.log("按钮2相对于页面文档的坐标",event.pageX,event.pageY);
+        console.log("由于已经滚动了滚动条，因此和相对页面的坐标是不相等的,必须要经过变换才能相等",conversionToEqual(event))
+    });
+
+    /**
+     * page坐标=client坐标+scroll距离
+     */
+    function conversionToEqual (event) {
+        var scrollTop=document.body.scrollTop||document.documentElement.scrollTop;
+        var scrollLeft=document.body.scrollLeft||document.documentElement.scrollLeft;
+        if(event.clientX===event.pageX-scrollLeft && event.clientY===event.pageY-scrollTop){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 鼠标事件的screenX和screenY坐标是相对于屏幕的坐标。和另外两个坐标没有关系。和浏览器自身有关。
+     * 在浏览器不动的情况下。 screen坐标和client坐标的差值是一定的。
+     * 据此可以算出浏览器工具栏，边框的大小。
+     */
+    var button3=document.getElementById("button3");
+    button3.addEventListener("click",function (event) {
+        console.log("按钮3相对于屏幕坐标",event.screenX,event.screenY);
+        console.log("这个坐标和相对视口的client坐标差值为定值(在窗口不变的情况下)",event.screenX-event.clientX,event.screenY-event.clientY);
+        console.log("而这个距离差值，正是文档页面视口距离屏幕左上角的像素距离")
+    });
+
+
+    /**
+     * shiftKey , ctrlKey , altKey, metaKey属性是鼠标属性触发时是否在键盘上按下了这些键位。
+     * 如果按下了返回true。否则返回false。
+     */
+    var p1=document.getElementById("p1");
+    p1.addEventListener("click",function (event) {
+        var extraKey=[];
+        if(event.shiftKey){
+            extraKey.push("shift");
+        }
+        if(event.ctrlKey){
+            extraKey.push("ctrl");
+        }
+        if(event.metaKey){
+            extraKey.push("meta");
+        }
+        if(event.altKey){
+            extraKey.push("alt");
+        }
+        console.log("点击时额外按了键盘上的:",extraKey)
+    });
+
+    /**
+     *  button是鼠标事件触发时， 鼠标上按键的单个按键的映射值。
+     *  0 是左键
+     *  1 是中键
+     *  2 是右键
+     */
+    var p2=document.getElementById("p2");
+    p2.addEventListener("mousedown",function (event) {
+        switch (event.button){
+            case 0:
+                console.log("按下了左键");
+                break;
+            case 1:
+                console.log("按下了中键");
+                break;
+            case 2:
+                console.log("按下了右键")
+        }
+    });
+
+
+    /**
+     *  buttons是鼠标事件触发时， 鼠标上按键的多个按键的映射值的组合值。
+     *  1 是左键
+     *  2 是中键
+     *  4 是右键
+     *  3 是 左键加中键
+     *  5 是 左键加右键
+     *  6 是 中键加右键
+     *  7 是 三个键全按
+     */
+    var p3=document.getElementById("p3");
+    var maxButtons=0;
+    var prevTime=0;
+    var currentTime;
+    p3.addEventListener("mousedown",function (event) {
+        currentTime=event.timeStamp;
+        maxButtons=Math.max(maxButtons,event.buttons);
+        //短间隔内的多次鼠标事件只取最大buttons
+
+        if(currentTime-prevTime >100){
+            console.log("多个按键的映射组合值为",maxButtons);
+            maxButtons=0;
+            prevTime=currentTime;
+        }else{
+            prevTime=currentTime;
+            event.preventDefault();
+        }
+    });
+
+    /**
+     * detail是UI事件的属性，但是在鼠标事件中是具有意义的。
+     * detail在鼠标事件中表示的是短时间连续click单击的次数。
+     * 同时如果鼠标移动位置会被打断计数。
+     */
+    var p4=document.getElementById("p4");
+    p4.addEventListener("click",function (event) {
+        console.log(event.detail)
+    });
+
+    /**
+     * 同时 dblclick事件的触发也会打断detail的计数
+     * 因此，dblclick事件中的detail永远等于2
+     */
+    var p5=document.getElementById("p5");
+    p5.addEventListener("dblclick",function (event) {
+        console.log("dblclick事件会打断detail计数，因此在dblclick事件触发时，detail永远等于2",event.detail===2)
+    });
+
+    /**
+     *  mousewheel事件属于 WheelEvent滚轮事件。
+     *  其属性 wheelDelta永远是120的倍数。
+     *  其值为正时，表示向上滚动，否则向下滚动。
+     *  滚轮事件是不能取消冒泡的冒泡事件。
+     */
+    var p6=document.getElementById("p6");
+    p6.addEventListener("mousewheel",function (event) {
+        console.log("mousewheel事件属于WheelEvent",event.__proto__===WheelEvent.prototype);
+        console.log("滚轮事件mousewheel本身是冒泡的",event.bubbles===true);
+        console.log("同时滚轮事件mousewheel无法取消冒泡",event.cancelBubble===false);
+        console.log("mousewheel的wheelDelta值永远是120的倍数",event.wheelDelta%120===0);
+        if(event.wheelDelta>0){
+            console.log("此时滚轮向上")
+        }else{
+            console.log("此时滚轮向下")
+        }
+    });
+
+
+    /**
+     *  wheel事件属于 WheelEvent滚轮事件。 是DOM3标准滚轮事件
+     *  其属性 deltaY表示在垂直方向的滚动，永远是100的倍数。
+     *  当其值为正时，表示向下滚动，否则向上滚动。 与 mousewheel的wheelDelta方向相反。
+     *  滚轮事件是不能取消冒泡的冒泡事件。
+     */
+
+    var p7=document.getElementById("p7");
+    p7.addEventListener("wheel",function (event) {
+        console.log("wheel事件属于WheelEvent",event.__proto__===WheelEvent.prototype);
+        console.log("标准滚轮事件wheel本身是冒泡的",event.bubbles===true);
+        console.log("标准滚轮事件wheel无法取消冒泡",event.cancelBubble===false);
+        console.log("wheel的deltaY值永远是100的倍数",event.deltaY%100===0);
+        if(event.deltaY>0){
+            console.log("此时滚轮向下")
+        }else{
+            console.log("此时滚轮向上")
+        }
+    });
+
+    /**
+     * relatedTarget属性和 mouseout mouseover mouseenter mouseleave 事件强相关。
+     * 在这些事件里， relatedTarget表示的是 离开时进入的元素 或者是 进入时离开的元素。
+     * 在其他事件里，这个属性为null。
+     */
+    var div1=document.getElementById("div1");
+    var div2=document.getElementById("div2");
+    div1.addEventListener("mouseover",function (event) {
+        console.log("mouseover事件的currentTarget永远是div1,但是target可以是div1或者div2",event.currentTarget===div1);
+        console.log("mouseover事件","从",event.relatedTarget.id,"离开并进入到",event.target.id);
+        event.target.classList.add("in");
+    });
+    div1.addEventListener("mouseout",function (event) {
+        console.log("mouseout事件的currentTarget永远是div1,但是target可以是div1或者div2",event.currentTarget===div1);
+        console.log("mouseout事件","从",event.target.id,"离开并进入到",event.relatedTarget.id);
+        event.target.classList.remove("in");
+    })
+
+
+</script>
+</html>

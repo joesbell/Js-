@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>写入数据</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="写入随机数据">
+
+</body>
+
+<script>
+
+    var IDBName="test"+Math.random(); //保证每次打开页面连接数据库都是新建操作。
+    var button1=document.getElementById("button1");
+
+    /**
+     * 新建一个数据库以及对象仓库
+     */
+    var req=indexedDB.open(IDBName);
+    var db;
+    req.onupgradeneeded=function (event) {
+        db=event.target.result;
+
+        var store=db.createObjectStore("users",{ autoIncrement:true});
+
+        store.createIndex("usersage","age",{unique:false});
+
+        var versionChangeTransaction=event.target.transaction;
+
+        versionChangeTransaction.oncomplete=function () {
+            console.log("数据库创建Schema完毕");
+        };
+        versionChangeTransaction.onerror=function () {
+            console.log("数据库创建Schema失败");
+        }
+    };
+    req.onsuccess=function () {
+        console.log("连接到新创建的数据库成功");
+
+        //关闭页面时，删除数据库
+        window.onunload=function () {
+            indexedDB.deleteDatabase(IDBName);
+        }
+    };
+
+    /**
+     * 向该表写入数据
+     */
+    button1.addEventListener("click",function () {
+        //获取到该数据库的事务对象， 写入操作时，模式必须是 readwrite
+        var transaction=db.transaction("users","readwrite");
+        console.log(transaction instanceof IDBTransaction);
+
+        //获取到该事务下的对象仓库。
+        var store=transaction.objectStore("users");
+        console.log(store instanceof IDBObjectStore);
+
+        //使用该对象仓库的方法写入数据。
+        var req=store.add({age:(Math.random()*100)>>0});
+        console.log(req instanceof IDBRequest);
+
+        //根据该写入请求的事件触发来判断写入操作是否成功
+        req.onsuccess=function () {
+            console.log("写入成功");
+        };
+        req.onerror=function () {
+            console.log("写入失败");
+        };
+
+        //但是这是远远不够的， 数据只有在事务执行成功的情况下才会真正的写入硬盘，否则是会被回滚的。
+        transaction.oncomplete=function () {
+            console.log("事务执行完毕,此时写入数据才真正的写入硬盘");
+        };
+        transaction.onerror=function () {
+            console.log("事务执行失败,此时写入操作被取消");
+        };
+    })
+
+</script>
+
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>访问元素的样式</title>
+
+    <style>
+        p{
+            height: 20px;
+            line-height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <p id="p1" style="font-size: 13px;float: right">p元素的style特性</p>
+
+</body>
+
+<script>
+
+    /**
+     * 通过元素style属性访问元素的style特性指定的CSS样式信息
+     */
+    var p1=document.getElementById("p1");
+    console.log(p1.style.__proto__===CSSStyleDeclaration.prototype);
+    console.log(p1.style.fontSize==="13px");
+    console.log(p1.style.cssFloat==="right");
+    console.log(p1.style.color===""); //只能访问元素style特性中指定的CSS样式信息。
+    console.log(p1.style.backgroundColor===""); //style特性中未指定的CSS属性访问时返回的是空字符串。
+    p1.style.backgroundColor="white"; //修改style属性会改变元素的style特性。也就是说style对象是可写可读的。
+    console.log(p1.style.backgroundColor==="white");
+
+    /**
+     * 这个style属性的 CSSStyleDeclaration对象具有以下的属性和方法。
+     */
+    console.log(CSSStyleDeclaration.prototype.hasOwnProperty("cssText"));
+    console.log(CSSStyleDeclaration.prototype.hasOwnProperty("length"));
+    console.log(CSSStyleDeclaration.prototype.hasOwnProperty("parentRule"));
+    console.log(CSSStyleDeclaration.prototype.hasOwnProperty("getPropertyPriority"));
+    console.log(CSSStyleDeclaration.prototype.hasOwnProperty("getPropertyValue"));
+    console.log(CSSStyleDeclaration.prototype.hasOwnProperty("item"));
+    console.log(CSSStyleDeclaration.prototype.hasOwnProperty("removeProperty"));
+    console.log(CSSStyleDeclaration.prototype.hasOwnProperty("setProperty"));
+
+    var styleObj=p1.style;
+    console.log(styleObj.cssText===p1.getAttribute("style")); //cssText属性可以直接获取元素的style特性字符串
+    styleObj.cssText="font-size: 16px; color: red;"; //而设置cssText等同于直接设置元素的style特性值。
+    console.log(styleObj.length===2);// length属性表示目前元素的style特性中指定了的CSS属性的个数。
+
+    showStyleDetail(styleObj);
+
+    //使用 setProperty方法 设置CSS属性值。
+    styleObj.setProperty("font-family","fantasy","important");
+    styleObj.setProperty("background-color","gray","");
+
+    //使用removeProperty方法 移除CSS属性值
+    styleObj.removeProperty("font-family");
+    showStyleDetail(styleObj);
+
+    console.log(Object.getOwnPropertyDescriptor(CSSStyleDeclaration.prototype,"cssFloat"))
+    /**
+     * 利用CSSStyleDeclaration类型的方法展示style的所有CSS属性内容。
+     */
+    function showStyleDetail(styleObj) {
+        var cssName;
+        for(var i=0,len=styleObj.length;i<len;i++){
+            //通过item方法获取CSS属性名。
+            cssName=styleObj.item(i);
+            // cssName=styleObj[i]; 数组访问法也是可行的。
+            //通过getPropertyValue方法获取CSS属性值，通过getPropertyPriority方法获取该CSS属性值的优先级
+            console.log("CSS属性:",cssName,"值为:",styleObj.getPropertyValue(cssName),"优先级:",styleObj.getPropertyPriority(cssName))
+        }
+    }
+
+
+    /**
+     * 上面的style属性 CSSStyleDeclaration 类型对象只能获取 元素style特性所指定的CSS属性，无法获取当前元素的真实的经过样式层叠后的样式信息。
+     * 因此document.defaultView 也就是 window对象提供 getComputedStyle()方法用于获取元素经过层叠后的真实样式信息的style对象。
+     */
+    console.log(window.hasOwnProperty("getComputedStyle"));
+
+    /**
+     * 获取元素经过计算(样式层叠)后的最终样式信息的 CSSStyleDeclaration对象
+     */
+    function getComputedStyleOfElement(ele) {
+        //元素的currentStyle属性是IE下的获取方式
+        return document.defaultView.getComputedStyle(ele)||ele.currentStyle;
+    }
+    var realStyle=getComputedStyleOfElement(p1);
+
+    //可以看到，连style标签下的嵌入式样式的信息也能正确读取了。
+    console.log(realStyle.height==="20px");
+    console.log(realStyle.lineHeight==="20px");
+    //并且就算是根本没有指定的CSS属性，也会按照默认值赋值,但是不同的浏览器，默认值可能是不相同的。
+    console.log(realStyle.cssFloat!==""&&realStyle.cssFloat==="none");
+
+    //但是对于计算获取的这个CSSStyleDeclaration对象来说，所有的属性都是只读属性，这跟普通的通过元素的style属性获取的可读可写的CSSStyleDeclaration是不一样的。
+    try{
+        realStyle.height="40px";
+    }catch (e){
+        console.log("对于计算获取的CSSStyleDeclaration来说，是只读的,强行写入会发生异常:"+e.toString())
+    }
+
+</script>
+
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>变动事件一一特性和文本节点变动</title>
+</head>
+<body>
+
+<p id="p1">hello</p>
+
+</body>
+<script>
+    document.body.addEventListener("DOMSubtreeModified",function(event){
+        console.log("DOMSubtreeModified事件允许冒泡,并且不允许取消冒泡",event.bubbles===true,event.cancelBubble===false,event.eventPhase===3);
+        console.log("变更的子树是:",event.target);
+    });
+
+    /**
+     * DOMCharacterDataModified是文本节点变动事件，冒泡的，因此可以在上层元素捕获。
+     * 该事件发生在文本变动之后。单纯新增文本节点不会触发这个事件。只有在修改文本是才会触发。
+     * 事件对象的prevValue表示修改前的值， 事件对象的newValue属性表示的是修改后的值.
+     */
+    document.body.addEventListener("DOMCharacterDataModified",function(event){
+        console.log("DOMCharacterDataModified事件允许冒泡,并且不允许取消冒泡",event.bubbles===true,event.cancelBubble===false,event.eventPhase===3);
+        console.log("文本节点变更的是:",event.target);
+        console.log("变更前值:",event.prevValue,"变更后的值:",event.newValue);
+    });
+
+    /**
+     * DOMCharacterDataModified是特性节点变动事件，冒泡的，因此可以在上层元素捕获。
+     * 该事件发生在特性节点变动之后。 修改 新增 删除 特性节点 均会触发该事件。
+     * 事件对象的prevValue表示变化前的值， 事件对象的newValue属性表示的是变化后的值.
+     * 事件对象的attrName表示的是变化的特性名。attrChange属性是个数字，表示的是本次变更是 新增还是修改还是删除。
+     */
+    document.body.addEventListener("DOMAttrModified",function(event){
+        console.log("DOMAttrModified事件允许冒泡,并且不允许取消冒泡",event.bubbles===true,event.cancelBubble===false,event.eventPhase===3);
+        console.log("特性节点变更的是元素:",event.target);
+        console.log("变更的特性名是:",event.attrName,"变更前的值:",event.prevValue,"变更后的值:",event.newValue);
+
+        //attrChange属性是个数字，表示的是本次变更是 新增还是修改还是删除。
+        switch (event.attrChange){
+            case MutationEvent.prototype.ADDITION:
+                console.log("变更操作是新增");
+                break;
+            case MutationEvent.prototype.REMOVAL:
+                console.log("变更操作是删除");
+                break;
+            case MutationEvent.prototype.MODIFICATION:
+                console.log("变更操作是修改");
+                break;
+        }
+    });
+
+    var p1=document.getElementById("p1");
+    var text=p1.firstChild;
+    text.nodeValue="修改后";
+    p1.appendChild(document.createTextNode(" 单纯添加文本节点不会触发文本变动事件"));
+    setTimeout(()=>{
+        console.log("------------------------");
+        console.log("但是normolize合并文本节点时会触发文本变动事件");
+        p1.normalize();
+
+        setTimeout(()=>{
+            /**
+             * 修改特性节点会触发 DOMAttrModified事件。
+             */
+            p1.setAttribute("id","newId");
+            console.log("---------------------------");
+            setTimeout(()=>{
+                /**
+                 * 新增特性节点会触发 DOMAttrModified事件。
+                 */
+                p1.setAttribute("data-mydata","myValue");
+                console.log("---------------------------");
+                /**
+                 * 删除特性节点会触发 DOMAttrModified事件。
+                 */
+                setTimeout(()=>{
+                    p1.removeAttribute("data-mydata");
+                    console.log("---------------------------");
+                },100);
+
+            },100);
+        },100);
+
+    },100)
+</script>
+</html>

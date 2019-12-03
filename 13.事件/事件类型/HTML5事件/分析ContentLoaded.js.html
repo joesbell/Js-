@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>分析ContentLoaded.js</title>
+</head>
+<body>
+
+<img src="DOMContentLoaded.png">
+
+</body>
+
+<script>
+    /**
+     * ContentLoaded.js是一个跨浏览器的 DOMContentLoaded事件判断库。
+     * 项目地址:https://github.com/dperini/ContentLoaded/blob/master/src/contentloaded.js
+     */
+
+    /**
+     * 原理分析:
+     * 核心原理就是 利用 load事件和readystatechange事件以及IE特有的html元素doScroll来进行辅助判断DOM解析是否完毕。
+     * load事件 DOMContentLoaded事件 readystatechange事件 IE的doScroll不停轮询。
+     *
+     * 就看以下哪个先满足条件:
+     * 1. load事件触发 那么肯定已经进行了DOM解析。 所以可以执行我们的fn事件处理程序
+     * 2. readystatechange事件触发 当readystate==="complete"时，肯定已经DOM解析完毕，所以可以执行fn
+     * 3. IE低版本特有的doScroll不报错了，那么DOM解析也完成了，可以执行fn。
+     * 4. 真正的DOMContentLoaded事件触发了，那么就执行fn。
+     *
+     * 谁先满足条件谁就执行，并设置标志位 done一一fn执行了 为true。
+     */
+    function contentLoaded(win, fn) {
+
+        var done = false, //处理函数是否执行过了
+            top = true,   //调用窗口是否是顶层窗口(也就是说不包含框架)
+            doc = win.document, //docment元素
+            root = doc.documentElement, //html元素
+            modern = doc.addEventListener, //判断是否支持DOM2级事件处理
+
+            add = modern ? 'addEventListener' : 'attachEvent', //添加DOM2级事件监听
+            rem = modern ? 'removeEventListener' : 'detachEvent', //移除DOM2级事件监听
+            pre = modern ? '' : 'on', //如果是不支持DOM2级标准事件处理的IE，那么时间类型的前缀是 "on"
+
+
+            init = function(event) {
+
+                /**
+                 * 拦截readystatechange事件处理程序直到readyState是"complete"。
+                 */
+                if (event.type === 'readystatechange' && doc.readyState !== 'complete'){
+                    return;
+                }
+
+                /**
+                 * 如果事件是load事件，那么就可以移除事件处理程序。
+                 * 如果事件是readystatechange事件，那么说明 readystate已经是 "complete"了，那么也可以移除了
+                 * 如果事件是DOMcontentLoaded事件，那么说明DOM解析完毕了，事件触发了，可以移除了
+                 */
+                (event.type === 'load' ? win : doc)[rem](pre + event.type, init, false);
+
+                /**
+                 * 如果处理函数没执行过，那么设置标志为true。表明只执行一次。
+                 */
+                if (!done && (done = true)) {
+                    //将事件对象传入处理函数作为第一个参数并调用处理函数。
+                    fn.call(win, event.type || event );
+                }
+            },
+
+            /**
+             * 用于IE低版本判断DOM是否加载完毕。
+             * 在IE低版本中，只有DOM解析完毕后才允许在html元素上调用 doScroll("left")。
+             * 没解析DOM完毕之前都会报错。
+             */
+            poll = function() {
+                try {
+                    root.doScroll('left');
+                } catch(e) {
+                    setTimeout(poll, 50);
+                    return;
+                }
+                init('poll'); //说明DOM解析完毕了
+            };
+
+
+        /**
+         * 此时如果readyState已经是 complete了，说明这段代码执行太慢了。DOMContentLoaded的时机已经过了。
+         */
+        if (doc.readyState === 'complete') {
+            //虽然已经过了时机，但是依旧执行处理函数。
+            fn.call(win, 'lazy'); //lazy无意义，只是单纯表示执行迟了。
+        }else {
+
+            /**
+             * 如果是低版本的IE。 那么就准备使用 滚动的方法判断是否DOM解析完毕。
+             */
+            if (!modern && root.doScroll) {
+                try {
+                    //window.frameElement表示的是页面的frame元素。
+                    //在这里如果存在frame框架元素那么就不使用 滚动的方法判断DOM是否解析完毕。
+                    top = !win.frameElement;
+                } catch(e) {
+
+                }
+                if (top) {
+                    poll();
+                }
+            }
+            /**
+             * 一律添加三个事件监听。
+             */
+            doc[add](pre + 'DOMContentLoaded', init, false);
+            doc[add](pre + 'readystatechange', init, false);
+            win[add](pre + 'load', init, false);
+        }
+    }
+
+
+    document.addEventListener("readystatechange",function(event){
+        console.log("readystatechange事件状态:",document.readyState);
+    });
+
+    window.addEventListener("load",function (event) {
+        console.log("load事件触发，整个文档的DOM都解析完毕并且资源也已经下载完毕");
+    });
+
+    contentLoaded(window,function () {
+        console.log("ContentLoaded.js的DOMContentLoaded触发,DOM树已经解析完毕");
+    })
+
+</script>
+</html>

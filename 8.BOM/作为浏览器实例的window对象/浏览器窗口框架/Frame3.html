@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>centerFrame</title>
+</head>
+<body>
+
+<h1>centerFrame</h1>
+
+</body>
+
+<script>
+    var c="c";
+    function getMessage(msg) {
+        msg.stopPropagation();
+        this.printLineInfo=top.printLineInfo;
+        this.printLineInfo("当前窗口名:"+window.name);
+        this.printLineInfo("centerFrame窗口收到信息:"+msg.data);
+        this.printLineInfo("证明我是centerFrame:"+c);
+        this.printLineInfo("window===top.frames[2]:"+(window===top.frames[2]));
+        this.printLineInfo("self===top.frames[2]:"+(self===top.frames[2]));
+        this.printLineInfo("window===top.frames['centerFrame']:"+(window===top.frames["centerFrame"]));
+        this.printLineInfo("window.parent===top:"+(window.parent===top));
+
+        setTimeout(()=>{
+            top.frames[3].postMessage("rightFrame应该收到的信息","*");
+        },1000);
+
+        window.document.body.style.background="yellow";
+    }
+
+    window.addEventListener("message",getMessage,false);
+</script>
+
+</html>

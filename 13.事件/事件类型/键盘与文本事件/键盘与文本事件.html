@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>键盘与文本事件</title>
+</head>
+<body>
+
+<h1>不同浏览器的键盘与文本事件实现有差异，这里以谷歌浏览器为准</h1>
+
+
+<p>文本框:</p>
+<input type="text" id="input1">
+
+<p>请按下字符键或非字符键,观察键盘与文本事件的触发顺序:</p>
+<input type="text" id="input2">
+
+<p>请按下 ? 键,观察键盘与文本事件的触发顺序:</p>
+<input type="text" id="input3">
+
+<p>请按下任意键,查看键码keyCode和字符码charCode:</p>
+<input type="text" id="input4">
+
+<p>请按下任意键,获取按下键的位置  location</p>
+<input type="text" id="input5">
+
+<p>请按下shift ctrl 等键，查看 getModifierState方法的效果</p>
+<input type="text" id="input6">
+
+</body>
+
+<script>
+    /**
+     * 键盘事件和文本事件都继承UI事件
+     */
+    console.log(KeyboardEvent.prototype.__proto__===UIEvent.prototype);
+    console.log(TextEvent.prototype.__proto__===UIEvent.prototype);
+
+    /**
+     * 键盘事件自身拥有和鼠标事件相似的shiftKey , ctrlKey , altKey, metaKey属性
+     */
+    console.log(KeyboardEvent.prototype.hasOwnProperty("ctrlKey"));
+    console.log(KeyboardEvent.prototype.hasOwnProperty("metaKey"));
+    console.log(KeyboardEvent.prototype.hasOwnProperty("altKey"));
+    console.log(KeyboardEvent.prototype.hasOwnProperty("shiftKey"));
+
+    /**
+     * 键盘事件中跟按键的码相关的属性
+     */
+    console.log(KeyboardEvent.prototype.hasOwnProperty("keyCode"));
+    console.log(KeyboardEvent.prototype.hasOwnProperty("charCode"));
+    console.log(KeyboardEvent.prototype.hasOwnProperty("key"));
+
+    var input1=document.getElementById("input1");
+
+    input1.addEventListener("keydown",function(event){
+        console.log("keydown事件可以在任意键被按下时触发");
+    });
+    input1.addEventListener("keyup",function(event){
+        console.log("keyup事件可以在任意键被松开时触发");
+
+    });
+    input1.addEventListener("keypress",function(event){
+        console.log("keypress事件只有在按下字符时才会触发");
+    });
+    input1.addEventListener("textInput",function(event){
+        console.log("textInput事件在文本框输入字符时，keyup触发之前触发");
+    });
+
+    /**
+     *  键盘与文本事件的触发顺序 ：
+     *  keydown -> keypress(如果按下的是字符键) -> textInput(如果按下的是字符键) -> keyup
+     */
+    var input2=document.getElementById("input2");
+    input2.addEventListener("keydown",function(event){
+        console.log("首先触发keydown事件");
+
+    });
+    input2.addEventListener("keyup",function(event){
+        console.log("最后触发keyup事件");
+    });
+    input2.addEventListener("keypress",function(event){
+        console.log("在按下非字符键时，keypress事件不会触发");
+    });
+    input2.addEventListener("textInput",function(event){
+        console.log("在按下非字符键时，textInput事件不会触发");
+    });
+
+    /**
+     * 按下 问号 键时， 键盘与文本事件的触发顺序。
+     */
+    var input3=document.getElementById("input3");
+    input3.addEventListener("keydown",function(event){
+        console.log("第一步:触发的是shift 和 / 的keydown事件",event.key);
+    });
+    input3.addEventListener("keypress",function(event){
+        console.log("第二步:触发 ? 的 keypress 事件",event.key==="?",event.shiftKey===true); //shift是按下了的。
+    });
+    input3.addEventListener("textInput",function(event){
+        console.log("第三步:触发 ? 的 textInput 事件",event.data==="?");
+    });
+    input3.addEventListener("keyup",function(event){
+        console.log("最后一步:触发的是shift 和 / 的keyup事件",event.key);
+    });
+
+    /**
+     * 键盘事件的 key keyCode charCode属性
+     */
+    var input4=document.getElementById("input4");
+    input4.addEventListener("keydown",function(event){
+        console.log("keydown的键码是:",event.keyCode,"字符码永远等于0",event.charCode===0,"key:",event.key);
+    });
+
+    /**
+     * 这里需要注意的是，键码和字符码本身是没有任何关系的。
+     * 大写字母A和小写字母a的键码都是同一个，但是字母码(ASCII)却不相同。这点就可以轻易明白。
+     *
+     * 同时也要明白. key和keyCode之间的关系并不是 key=String.fromCharCode(keyCode). 和上面的道理一致。
+     * key属性是可以识别出大小写的。keyCode是和大小写没关系的。
+     */
+    input4.addEventListener("keypress",function(event){
+        console.log("keypress的键码是:",event.keyCode,"字符码是",event.charCode,"key:",event.key);
+        console.log("keypress事件的字符键的键码和字符码通常一致(keypress事件不应该有键码)",event.keyCode===event.charCode);
+    });
+    input4.addEventListener("textInput",function(event){
+        console.log("textInput输入的字符内容是:",event.data);
+    });
+    input4.addEventListener("keyup",function(event){
+        console.log("keyup的键码是:",event.keyCode,"字符码永远等于0",event.charCode===0,"key:",event.key);
+    });
+
+    /**
+     * 键盘事件的location属性表明了按下的键所处的位置
+     */
+    var input5=document.getElementById("input5");
+    input5.addEventListener("keydown",function(event){
+        var location;
+        switch (event.location){
+            case 0:
+                location="主键盘区";
+                break;
+            case 1:
+                location="左侧键盘";
+                break;
+            case 2:
+                location="右侧键盘";
+                break;
+            case 3:
+                location="数字键盘";
+                break;
+        }
+        console.log("按下的",event.key,"位于",location);
+    });
+
+    /**
+     * 可以被 shiftKey 等属性取代的 getModifierState()方法
+     */
+    var input6=document.getElementById("input6");
+    input6.addEventListener("keydown",function(event){
+        console.log(event.getModifierState("Control")===event.ctrlKey);
+        console.log(event.getModifierState("Alt")===event.altKey);
+        console.log(event.getModifierState("Shift")===event.shiftKey);
+        console.log(event.getModifierState("Meta")===event.metaKey);
+    });
+</script>
+</html>

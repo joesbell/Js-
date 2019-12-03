@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GET请求和POST请求</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="发送GET请求">
+<input type="button" id="button2" value="发送POST请求">
+
+</body>
+
+<script>
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    /**
+     * 一个为GET请求URL添加请求参数的方法
+     */
+    function addGetParam(url,key,value){
+        //判断是否已经有请求参数了。如果有了就添加& 否则添加?
+        if(url.indexOf("?")!==-1){
+            url+="&";
+        }else{
+            url+="?";
+        }
+        //处理url时对请求参数必须编码！
+        url+= encodeURIComponent(key)+"="+encodeURIComponent(value);
+        return url;
+    }
+
+    button1.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+        var url="/rest/get";
+        url=addGetParam(url,"user","reveur");
+        url=addGetParam(url,"age","24");
+        url=addGetParam(url,"sex","男");
+
+        //GET请求时，url中携带着请求参数
+        xhr.open("GET",url);
+
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log(xhr.responseText)
+                }
+            }
+        };
+
+        xhr.send(null);//GET请求不需要在消息实体中发送数据
+    });
+
+    button2.addEventListener("click",function () {
+        var xhr=new XMLHttpRequest();
+
+        xhr.open("POST","/rest/post");
+
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log(xhr.responseText)
+                }
+            }
+        };
+
+        /**
+         * POST请求时，请求内容放在 消息实体中。因此格式不限，数据量可以很大。
+         * 此时我们可以通过设置请求头的 Content-Type属性在指明请求数据的MIME类型。
+         */
+        xhr.setRequestHeader("Content-Type","application/json");
+        xhr.send(JSON.stringify({
+            user:"reveur",
+            age:24,
+            sex:"男"
+        }));
+
+        // xhr.send(document); xhr发送Document文档类型时会自动获取文档的内容并发送。
+        // xhr.send({ a:1,b:"2",toString:function(){return '对象会自动转化为字符串发送'}}); 而在发送对象时，会自动将对象转化为字符串发送。
+        //因此往往我们需要先将对象序列化后再发送。
+
+    });
+
+</script>
+</html>

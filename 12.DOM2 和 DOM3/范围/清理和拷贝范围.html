@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>清理和拷贝范围</title>
+</head>
+<body>
+    <p> hello </p>
+</body>
+
+<script>
+    /**
+     * Range类型上提供方法
+     */
+    console.log(Range.prototype.hasOwnProperty("detach"));
+    console.log(Range.prototype.hasOwnProperty("cloneRange"));
+
+
+    var p=document.querySelector("p");
+    var range=document.createRange();
+    range.selectNode(p);
+
+    var clone=range.cloneRange();
+
+    /**
+     * 用于判断范围的各个属性是否相等。
+     */
+    function equal(range1,range2) {
+        var props=[];
+        for(var prop in range1){
+            props.push(prop);
+        }
+
+        var result=props.find(function (value) {
+            if(range1[value]!==range2[value]){
+                return true;
+            }
+        });
+
+        return result===undefined;
+    }
+
+    console.log("拷贝的各个属性相同",equal(range,clone));
+    console.log("拷贝的和原本的不是同一个对象",range!==clone);
+
+    clone.selectNodeContents(p);
+    console.log("拷贝的和原来的互不影响",clone!==range);
+
+    /**
+     * 使用完毕后最好 detach。 分离文档和范围。
+     */
+    range.detach();
+    clone.detach();
+
+    console.log("detach分离后，范围并不等于null",range!==null);
+
+    range=null;
+    clone=null;
+</script>
+</html>

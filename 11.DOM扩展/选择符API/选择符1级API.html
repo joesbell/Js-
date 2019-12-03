@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>选择符1级API</title>
+</head>
+<body>
+
+<div>
+    <p id="myid">0</p>
+    <p class="myclass1">1</p>
+    <p class="myclass1">2</p>
+    <p class="myclass2">3</p>
+    <p class="myclass2">4</p>
+
+</div>
+</body>
+
+<script>
+    /**
+     * 选择符一级API主要提供两个方法:
+     * 1.querySelector
+     * 2.querySelectorAll
+     */
+
+    /**
+     * 可以看到选择符1级API是分别在 Document类型 Element类型 DocumentFragment类型上提供的。
+     * 虽然他们叫着同样的名字，但是却不是同一个函数。
+     */
+    console.log(Element.prototype.hasOwnProperty("querySelector"));
+    console.log(Document.prototype.hasOwnProperty("querySelector"));
+    console.log(DocumentFragment.prototype.hasOwnProperty("querySelector"));
+    console.log(Element.prototype.querySelector!==Document.prototype.querySelector);
+
+    console.log(Element.prototype.hasOwnProperty("querySelectorAll"));
+    console.log(Document.prototype.hasOwnProperty("querySelectorAll"));
+    console.log(DocumentFragment.prototype.hasOwnProperty("querySelectorAll"));
+    console.log(Element.prototype.querySelectorAll!==Document.prototype.querySelectorAll);
+
+    /**
+     * querySelector方法可以在调用节点的所有后代中，返回第一个与选择符API匹配的节点。
+     */
+
+    //这里是根据id匹配
+    var p0=document.querySelector("#myid");
+    console.log(p0!==null);
+    //可以支持复杂的CSS选择器
+    p0=document.querySelector("p#myid");
+    console.log(p0!==null);
+    p0=document.querySelector("div#myid");
+    //如果找不到匹配的，那么返回null
+    console.log(p0===null);
+
+    //这里根据标签匹配.
+    var div=document.querySelector("div");
+    console.log(div!==null);
+
+    //这里根据className匹配.
+    var p1=div.querySelector(".myclass1");
+    console.log(p1!==null);
+
+    /**
+     * 而querySelectorAll则可以在调用节点的所有后代中，返回所有匹配元素组成的静态NodeList集合。
+     */
+    var ps=document.querySelectorAll("p");
+    console.log(ps.length===5);
+    //这里需要注意的是，尽管其隐式原型依旧为 NodeList。但是在底层实现中，选择符API返回的NodeList集合对象是一个静态的有序集合。
+    console.log(ps.__proto__===NodeList.prototype);
+    div.appendChild(document.createElement("p"));
+    console.log(ps.length===5); //可以看到在添加一个p元素后，长度依旧没有变化，这说明是静态的。
+    console.log(document.querySelectorAll("p").length===6); //这里只能重新获取当前的p标签元素的集合。
+
+</script>
+</html>

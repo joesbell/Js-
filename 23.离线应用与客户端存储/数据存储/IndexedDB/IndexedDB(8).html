@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>使用索引</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="使用索引">
+
+</body>
+
+<script>
+
+    var IDBName="test"+Math.random(); //保证每次打开页面连接数据库都是新建操作。
+    var button1=document.getElementById("button1");
+
+    /**
+     * 新建一个数据库以及对象仓库
+     */
+    var req=indexedDB.open(IDBName);
+    var db;
+    req.onupgradeneeded=function (event) {
+        db=event.target.result;
+
+        var store=db.createObjectStore("users",{ autoIncrement:true});
+
+        store.createIndex("userage","age",{unique:false});
+
+        var versionChangeTransaction=event.target.transaction;
+
+        versionChangeTransaction.oncomplete=function () {
+            console.log("数据库创建Schema完毕");
+        };
+        versionChangeTransaction.onerror=function () {
+            console.log("数据库创建Schema失败");
+        }
+    };
+    req.onsuccess=function () {
+        console.log("连接到新创建的数据库成功");
+
+        var transaction=db.transaction("users","readwrite");
+        var store=transaction.objectStore("users");
+
+        var total=10;
+        var datas=[];
+        for(var i=0;i<total;i++){
+            datas.push({
+                name:generateWord(6),
+                age:i,
+            })
+        };
+
+        datas.forEach((data)=>{
+            store.add(data);
+        });
+
+        transaction.oncomplete=function(){
+            console.log("数据初始化完毕");
+        };
+
+        transaction.onerror=function(){
+            console.log("数据初始化失败");
+        };
+        //关闭页面时，删除数据库
+        window.onunload=function () {
+            indexedDB.deleteDatabase(IDBName);
+        }
+    };
+
+    /**
+     * 根据索引获取数据
+     */
+    button1.addEventListener("click",function () {
+
+        var transaction=db.transaction("users","readonly");
+        console.log(transaction instanceof IDBTransaction);
+
+        //获取到该事务下的对象仓库。
+        var store=transaction.objectStore("users");
+        //获取到userage索引。
+        var index=store.index("userage");
+        console.log(index instanceof IDBIndex);
+
+        var req=index.get(1);//查询 索引userage值为1的数据
+
+        req.onsuccess=function (event) {
+            var result=event.target.result;
+            console.log("获取到数据",result);
+        };
+        req.onerror=function () {
+            console.log("获取数据失败");
+        };
+
+        transaction.oncomplete=function () {
+            console.log("事务执行完毕");
+        };
+        transaction.onerror=function () {
+            console.log("事务执行失败");
+        };
+    });
+
+    /**
+     * 生成 length长度的字符串 ，这些字符串的每个字符均是 A-Z
+     * @param length
+     * @returns {string}
+     */
+    function generateWord(length) {
+        var result="";
+        for(var i=0;i<length;i++){
+            result+=String.fromCharCode(((Math.random()*26)>>0)+65);
+        }
+        return result;
+    }
+</script>
+
+</html>

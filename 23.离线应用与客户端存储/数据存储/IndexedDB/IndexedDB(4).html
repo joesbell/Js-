@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>获取数据</title>
+</head>
+<body>
+
+<input type="button" id="button1" value="获取所有数据">
+
+<input type="button" id="button2" value="检测获取到的数据是否真的存在">
+
+</body>
+
+<script>
+
+    var IDBName="test"+Math.random(); //保证每次打开页面连接数据库都是新建操作。
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    /**
+     * 新建一个数据库以及对象仓库
+     */
+    var req=indexedDB.open(IDBName);
+    var db;
+    req.onupgradeneeded=function (event) {
+        db=event.target.result;
+
+        var store=db.createObjectStore("users",{ autoIncrement:true});
+
+        store.createIndex("usersage","age",{unique:false});
+
+        var versionChangeTransaction=event.target.transaction;
+
+        versionChangeTransaction.oncomplete=function () {
+            console.log("数据库创建Schema完毕");
+        };
+        versionChangeTransaction.onerror=function () {
+            console.log("数据库创建Schema失败");
+        }
+    };
+    req.onsuccess=function () {
+        console.log("连接到新创建的数据库成功");
+
+        var transaction=db.transaction("users","readwrite");
+        var store=transaction.objectStore("users");
+
+        //写入10个随机数据
+        var total=10;
+        var datas=[];
+        for(var i=0;i<total;i++){
+            datas.push({
+                name:generateWord(6),
+                age:(Math.random()*30>>0)
+            })
+        };
+        //写入1个undefined数据
+        datas.push(undefined);
+
+        datas.forEach((data)=>{
+            store.add(data);
+        });
+
+        transaction.oncomplete=function(){
+            console.log("数据初始化完毕");
+        };
+
+        transaction.onerror=function(){
+            console.log("数据初始化失败")
+        };
+
+        //关闭页面时，删除数据库
+        window.onunload=function () {
+            indexedDB.deleteDatabase(IDBName);
+        }
+    };
+
+    /**
+     * 获取所有数据
+     */
+    button1.addEventListener("click",function () {
+        //获取到该数据库的事务对象，获取数据时，事务模式最好是 readonly
+        var transaction=db.transaction("users","readonly");
+        console.log(transaction instanceof IDBTransaction);
+
+        //获取到该事务下的对象仓库。
+        var store=transaction.objectStore("users");
+        console.log(store instanceof IDBObjectStore);
+
+        //使用该对象仓库的方法获取所有数据
+        var req=store.getAll();
+
+        //根据该写入请求的事件触发来判断写入操作是否成功
+        req.onsuccess=function (event) {
+            console.log("获取成功",event.target.result);
+        };
+        req.onerror=function () {
+            console.log("获取失败");
+        };
+
+        transaction.oncomplete=function () {
+            console.log("事务执行完毕");
+        };
+        transaction.onerror=function () {
+            console.log("事务执行失败");
+        };
+    });
+
+    /**
+     * 判断数据库中是否存在某个主键为key的数据。
+     */
+    button2.addEventListener("click",function () {
+       var transaction=db.transaction("users");
+       var store=transaction.objectStore("users");
+
+       /**
+        * 数据本身为undefined或者数据不存在，get返回的结果都是undefined，但是我们可以通过两种方法来判别究竟是哪种情况。
+        */
+
+
+       var req1=store.get(11);
+       req1.onsuccess=function () {
+           console.log("获取主键为11的数据返回值为undefined",event.target.result===undefined);
+       };
+
+       //利用openCursor函数判断主键为11的数据是否存在
+       var req2=store.openCursor(11);
+       req2.onsuccess=function (event) {
+           var cursor=event.target.result;
+           console.log(cursor instanceof IDBCursor);
+           if(cursor!=null){
+               console.log("主键为11的数据是存在的");
+           }else {
+               console.log("主键为11的数据是不存在的");
+           }
+       };
+
+        var req3=store.get(12);
+        req3.onsuccess=function () {
+            console.log("获取主键为12的数据返回值为undefined",event.target.result===undefined);
+        };
+
+       //利用count函数判断主键为12的数据是否存在
+       var req4=store.count(12);
+       req4.onsuccess=function (event) {
+           var sum=event.target.result;
+           if(sum!==0){
+               console.log("主键为12的数据是存在的");
+           }else{
+               console.log("主键为12的数据是不存在的")
+           }
+       };
+
+       transaction.oncomplete=function () {
+           console.log("事务执行完毕")
+       }
+    });
+
+    /**
+     * 生成 length长度的字符串 ，这些字符串的每个字符均是 A-Z
+     * @param length
+     * @returns {string}
+     */
+    function generateWord(length) {
+        var result="";
+        for(var i=0;i<length;i++){
+            result+=String.fromCharCode(((Math.random()*26)>>0)+65);
+        }
+        return result;
+    }
+
+</script>
+
+</html>

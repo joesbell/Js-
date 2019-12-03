@@ -1,0 +1,152 @@
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!--这里定义了过渡类型的文档类型定义DTD-->
+
+<!--这里声明了html文档的命名空间http://www.w3.org/1999/xhtml和命名空间前缀myxhtml-->
+
+<myxhtml:html xmlns:myxhtml="http://www.w3.org/1999/xhtml">
+<myxhtml:head>
+    <myxhtml:title>XHTML的XML命名空间</myxhtml:title>
+</myxhtml:head>
+<myxhtml:body>
+
+    <myxhtml:p id="p1">我的XHTML</myxhtml:p>
+
+    <!--在myxhtml的命名空间中，定义了新的命名空间及其前缀-->
+    <mysvg:svg  id="svg1" xmlns:mysvg="http://www.w3.org/2000/svg" width="150">
+        <mysvg:rect width="100" height="100"/>
+    </mysvg:svg>
+
+    <!--在myxhtml的命名空间中，定义了新的命名空间-->
+    <svg  id="svg2" xmlns="http://www.w3.org/2000/svg" width="250">
+        <rect id="rect2" width="100" height="100"/>
+        <rect id="rect3" width="100" x="150" height="100"/>
+    </svg>
+
+    <div xmlns="anyURI">
+        <p>under anyURI namespace</p>
+    </div>
+</myxhtml:body>
+
+
+    <myxhtml:script>
+        /**
+         *  在Element类型上新增了三个属性，跟命名空间有关:
+         *  1.localName:除去前缀的标签名
+         *  2.prefix：前缀
+         *  3.namespaceURI:命名空间URI
+        */
+        console.log(Element.prototype.hasOwnProperty("localName"));
+        console.log(Element.prototype.hasOwnProperty("prefix"));
+        console.log(Element.prototype.hasOwnProperty("namespaceURI"));
+
+        var p1=document.getElementById("p1");
+        console.log(p1.localName==="p");
+        console.log(p1.prefix==="myxhtml");
+        //可以看到在元素拥有前缀的情况下 tagName==nodeName==prefix+":"+localName
+        console.log(p1.nodeName===p1.prefix+":"+p1.localName);
+        console.log(p1.tagName===p1.prefix+":"+p1.localName);
+        console.log(p1.namespaceURI==="http://www.w3.org/1999/xhtml");
+
+        var svg1=document.getElementById("svg1");
+        console.log(svg1.localName==="svg");
+        console.log(svg1.prefix==="mysvg");
+        console.log(svg1.nodeName===svg1.prefix+":"+svg1.localName);
+        console.log(svg1.tagName===svg1.prefix+":"+svg1.localName);
+        console.log(svg1.namespaceURI==="http://www.w3.org/2000/svg");
+
+
+        /**
+         * 在Node类型上新增了三个方法，跟命名空间有关:
+         * 1.lookupPrefix(nsURI) 根据命名空间查找元素的前缀
+         * 2.lookupNamespaceURI(prefix) 根据前缀查找元素的命名空间URI
+         * 3.isDefaultNamespace(nsURI) 元素的命名空间是否是默认命名空间。 如果命名空间没有前缀，那么就会返回true。有就会返回false。
+        */
+        console.log(Node.prototype.hasOwnProperty("lookupPrefix"));
+        console.log(Node.prototype.hasOwnProperty("lookupNamespaceURI"));
+        console.log(Node.prototype.hasOwnProperty("isDefaultNamespace"));
+
+        //可以看到，在prefix存在的情况下， 元素的isDefaultNamespace方法返回false
+        console.log((p1.isDefaultNamespace(p1.namespaceURI)===false)&amp;&amp;(p1.prefix!==null));//在XHTML中， 特殊符号必须转义的。
+        console.log(p1.lookupPrefix(p1.namespaceURI)===p1.prefix);
+        console.log(p1.lookupNamespaceURI(p1.prefix)===p1.namespaceURI);
+
+        var svg2=document.getElementById("svg2");
+
+        //可以看到，在prefix不存在的情况下， 元素的isDefaultNamespace方法返回true
+        console.log(svg2.isDefaultNamespace(svg2.namespaceURI)&amp;&amp;(svg2.prefix===null));
+        console.log(svg2.lookupNamespaceURI(null)===svg2.namespaceURI);
+        console.log(svg2.lookupPrefix(svg2.namespaceURI)===null);
+
+
+        /**
+         * 在Document类型上新增了三个有关命名空间的方法:
+         * 1.createElementNS(namespaceURI,tagName) 创建一个属于namespaceURI命名空间的tagName元素
+         * 2.createAttributeNS(namespaceURI,attrName) 创建一个属于namespaceURI命名空间的attrName特性
+         * 3.getElementsByTagNameNS(namespaceURI,tagName) 获取namespaceURI命名空间下的所有标签名为tagName的节点HTMLCollection集合
+        */
+        console.log(Document.prototype.hasOwnProperty("createElementNS"));
+        console.log(Document.prototype.hasOwnProperty("getElementsByTagNameNS"));
+        console.log(Document.prototype.hasOwnProperty("createAttributeNS"));
+
+        var div1=document.createElementNS("myNamespaceURI","div");
+        document.body.appendChild(div1);
+        var p2=document.createElementNS(div1.namespaceURI,"p");
+        var p3=document.createElementNS(div1.namespaceURI,"p");
+        p2.innerHTML="1";
+        p3.innerHTML="2";
+        div1.appendChild(p2);
+
+        var ps=document.getElementsByTagNameNS(div1.namespaceURI,"p");//获取该命名空间下的所有p标签元素的集合
+        console.log(ps.__proto__===HTMLCollection.prototype);//这个集合是HTMLCollection对象
+        console.log(ps.length===1);
+        div1.appendChild(p3);
+        console.log(ps.length===2); //动态的集合
+
+        var attr1=document.createAttributeNS(div1.namespaceURI,"data-mydata"); //创建命名空间下的特性节点.
+        attr1.value="mynsdata";
+        console.log(attr1.namespaceURI===div1.namespaceURI);
+
+
+        /**
+         * 在Element类型上还新增诸多跟命名空间下的特性操作相关的方法
+        */
+        console.log(Element.prototype.hasOwnProperty("getAttributeNS"));
+        console.log(Element.prototype.hasOwnProperty("getAttributeNodeNS"));
+        console.log(Element.prototype.hasOwnProperty("getElementsByTagNameNS"));
+        console.log(Element.prototype.hasOwnProperty("hasAttributeNS"));
+        console.log(Element.prototype.hasOwnProperty("removeAttributeNS"));
+        console.log(Element.prototype.hasOwnProperty("setAttributeNS"));
+        console.log(Element.prototype.hasOwnProperty("setAttributeNodeNS"));
+
+        var div2=document.getElementsByTagNameNS("anyURI","div")[0];
+        var p4=div2.getElementsByTagNameNS("anyURI","p")[0];
+        //不是同一个方法！ 虽然功能是一致的。
+        console.log(Element.prototype.getElementsByTagNameNS!==Document.prototype.getElementsByTagNameNS);
+        p4.setAttributeNS("someURI","olddata","value");
+        if(p4.hasAttributeNS("someURI","olddata")){
+            p4.removeAttributeNS("someURI","olddata");
+            var attr2=document.createAttributeNS("someURI","newdata");
+            attr2.value="newvalue";
+            p4.setAttributeNodeNS(attr2);
+        }
+        console.log(p4.getAttributeNodeNS("someURI","newdata").nodeValue==="newvalue");
+        //不带NS的方法可以无视命名空间进行查找
+        console.log(p4.getAttributeNS("someURI","newdata")===p4.getAttribute("newdata"));
+        console.log(p4.getAttributeNodeNS("someURI","newdata")===p4.getAttributeNode("newdata"));
+
+        /**
+         * 在NamedNodeMap类型上还新增了有关命名空间的方法
+        */
+        console.log(NamedNodeMap.prototype.hasOwnProperty("getNamedItemNS"));
+        console.log(NamedNodeMap.prototype.hasOwnProperty("setNamedItemNS"));
+        console.log(NamedNodeMap.prototype.hasOwnProperty("removeNamedItemNS"));
+
+        console.log(p4.attributes.getNamedItemNS("someURI","newdata")===p4.attributes.getNamedItem("newdata"));
+        console.log(p4.attributes.removeNamedItemNS("someURI","newdata")===attr2);
+        p4.attributes.setNamedItemNS(attr1);
+        console.log(p4.getAttributeNodeNS(div1.namespaceURI,"data-mydata")===attr1);
+
+    </myxhtml:script>
+</myxhtml:html>

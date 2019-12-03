@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>topFrame</title>
+</head>
+<body>
+
+<h1>topFrame</h1>
+
+</body>
+
+<script>
+    var a="a";
+    function getMessage(msg) {
+        msg.stopPropagation();
+        this.printLineInfo=top.printLineInfo;
+        this.printLineInfo("当前窗口名:"+window.name);
+        this.printLineInfo("topFrame窗口收到信息:"+msg.data);
+        this.printLineInfo("证明我是topFrame:"+a);
+        this.printLineInfo("window===top.frames[0]:"+(window===top.frames[0]));
+        this.printLineInfo("self===top.frames[0]:"+(self===top.frames[0]));
+        this.printLineInfo("window===top.frames['topFrame']:"+(window===top.frames["topFrame"]));
+        this.printLineInfo("window.parent===top:"+(window.parent===top));
+
+        document.body.style.background="red";
+        setTimeout(()=>{
+            top.frames[1].postMessage("leftFrame应该收到的信息","*");
+        },1000);
+
+    }
+
+    window.addEventListener("message",getMessage,false);
+</script>
+
+</html>

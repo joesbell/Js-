@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frame4</title>
+</head>
+<body>
+
+
+
+<button id="button1">点击会将frame5窗口跳转新窗口: targetName一一frame5</button>
+
+
+<button id="button2">点击会将frame100窗口跳转新窗口: targetName一一frame100</button>
+</body>
+
+<script>
+
+    window.onload=function () {
+        var node=document.createElement("h1");
+        document.body.insertBefore(node,document.body.children[0]);
+        node.innerText=window.name;
+    }
+
+
+    /**
+     * 当用一个窗口名作为目标窗口时。如果该窗口名确实存在，那么会已已存在的窗口作为新窗口的载体。
+     */
+    document.getElementById("button1").addEventListener("click",function () {
+        var newWindow=window.open("newWindow.html","frame5");
+    })
+
+    /**
+     * 否则，等同于使用 _blank 新建一个页面，该页面的window.name属性为我们指定的窗口名
+     */
+    document.getElementById("button2").addEventListener("click",function () {
+        var newWindow=window.open("newWindow.html","frame100");
+    })
+</script>
+
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>函数节流throttle与函数去抖debounce</title>
+</head>
+<body>
+<input type="button" id="button1" value="节流的点击事件">
+<hr>
+<input type="text" id="text1" placeholder="防抖的输入事件">
+
+</body>
+
+<script>
+
+    var button1=document.getElementById("button1");
+    var text1=document.getElementById("text1");
+
+    button1.addEventListener("click",throttle((function(){
+        var prev;
+        var current;
+        return function(){
+            current=Date.now();
+            console.log("节流后一秒内只能触发一次",prev?"距离上次触发的间隔为:"+(current-prev):"");
+            prev=current;
+        }
+    }()),1000));
+
+    text1.addEventListener("keyup",debounce(function(){
+        console.log("防抖后，连续输入将不会触发回调,除非一定时间后没有继续输入")
+    },1000));
+
+    /**
+     * 节流的核心在于 每个时间间隔内，函数最多执行一次。
+     */
+    function throttle(method,intervalTime){
+        //通过闭包，保留一些节流所需要用到的本地变量。
+        var prev; //记录上一次函数执行的时间。
+        var timerId;
+        return function(){
+            var current=Date.now();
+            var that=this;
+            var args=Array.prototype.slice.call(arguments,0);
+            clearTimeout(timerId);
+
+            //如果执行间隔大于预设值，那么就直接执行。
+            if(prev && current-prev>=intervalTime){
+                method.apply(that,args);
+                prev=Date.now();
+            }else{
+                /**
+                 * 否则，设置个定时器，使其时间为 剩余冷却时间。
+                 */
+                timerId=setTimeout(function() {
+                    method.apply(that,args);
+                    prev=Date.now();
+                }, intervalTime+prev-current);
+            }
+        }
+    }
+
+    /**
+     * 去抖的核心在于，每次调用时，都要刷新定时器时间，除非一段时间内不再调用，才会真正执行函数。
+     */
+    function debounce(method,delayTime){
+        //通过闭包，保留去抖所需要用到的本地变量。
+        var timeId;
+        return function(){
+            //每次调用都会清空定时器。
+            clearTimeout(timeId);
+            var that=this;
+            var args=Array.prototype.slice.call(arguments,0);
+            /**
+             * 并且按照原本的预设的延迟执行时间重新执行定时器。
+             */
+            timeId=setTimeout(function(){
+                method.apply(that,args);
+            },delayTime)
+        }
+    }
+
+</script>
+
+</html>

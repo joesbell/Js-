@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图像数据的像素操作</title>
+</head>
+<body>
+
+<div style="position: relative;">
+
+    <h3>原图</h3>
+    <canvas id="canvas1"  style="border: 1px solid black;cursor: crosshair;" ></canvas>
+    <br>
+    <input type="file" id="input1">
+
+    <span  style="position: absolute; top:100px;left: 1100px;">反锯齿的放大图</span>
+    <canvas id="canvas5"  height="200" width="200" style="border: 1px solid black;position: absolute; top:150px;left: 1100px;" ></canvas>
+
+    <span  style="position: absolute; top:100px;left: 1350px;">没有反锯齿的放大图</span>
+    <canvas id="canvas6"  height="200" width="200" style="border: 1px solid black;position: absolute; top:150px;left: 1350px;" ></canvas>
+
+    <span  id="text1" style="position: absolute; top:300px;left: 1580px;"></span>
+    <canvas id="canvas3"  height="100" width="100" style="border: 1px solid black;position: absolute; top:200px;left: 1600px;" ></canvas>
+
+</div>
+
+<h3>黑白(灰度)图</h3>
+<canvas id="canvas2"  style="border: 1px solid black" ></canvas>
+<input type="button" id="button1" value="保存黑白图到本地">
+
+<h3>反相颜色图</h3>
+<canvas id="canvas4"  style="border: 1px solid black"  ></canvas>
+<input type="button" id="button2" value="保存反相颜色图到本地">
+
+</body>
+
+<script>
+
+    /**
+     * 图像数据ImageData类型具有以下三个属性
+     */
+    console.log(ImageData.prototype.hasOwnProperty("width"));
+    console.log(ImageData.prototype.hasOwnProperty("height"));
+    console.log(ImageData.prototype.hasOwnProperty("data"));
+
+    /**
+     * 2D上下文对象中关于 图像数据操作的相关方法
+     */
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("getImageData"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("createImageData"));
+    console.log(CanvasRenderingContext2D.prototype.hasOwnProperty("putImageData"));
+
+    var canvas1=document.getElementById("canvas1");
+    var ctx1=canvas1.getContext("2d");
+
+    var canvas2=document.getElementById("canvas2");
+    var ctx2=canvas2.getContext("2d");
+
+    var canvas3=document.getElementById("canvas3");
+    var ctx3=canvas3.getContext("2d");
+
+    var canvas4=document.getElementById("canvas4");
+    var ctx4=canvas4.getContext("2d");
+
+    var canvas5=document.getElementById("canvas5");
+    var ctx5=canvas5.getContext("2d");
+
+    var canvas6=document.getElementById("canvas6");
+    var ctx6=canvas6.getContext("2d");
+
+    var input1=document.getElementById("input1");
+    var text1=document.getElementById("text1");
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+
+    var prevImgURL; //保存上次上传的图片的地址
+    /**
+     * 上传图片浏览器本地处理
+     */
+    input1.addEventListener("change",function(event){
+        var img=new Image();
+        img.onload=function(){
+            /**
+             * 这里需要注意的是，调整的不是canvas的style样式的height和width(对应可视像素的区域)。
+             * 而是调整canvas对象自身的height和width属性(对应canvas内部坐标系)。
+             *
+             * 如果这里是将canvas的样式调整为和图片大小一样，那么实际上进行的是缩放操作。
+             * 也就是说，坐标系依旧是原来那么大，但是画布的可视区域却变大了，造成的结果就是放大效果，图片依旧显示不全。
+             */
+
+            //调整原图的canvas大小
+            canvas1.height=img.height;
+            canvas1.width=img.width;
+            //调整黑白图的canvas大小
+            canvas2.height=img.height;
+            canvas2.width=img.width;
+            //调整反相颜色的canvas大小
+            canvas4.height=img.height;
+            canvas4.width=img.width;
+
+            ctx1.drawImage(img,0,0);
+
+            /**
+             * 获取图像数据对象的方式有两种:
+             * 1. getImageData 获取已有的图像数据
+             * 2. createImageData 创建一个新的图像数据
+             */
+            var imageData=ctx1.getImageData(0,0,img.width,img.height);
+            console.log(imageData.__proto__===ImageData.prototype);
+            /**
+             * 像素点的信息是存储在 Uint8ClampedArray这个类型的数组对象里的。这个数组的每个数据都是8位的。也就是说最多表示0到255的数据
+             */
+            console.log(imageData.data.__proto__===Uint8ClampedArray.prototype);
+            /**
+             * 图像数据的data属性的数组是由像素宽度*高度个像素点的rgba数据构成的的。
+             * 一个像素点有4个数据,每个数据具有8位。值的范围为 0到255。 按照红 绿 蓝 透明度 顺序排列。
+             */
+            console.log(imageData.data.length===imageData.height*imageData.width*4);
+
+            //创建一个新的图像数据对象用于 绘制反相颜色图
+            var processedData=ctx1.createImageData(imageData.width,imageData.height);
+            //获取已有的图像数据对象用于 绘制黑白图
+            var processedData2=ctx1.getImageData(0,0,img.width,img.height);
+
+            for(var i=0;i<imageData.data.length;i+=4){
+                var red=imageData.data[i];
+                var green=imageData.data[i+1];
+                var blue=imageData.data[i+2];
+                var alpha=imageData.data[i+3];
+                var avg= ((red+green+blue)/3)>>0; //计算平均颜色
+
+                //这里是黑白图的像素点数据处理
+                processedData.data[i]=avg;
+                processedData.data[i+1]=avg;
+                processedData.data[i+2]=avg;
+                processedData.data[i+3]=alpha;
+
+                //这里是颜色反向图的像素点数据处理
+                processedData2.data[i]=255-red;
+                processedData2.data[i+1]=255-green;
+                processedData2.data[i+2]=255-blue;
+                processedData2.data[i+3]=alpha;
+            }
+
+            /**
+             * putImageData方法将 图像数据绘制到画布上。
+             */
+            ctx2.putImageData(processedData,0,0);
+            ctx4.putImageData(processedData2,0,0)
+        };
+
+        /**
+         * 这里使用 URL的createObjectURL方法，以我们上传的文件创建一个本地的URL连接。
+         * 达到让我们本地处理上传数据的目的。
+         */
+        var imgSrc=URL.createObjectURL(event.target.files[0]);
+        //返回的是一个 String 对象。 而不是一个string基本类型
+        console.log(imgSrc.__proto__===String.prototype);
+        img.src=imgSrc;
+
+        /**
+         * 使用 URL.revokeObjectURL()方法可以释放指定的本地URL连接的数据。
+         */
+        if(prevImgURL){
+            URL.revokeObjectURL(prevImgURL);
+        }
+        prevImgURL=imgSrc;
+    });
+
+    /**
+     * 为原图增加实时的 放大功能以及 rgba颜色指示器功能
+     */
+    canvas1.addEventListener("mousemove",function (event) {
+        var mouseX=event.clientX;
+        var mouseY=event.clientY;
+        var boudingRect=this.getBoundingClientRect();
+        var canvasX=boudingRect.left;
+        var canvasY=boudingRect.top;
+        //这里就计算出了鼠标指针的位置在canvas的坐标系中的坐标了。
+        var x=(mouseX-canvasX)>>0;
+        var y=(mouseY-canvasY)>>0;
+        var imgData=ctx1.getImageData(0,0,this.width,this.height);
+
+        /**
+         * 获取图像数据中 x 列 y 行的像素点的数据的方式是通过
+         * (y*width+x)*4 获取到该像素点 red值 的索引。再以此获取4个数据就是该像素点的 rgba值了。
+         */
+        var startIndex= 4*(y*imgData.width+x);
+        var red=imgData.data[startIndex];
+        var green=imgData.data[startIndex+1];
+        var blue=imgData.data[startIndex+2];
+        var alpha=imgData.data[startIndex+3];
+
+        //需要注意的是， 这里获取到的rgba中的 透明度的值 最大值是 255，而不是1，因此用于CSS中时，需要将其除以255
+        var color="rgba("+red+","+green+","+blue+","+alpha/255+")";
+        ctx3.fillStyle=color;
+        ctx3.fillRect(0,0,canvas3.width,canvas3.height);
+        ctx3.fill();
+        text1.innerText=color+"点击复制";
+
+
+        /**
+         * 这里则是将 原图中 10*10像素区域 放大为 200*200的像素区域。
+         */
+        ctx5.drawImage(canvas1,x-5,y-5,10,10,0,0,200,200);
+
+        /**
+         * 而这里 则是 不开启反锯齿的放大图片。默认的浏览器放大图像都是开启了反锯齿的，因此我们需要手动关闭反锯齿。
+         */
+        ctx6.imageSmoothingEnabled = false;
+        ctx6.mozImageSmoothingEnabled = false;
+        ctx6.webkitImageSmoothingEnabled = false;
+        ctx6.msImageSmoothingEnabled = false;
+        ctx6.drawImage(canvas1,x-5,y-5,10,10,0,0,200,200);
+    });
+
+    /**
+     * 点击颜色代码复制到粘贴板的功能则是通过 document.execCommand()方法实现的。
+     */
+    text1.addEventListener("click",function () {
+        document.execCommand("copy",false,undefined);
+    });
+
+    /**
+     * 监听颜色代码 copy事件。
+     */
+    text1.addEventListener("copy",function (event) {
+        var clip=event.clipboardData||window.clipboardData;
+        //这里去除文本内容中的 点击复制 四个字。
+        var color=text1.innerText.substring(0,text1.innerText.length-4);
+        clip.setData("text/plain",color);
+        //这里一定要阻止默认的复制事件的行为。否则我们设置粘贴板的数据是不会生效的
+        event.preventDefault();
+        alert("成功复制颜色代码:"+color);
+    });
+
+    /**
+     * 利用 新增一个download链接并点击，来保存处理后的图片到本地。
+     */
+    button1.addEventListener("click",function () {
+       var imgSrc=canvas2.toDataURL();
+       var link=document.createElement("a");
+       link.download="黑白图";
+       link.href=imgSrc;
+       document.body.appendChild(link);
+       link.click();
+       document.body.removeChild(link);
+    });
+
+    button2.addEventListener("click",function () {
+        var imgSrc=canvas4.toDataURL();
+        var link=document.createElement("a");
+        link.download="反相颜色图";
+        link.href=imgSrc;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+</script>
+
+</html>

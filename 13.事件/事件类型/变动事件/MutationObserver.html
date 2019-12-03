@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MutationObserver</title>
+</head>
+<body>
+
+<div id="div1">
+    <p id="p1"></p>
+</div>
+
+</body>
+
+<script>
+
+    var div1=document.getElementById("div1");
+    var p1=document.getElementById("p1");
+
+
+    /**
+     * DOM变动后触发的回调函数，这个回调函数的参数是 变动记录的数组.
+     * 之所以是数组的原因是:这里触发回调并不是变动一次就触发一次，而是在一定时间内所有的变动都集中处理执行一次回调，这样性能就高很多。
+     */
+    var callback=function (mutationList) {
+        for(var mutation of mutationList){
+            switch (mutation.type){
+                case "childList":
+                    if(mutation.addedNodes.length>0){
+                        console.log("在",mutation.target,"上添加了节点",mutation.addedNodes[0])
+                    }if(mutation.removedNodes.length>0){
+                        console.log("在",mutation.target,"上移除了节点",mutation.removedNodes[0]);
+                    }
+                    break;
+                case "characterData":
+                    console.log("修改文本节点,原本文本:",mutation.oldValue,"新文本:",mutation.target.nodeValue);
+                    break;
+                case "attributes":
+                    let oldValue=mutation.oldValue;
+                    let name=mutation.attributeName;
+                    let value=mutation.target.getAttribute(name);
+                    /**
+                     * 这里只是演示，实际不能这么用，因为监听的是一段时间内的变动记录再集体进行处理。
+                     * 在这一段时间内，mutation.target目标元素很可能已经是变动过很多次的了。
+                     */
+                    if(oldValue==null&&value!=null){
+                        console.log("添加特性节点,特性名:",name,"特性值:",value)
+                    }else if(value==null&&oldValue!=null){
+                        console.log("移除特性节点,特性名:",name)
+                    }else{
+                        console.log("修改特性节点,特性名:",name,"原本特性值:",oldValue,"新的特性值:",value)
+                    }
+                    break;
+            }
+        }
+        console.log("------------------------");
+    };
+
+    /**
+     * 监听配置
+     */
+    var config={
+        childList:true,
+        subtree:true,
+        characterData:true,
+        characterDataOldValue:true,
+        attributes:true,
+        attributeOldValue:true,
+        attributeFilter:["id","mydata"]
+
+    };
+
+    var mutationObserver=new MutationObserver(callback);//创建 变动监听器
+
+    mutationObserver.observe(div1,config); //开始使用config配置 监听 div1元素
+
+    p1.appendChild(document.createTextNode("p1元素"));
+
+    var p2=document.createElement("p");
+
+    div1.appendChild(p2);
+    p2.appendChild(document.createTextNode("p2元素"));
+
+    p2.setAttribute("id","p2");
+
+    p2.setAttribute("mydata","myvalue");
+
+    p2.setAttribute("somedata","somevalue"); //由于配置了监听的节点列表，因此这个变动不会被监听。
+
+
+    //这里设置延时，避免影响演示。
+    setTimeout(()=>{
+        p2.firstChild.nodeValue="修改后的p2";
+        p2.removeAttribute("mydata");
+
+    },100);
+
+    setTimeout(()=>{
+        p2.innerText="再次修改p2文本";
+        div1.removeChild(p2);
+    },200);
+
+
+</script>
+</html>

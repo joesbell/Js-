@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>利用表格相关属性操作表格</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 所谓表格相关属性就是说 table tbody tr 额外的属性。
+     */
+
+    /**
+     * 这是 table元素  HTMLTableElement提供的一些属性
+     */
+    console.log(HTMLTableElement.prototype.hasOwnProperty("rows"));
+    console.log(HTMLTableElement.prototype.hasOwnProperty("createTHead"));
+    console.log(HTMLTableElement.prototype.hasOwnProperty("createTFoot"));
+    console.log(HTMLTableElement.prototype.hasOwnProperty("insertRow"));
+    console.log(HTMLTableElement.prototype.hasOwnProperty("deleteRow"));
+    /**
+     * 这是 tbody元素  HTMLTableSectionElement提供的一些属性
+     */
+    console.log(HTMLTableSectionElement.prototype.hasOwnProperty("rows"));
+    console.log(HTMLTableSectionElement.prototype.hasOwnProperty("insertRow"));
+    console.log(HTMLTableSectionElement.prototype.hasOwnProperty("deleteRow"));
+    /**
+     * 这是 tr元素  HTMLTableRowElement提供的一些属性
+     */
+    console.log(HTMLTableRowElement.prototype.hasOwnProperty("cells"));
+    console.log(HTMLTableRowElement.prototype.hasOwnProperty("insertCell"));
+    console.log(HTMLTableRowElement.prototype.hasOwnProperty("deleteCell"));
+
+    /**
+     * 这里创建一个 2*2的表格
+     */
+    var table=document.createElement("table");
+    table.border="1px solid black";
+    var tbody=document.createElement("tbody");
+    document.body.appendChild(table);
+    table.appendChild(tbody);
+
+    tbody.insertRow(0); //新建第一行
+    tbody.insertRow(1); //新建第二行
+    tbody.rows[0].insertCell(0); //在第一行新建第一个td元素
+    tbody.rows[0].insertCell(1);
+    tbody.rows[1].insertCell(0);
+    tbody.rows[1].insertCell(1);
+    tbody.rows[0].cells[0].appendChild(document.createTextNode("cell 1 1 ")); //通过 rows cells 索引到 具体的td元素。
+    tbody.rows[0].cells[1].appendChild(document.createTextNode("cell 1 2 "));
+    tbody.rows[1].cells[0].appendChild(document.createTextNode("cell 2 1 "));
+    tbody.rows[1].cells[1].appendChild(document.createTextNode("cell 2 2 "));
+
+</script>
+</html>

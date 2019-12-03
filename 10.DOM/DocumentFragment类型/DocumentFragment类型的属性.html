@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DocumentFragment类型的属性</title>
+</head>
+<body>
+
+</body>
+<script>
+    var df=document.createDocumentFragment();
+    console.log(df.__proto__===DocumentFragment.prototype);
+    console.log(df.nodeValue===null);
+    console.log(df.nodeName==="#document-fragment");
+    console.log(df.nodeType===11);
+    console.log(df.parentNode===null);
+    console.log(df.ownerDocument===document);
+</script>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代码测试页</title>
+
+    <script>
+        function test(JSPath){
+            var temp=JSPath.substring(0,JSPath.indexOf(".js"));
+            document.write( "<script> console.log('开始进行 "+temp+" 的测试');"+"<\/script>" );
+            document.write("<script src='"+JSPath+"'><\/script>");
+            document.write( "<script> console.log('结束对  "+temp+" 的测试');"+"<\/script>" );
+            temp=null;
+        }
+    </script>
+</head>
+<body>
+
+
+<!--<script>-->
+<!--test("for-in语句.js");-->
+<!--</script>-->
+
+
+<script>
+test("break和continue配合label使用.js");
+</script>
+
+</body>
+</html>

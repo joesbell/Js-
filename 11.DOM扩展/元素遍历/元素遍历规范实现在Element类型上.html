@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>元素遍历规范实现在Element类型上</title>
+</head>
+<body>
+
+</body>
+
+<script>
+    /**
+     * 元素遍历规范的5大属性均定义在Element原型上
+     */
+    console.log(Element.prototype.hasOwnProperty("firstElementChild"));
+    console.log(Element.prototype.hasOwnProperty("lastElementChild"));
+    console.log(Element.prototype.hasOwnProperty("previousElementSibling"));
+    console.log(Element.prototype.hasOwnProperty("nextElementSibling"));
+    console.log(Element.prototype.hasOwnProperty("childElementCount"));
+
+
+    /**
+     * 元素遍历规范定义的属性依旧是 只读属性，因为该属性是访问器属性并且set方法为undefined
+     */
+    console.log(Object.getOwnPropertyDescriptor(Element.prototype,"firstElementChild").set===undefined);
+
+    /**
+     * 作为对比的是 DOM1级上 针对Node节点类型遍历的属性是定义在Node上
+     */
+    console.log(Node.prototype.hasOwnProperty("firstChild"));
+    console.log(Node.prototype.hasOwnProperty("lastChild"));
+    console.log(Node.prototype.hasOwnProperty("previousSibling"));
+    console.log(Node.prototype.hasOwnProperty("nextSibling"));
+    console.log(NodeList.prototype.hasOwnProperty("length"));
+</script>
+</html>

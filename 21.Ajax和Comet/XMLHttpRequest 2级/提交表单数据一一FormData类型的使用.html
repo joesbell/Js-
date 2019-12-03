@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>提交表单数据一一FormData类型的使用</title>
+</head>
+<body>
+
+<form action="/rest/formdata" method="POST" id="form1" >
+    user:<input type="text" id="text1" name="user">
+    <br>
+    password:<input type="text" id="text2" name="password">
+    <br>
+    <span>logo</span><input type="file"  id="file1" name="logo">
+    <hr>
+    <h3>提交application/x-www-form-urlencoded类型 表单数据</h3>
+    <input type="button" id="button1" value="Ajax提交">
+    <input type="button" id="button2" value="表单提交(会跳转)" >
+    <hr>
+    <h3>提交multipart/form-data类型 表单数据</h3>
+    <input type="button" id="button3" value="FormData提交表单2">
+    <input type="button" id="button4" value="FormData提交表单3">
+    <input type="button" id="button5" value="表单提交(会跳转)">
+    <input type="button" id="button6" value="iframe提交">
+</form>
+
+</body>
+
+<script>
+    /**
+     * 提交表单数据的方式有多种:
+     * 1.表单自己的提交
+     * 2.自己拼接表单字段后进行Ajax请求。
+     * 3.使用FormData填充表单数据。(最方便)
+     * 4.IFrame隐藏框架提交。
+     * 后三种方式均可以做到无刷新/无跳转地提交表单数据
+     */
+
+    var button1=document.getElementById("button1");
+    var button2=document.getElementById("button2");
+    var button3=document.getElementById("button3");
+    var button4=document.getElementById("button4");
+    var button5=document.getElementById("button5");
+    var button6=document.getElementById("button6");
+
+    var text1=document.getElementById("text1");
+    var text2=document.getElementById("text2");
+    var file1=document.getElementById("file1");
+    var form1=document.getElementById("form1");
+
+    /**
+     * 使用xhr实现模拟表单 x-www-form-urlencoded 格式的提交。
+     * 核心在于设置Content-Type请求头以及拼接表单字段的值。
+     * 需要注意的是，这种x-www-form-urlencoded编码方式无法直接上传文件。
+     */
+    button1.addEventListener("click",function(){
+        var xhr=new XMLHttpRequest();
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log(xhr.responseText);
+                }
+            }
+        };
+        xhr.open("POST","/rest/formdata");
+        //核心1: 设置请求头
+        xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+
+        //核心2: 以 XX=YY&XX=YY格式拼接表单字段。
+        var param="";
+        param=addParam(param,text1.name,text1.value);
+        param=addParam(param,text2.name,text2.value);
+        param=addParam(param,file1.name,file1.files[0]&&file1.files[0].name);
+        xhr.send(param);
+    });
+
+    /**
+     * 辅助用于拼接application/x-www-form-urlencoded格式的表格字段。
+     */
+    function addParam(param,key,value) {
+        var group=encodeURIComponent(key)+"="+encodeURIComponent(value);
+        if(param.length===0){
+            param+=group;
+        }else{
+            param+="&"+group;
+        }
+        return param;
+    }
+
+    /**
+     * 表单提交的application/x-www-form-urlencoded格式数据特别简单 ，只需要设置 表单的 enctype 为 application/x-www-form-urlencoded 即可。
+     * 并且，这是默认的表单提交格式。
+     */
+    button2.addEventListener("click",function () {
+        form1.enctype="application/x-www-form-urlencoded";
+        form1.submit();
+    });
+
+    /**
+     * 使用Ajax模拟multipart/form-data格式的表单提交，核心在于使用 HTML5新增的FormData类型对象。
+     */
+    button3.addEventListener("click",function(){
+        /**
+         * 我们可以自己新建一个空的 FormData类型对象，然后使用 append方法 添加字段和值。
+         */
+        var formData=new FormData();
+        formData.append("user",text1.value);
+        formData.append("password",text2.value);
+        /**
+         * 如果是Blob类型对象(File类型继承自Blob),那么append方法第三个参数为可选的 文件名参数。
+         */
+        formData.append("logo",file1.files[0],file1.files[0]&&file1.files[0].name);
+
+        var xhr=new XMLHttpRequest();
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log(xhr.responseText);
+                }
+            }
+        };
+        xhr.open("POST","/rest/formdata");
+        /**
+         * xhr的send方法也可以接受 FormData对象。
+         * 此时，默认Content-Type请求头就会被设置为  multipart/form-data
+         */
+        // xhr.setRequestHeader("Content-Type","multipart/form-data"); 不用手动设置了
+        xhr.send(formData);
+    });
+
+    /**
+     * FormData的构造函数还可以直接以一个表单对象作为参数，会将其表单的字段自动涵盖，填充进生成出来的FormData中。
+     * 当然，这个填充过程是遵守表单提交的字段规则的。只有应该提交的字段才会被填充进FormData对象中。
+     * 此后，我们还可以自己为该FormData对象添加自定义的内容。
+     */
+    button4.addEventListener("click",function(){
+        var formData=new FormData(form1);
+        formData.append("submitTime",Date.now()); //这里我们添加自定义内容
+
+        var xhr=new XMLHttpRequest();
+        xhr.onreadystatechange=function(){
+            if(xhr.readyState===4){
+                if(xhr.status>=200&&xhr.status<300 || xhr.status===304){
+                    console.log(xhr.responseText);
+                }
+            }
+        };
+        xhr.open("POST","/rest/formdata");
+        xhr.send(formData);
+    });
+
+    /**
+     * 而用表单自身的提交，只需要同样设置 表单的 enctype属性为 multipart/form-data 。
+     * 即可提交 multipart/form-data 格式的数据。
+     */
+    button5.addEventListener("click",function () {
+        form1.enctype="multipart/form-data";
+        form1.submit();
+    });
+
+    /**
+     * 还有一种提交  multipart/form-data 表单数据的方式是利用 隐藏的IFrame。
+     * 核心原理就是 指定表单的target为隐藏的IFrame，通过监听IFrame的load事件来监听响应是否返回。
+     */
+    button6.addEventListener("click",function () {
+
+        //创建隐藏的IFrame。
+        var iframe=document.createElement("iframe");
+        iframe.name="use_to_submit";
+        iframe.display="none";
+
+        //指定表单的enctype以及target
+        var tempEnctype=form1.enctype;
+        var tempTarget=form1.target;
+        form1.enctype="multipart/form-data";
+        form1.target=iframe.name;
+
+        /**
+         * 这里注意！一定要先将iframe添加到文档中再为iframe添加load事件，否则load事件会在iframe添加后直接触发！
+         */
+        document.body.appendChild(iframe);
+
+        iframe.onload=function(){
+            /**
+             * 当响应回来后，获取整个iframe文档的内容，并将其从文档中移除。
+             */
+            var responseText=iframe.contentWindow.document.body.innerText;
+            console.log(responseText);
+            document.body.removeChild(iframe);
+            iframe=null;
+            form1.enctype=tempEnctype;
+            form1.target=tempTarget;
+        };
+
+        form1.submit();
+    });
+
+</script>
+
+</html>

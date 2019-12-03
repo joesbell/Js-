@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IE8及其以下的选择文本</title>
+</head>
+<body>
+
+
+<input type="text" id="input1" value="input" size="25" maxlength="30">
+<hr>
+<input type="button" id="button1" value="选择全部内容" >
+<hr>
+设置选择的起始索引<input type="text" id="input2"  size="1"><br>
+设置选择的结束索引(不包含)<input type="text" id="input3"  size="1"><br>
+<input type="button" id="button2" value="选择部分内容" >
+
+
+</body>
+
+<script>
+
+    var ua=navigator.userAgent;
+
+    var belowIE8=false;
+    if(/MSIE([^;]+)/.test(ua)) {
+        if (Number(RegExp.$1) < 9) {
+            belowIE8 = true;
+        }
+    }
+
+    if(belowIE8) {
+        var input1=document.getElementById("input1");
+        var input2=document.getElementById("input2");
+        var input3=document.getElementById("input3");
+
+        var button1=document.getElementById("button1");
+        var button2=document.getElementById("button2");
+
+        document.attachEvent("onclick",function (event) {
+            switch (event.srcElement.id){
+                case "button1":
+                    input1.select();
+                    console.log("select后成为了焦点",document.activeElement===input1);
+                    break;
+                case "button2":
+                    var start=input2.value;
+                    var end=input3.value;
+                    /**
+                     * IE中选择部分文本的方式是 基于该文本框对象的文本范围对象调用select()方法。
+                     */
+                    var range=input1.createTextRange(); //首先创建文本框对象的文本范围对象。
+                    range.collapse(true); //折叠到文本起始位置
+                    range.moveStart("character",start);
+                    /**
+                     * 当起点和终点折叠时，moveStart向后移动起始位置后同时修改终止位置。此时终点位置会跑到起点位置。所以应该算偏移
+                     */
+                    range.moveEnd("character",end-start);
+                    range.select();
+                    break;
+            }
+        });
+
+        /**
+         * IE中的 select事件不是冒泡的。
+         */
+        input1.attachEvent("onselect",function (event) {
+            /**
+             * 要获取IE中的选中文本非常简单。
+             * 需要注意的是这里的方法不是 createTextRange而是 createRange
+             */
+            console.log("选择的文本是",document.selection.createRange().text)
+        });
+    }else{
+        alert("请在IE8及其以下版本测试");
+    }
+
+</script>
+</html>
